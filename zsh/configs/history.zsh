@@ -1,6 +1,11 @@
-setopt hist_ignore_all_dups inc_append_history
-HISTFILE=~/.zhistory
-HISTSIZE=4096
-SAVEHIST=4096
+# history
+HISTFILE=$HOME/.zsh-history
+HISTSIZE=100000
+SAVEHIST=1000000
 
-export ERL_AFLAGS="-kernel shell_history enabled"
+# share .zshhistory
+setopt inc_append_history
+setopt share_history
+setopt hist_ignore_dups
+setopt hist_ignore_all_dups
+setopt hist_reduce_blanks

@@ -1,21 +1,15 @@
-# Unix
-alias ll="ls -al"
-alias ln="ln -v"
-alias mkdir="mkdir -p"
-alias e="$EDITOR"
-alias v="$VISUAL"
+# git 
+alias gd='git diff'
+alias gs='git status'
+alias gb='git branch'
+alias ga='git add'
+alias gf='git fetch --prune'
 
-# Bundler
-alias b="bundle"
+# github
+alias ghb='gh browse'
 
-# Rails
-alias migrate="bin/rails db:migrate db:rollback && bin/rails db:migrate db:test:prepare"
-alias s="rspec"
+# homebrew
+alias brew="PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin brew"
 
-# Pretty print the path
-alias path='echo $PATH | tr -s ":" "\n"'
-
-# Include custom aliases
-if [[ -f ~/.aliases.local ]]; then
-  source ~/.aliases.local
-fi
+# etc
+alias ls="gls --color=auto"
