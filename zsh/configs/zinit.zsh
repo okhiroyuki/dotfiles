@@ -55,18 +55,7 @@ add-zsh-hook chpwd chpwd_recent_dirs
 bindkey '^B' anyframe-widget-checkout-git-branch
 
 # GHQでクローンしたGitリポジトリを表示
-function peco-ghq-look () {
-  local selected_dir=$(ghq list | peco --query "$LBUFFER")
-  local ghq_root=$(ghq root)
-  if [ -n "$selected_dir" ]; then
-    BUFFER="cd ${ghq_root}/${selected_dir}"
-    zle accept-line
-  fi
-  zle clear-screen
-}
-
-zle -N peco-ghq-look
-bindkey '^G' peco-ghq-look
+bindkey '^G' anyframe-widget-cd-ghq-repository
 
 ## starship
 zinit light spaceship-prompt/spaceship-prompt
