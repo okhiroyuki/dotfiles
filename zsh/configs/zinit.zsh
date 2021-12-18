@@ -37,16 +37,20 @@ zinit light zsh-users/zsh-syntax-highlighting
 ## 履歴補完
 zinit light zsh-users/zsh-autosuggestions
 
-# 補完の色を変える
+## 補完の色を変える
 zinit light chrissicool/zsh-256color
 
 ## anyframe
 zinit light mollifier/anyframe
 
-# peco でコマンドの実行履歴を表示
+# expressly specify to use fzf
+zstyle ":anyframe:selector:" use fzf
+zstyle ":anyframe:selector:fzf:" command 'fzf --extended'
+
+# コマンドの実行履歴を表示
 bindkey '^R' anyframe-widget-execute-history
 
-# peco でディレクトリの移動履歴を表示
+# ディレクトリの移動履歴を表示
 bindkey '^e' anyframe-widget-cdr
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
@@ -62,4 +66,3 @@ zinit light spaceship-prompt/spaceship-prompt
 
 SPACESHIP_TIME_SHOW=true
 SPACESHIP_CHAR_SYMBOL="> "
-
