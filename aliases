@@ -30,6 +30,10 @@ alias gb='git branch'
 alias ga='git add'
 alias gf='git fetch --prune'
 
+function gc(){
+    git commit -m "$*"
+}
+
 # github
 if builtin command -v gh > /dev/null; then
   alias ghb='gh browse'
