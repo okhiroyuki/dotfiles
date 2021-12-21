@@ -59,11 +59,3 @@ bindkey '^B' anyframe-widget-checkout-git-branch
 
 # GHQでクローンしたGitリポジトリを表示
 bindkey '^G' anyframe-widget-cd-ghq-repository
-
-## starship
-zinit light spaceship-prompt/spaceship-prompt
-
-SPACESHIP_TIME_SHOW=true
-SPACESHIP_CHAR_SYMBOL="> "
-SPACESHIP_PACKAGE_SHOW=false
-SPACESHIP_VI_MODE_SHOW=false
