@@ -40,6 +40,9 @@ zinit light zsh-users/zsh-autosuggestions
 ## 補完の色を変える
 zinit light chrissicool/zsh-256color
 
+## git open
+zinit light paulirish/git-open
+
 ## anyframe
 zinit light mollifier/anyframe
 
