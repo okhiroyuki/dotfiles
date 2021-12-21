@@ -40,9 +40,6 @@ zinit light zsh-users/zsh-autosuggestions
 ## 補完の色を変える
 zinit light chrissicool/zsh-256color
 
-## git open
-zinit light paulirish/git-open
-
 ## anyframe
 zinit light mollifier/anyframe
 
@@ -53,7 +50,7 @@ zstyle ":anyframe:selector:" use peco
 bindkey '^R' anyframe-widget-execute-history
 
 # ディレクトリの移動履歴を表示
-bindkey '^e' anyframe-widget-cdr
+bindkey '^E' anyframe-widget-cdr
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
 
