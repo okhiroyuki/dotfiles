@@ -68,3 +68,5 @@ zinit light spaceship-prompt/spaceship-prompt
 
 SPACESHIP_TIME_SHOW=true
 SPACESHIP_CHAR_SYMBOL="> "
+SPACESHIP_PACKAGE_SHOW=false
+SPACESHIP_VI_MODE_SHOW=false
