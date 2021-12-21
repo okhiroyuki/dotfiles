@@ -7,5 +7,4 @@ disabled = true
 
 [time]
 disabled = false
-format = '🕙[\[ $time \]]($style) '
-time_format = "%T"
+format = '[$time]($style) '
