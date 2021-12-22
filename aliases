@@ -2,7 +2,6 @@
 alias ..="cd .."
 alias ll="ls -al"
 alias ln="ln -v"
-alias ls="gls --color=auto"
 alias mkdir="mkdir -p"
 
 alias clip='pbcopy'
@@ -20,6 +19,16 @@ fi
 # fd
 if builtin command -v fd > /dev/null; then
   alias find="fd"
+fi
+
+# exa
+if builtin command -v exa > /dev/null; then
+  alias ls="exa --icons"
+fi
+
+# ripgrep
+if builtin command -v rg > /dev/null; then
+  alias grep="rg"
 fi
 
 # git
