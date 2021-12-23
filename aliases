@@ -32,16 +32,11 @@ if builtin command -v rg > /dev/null; then
 fi
 
 # git
-alias g="git"
 alias gd='git diff'
 alias gs='git status'
 alias gb='git branch'
 alias ga='git add'
 alias gf='git fetch --prune'
-
-function gc(){
-    git commit -m "$*"
-}
 
 # github
 if builtin command -v gh > /dev/null; then
