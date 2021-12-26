@@ -32,6 +32,7 @@ if builtin command -v rg > /dev/null; then
 fi
 
 # tig status
+# brew install tig
 if builtin command -v tig > /dev/null; then
   alias gs="tig status"
 else

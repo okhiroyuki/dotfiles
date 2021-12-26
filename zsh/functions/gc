@@ -1,4 +1,5 @@
 function gc(){
+    # brew install commitizen
     if builtin command -v cz > /dev/null; then
         cz commit
     else
