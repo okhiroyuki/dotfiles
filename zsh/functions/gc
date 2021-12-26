@@ -1,3 +1,7 @@
 function gc(){
-    git commit -m "$*"
+    if builtin command -v cz > /dev/null; then
+        cz commit
+    else
+        git commit -m "$*"
+    fi
 }
