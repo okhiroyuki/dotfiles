@@ -31,10 +31,16 @@ if builtin command -v rg > /dev/null; then
   alias grep="rg"
 fi
 
+# tig status
+if builtin command -v tig > /dev/null; then
+  alias gs="tig status"
+else
+  alias gs='git status'
+fi
+
 # git
 alias g='git'
 alias gd='git diff'
-alias gs='git status'
 alias gb='git branch'
 alias ga='git add'
 alias gf='git fetch --prune'
