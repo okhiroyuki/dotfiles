@@ -1,0 +1,61 @@
+{
+    "message": {
+        "items": [
+            {
+                "name": "type",
+                "desc": "Select the type of change that you're committing:",
+                "form": "select",
+                "options": [
+                    { "name": "feat", "desc": "feat: 新機能" },
+                    { "name": "fix", "desc": "fix: バグ修正" },
+                    { "name": "docs", "desc": "docs: ドキュメントのみの変更" },
+                    {
+                    "name": "style",
+                    "desc":
+                        "style: フォーマットの変更(コードの動作に影響しないスペース、フォーマット、セミコロンなど)"
+                    },
+                    {
+                    "name": "refactor",
+                    "desc": "refactor: リファクタリングのための変更（機能追加やバグ修正を含まない）"
+                    },
+                    {
+                    "name": "perf",
+                    "desc": "perf: パフォーマンスの改善のための変更"
+                    },
+                    { "name": "test", "desc": "test: 不足テストの追加や既存テストの修正" },
+                    { "name": "ci", "desc": "ci: CI用の設定やスクリプトに関する変更" },
+                    {
+                    "name": "chore",
+                    "desc":
+                        "chore: その他の変更（ソースやテストの変更を含まない）"
+                    },
+                    { "name": "revert", "desc": "revert: Revert to a commit" },
+                    { "name": "WIP", "desc": "WIP: Work in progress" }
+                ],
+                "required": true
+            },        
+            {
+                "name": "scope",
+                "desc": "Scope. Could be anything specifying place of the commit change (users, db, poll):",
+                "form": "input"
+            },
+            {
+                "name": "subject",
+                "desc": "Subject. Concise description of the changes:",
+                "form": "input",
+                "required": true
+            },
+            {
+                "name": "body",
+                "desc": "Body. Motivation for the change and contrast this with previous behavior:",
+                "form": "multiline"
+            },
+            {
+                "name": "footer",
+                "desc": "Footer. Information about Breaking Changes and reference issues that this commit closes:",
+                "form": "multiline"
+            }
+        ],
+        "template": "{{.type}}{{with .scope}}({{.}}){{end}}: {{.subject}}{{with .body}}\n\n{{.}}{{end}}{{with .footer}}\n\n{{.}}{{end}}"
+    }
+}
