@@ -1,7 +1,7 @@
 function gc(){
-    # brew install commitizen
-    if builtin command -v cz > /dev/null; then
-        cz commit
+    # refs: https://github.com/okhiroyuki/commitizen-go
+    if builtin command -v commitizen-go > /dev/null; then
+        git cz
     else
         git commit -m "$*"
     fi
