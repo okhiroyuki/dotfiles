@@ -43,8 +43,10 @@ zinit light chrissicool/zsh-256color
 ## anyframe
 zinit light mollifier/anyframe
 
-# expressly specify to use peco
-zstyle ":anyframe:selector:" use peco
+# expressly specify to use fzf
+zstyle ":anyframe:selector:" use fzf
+# specify path and options for fzf
+zstyle ":anyframe:selector:fzf:" command 'fzf --extended'
 
 # コマンドの実行履歴を表示
 bindkey '^R' anyframe-widget-execute-history
