@@ -1,0 +1,12 @@
+[merge]
+  ff = only
+[commit]
+  template = ~/.gitmassage
+[fetch]
+  prune = true
+[core]
+  excludesfile = ~/.gitignore_global
+[ghq]
+  root = ~/Documents/github
+[include]
+  path = ~/.gitconfig.local
