@@ -6,29 +6,9 @@ alias mkdir="mkdir -p"
 
 alias clip='pbcopy'
 
-# bat
-if builtin command -v bat > /dev/null; then
-  alias cat="bat"
-fi
-
-# sd
-if builtin command -v sd > /dev/null; then
-  alias sed="sd"
-fi
-
-# fd
-if builtin command -v fd > /dev/null; then
-  alias find="fd"
-fi
-
 # exa
 if builtin command -v exa > /dev/null; then
   alias ls="exa --icons"
-fi
-
-# ripgrep
-if builtin command -v rg > /dev/null; then
-  alias grep="rg"
 fi
 
 # tig status
