@@ -1,10 +1,9 @@
 # load anyenv if available
 if which anyenv &>/dev/null; then
-    [ -f ~/.anyenv/bin/anyenv ] && eval "$(anyenv init - zsh)"
+    eval "$(anyenv init - zsh)"
 fi
 
 # load direnv if available 
 if which direnv &>/dev/null ; then
     eval "$(direnv hook zsh)"
 fi
-
