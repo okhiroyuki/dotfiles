@@ -1,6 +1,6 @@
 # load anyenv if available
 if which anyenv &>/dev/null; then
-    eval "$(anyenv init -)"
+    [ -f ~/.anyenv/bin/anyenv ] && eval "$(anyenv init - zsh)"
 fi
 
 # load direnv if available 
