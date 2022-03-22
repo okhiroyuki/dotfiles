@@ -3,3 +3,5 @@ bind diff S ?!git commit --squash %(commit)
 bind main F ?!git commit --fixup %(commit)
 bind main S ?!git commit --squash %(commit)
 
+# commitハッシュをコピー
+bind generic y @sh -c "echo %(commit) | pbcopy"
