@@ -10,3 +10,5 @@
   root = ~/Documents/github
 [include]
   path = ~/.gitconfig.local
+[rebase]
+    autosquash = true
