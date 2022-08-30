@@ -49,7 +49,13 @@ zstyle ":anyframe:selector:" use fzf
 zstyle ":anyframe:selector:fzf:" command 'fzf --extended'
 
 # コマンドの実行履歴を表示
-bindkey '^R' anyframe-widget-execute-history
+fzf_history() {
+  BUFFER=$(history -n -r 1 | fzf --no-sort +m --query "$LBUFFER" -e)
+  CURSOR=$#BUFFER
+}
+zle -N fzf_history
+
+bindkey '^R' fzf_history
 
 # ディレクトリの移動履歴を表示
 bindkey '^E' anyframe-widget-cdr
@@ -61,3 +67,6 @@ bindkey '^B' anyframe-widget-checkout-git-branch
 
 # GHQでクローンしたGitリポジトリを表示
 bindkey '^G' anyframe-widget-cd-ghq-repository
+
+zinit ice wait lucid
+zinit light olets/zsh-abbr
