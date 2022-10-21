@@ -55,18 +55,18 @@ fzf_history() {
 }
 zle -N fzf_history
 
-bindkey '^R' fzf_history
+bindkey '^F^R' fzf_history
 
 # ディレクトリの移動履歴を表示
-bindkey '^E' anyframe-widget-cdr
+bindkey '^F^E' anyframe-widget-cdr
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
 
 # branch一覧をインクリメントサーチ & checkout
-bindkey '^B' anyframe-widget-checkout-git-branch
+bindkey '^F^B' anyframe-widget-checkout-git-branch
 
 # GHQでクローンしたGitリポジトリを表示
-bindkey '^G' anyframe-widget-cd-ghq-repository
+bindkey '^F^G' anyframe-widget-cd-ghq-repository
 
 zinit ice wait lucid
 zinit light olets/zsh-abbr
