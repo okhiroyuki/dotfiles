@@ -572,7 +572,7 @@
 			<key>Character Encoding</key>
 			<integer>4</integer>
 			<key>Close Sessions On End</key>
-			<true/>
+			<integer>2</integer>
 			<key>Columns</key>
 			<integer>80</integer>
 			<key>Command</key>
