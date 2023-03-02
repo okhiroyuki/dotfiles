@@ -1,1 +1,1 @@
-export PATH="/Users/hiroyuki_okada/.local/bin:$PATH"
+export PATH="~/.local/bin:$PATH"

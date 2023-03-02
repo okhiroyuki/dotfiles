@@ -32,9 +32,6 @@ if builtin command -v gh > /dev/null; then
   alias ghb='gh browse'
 fi
 
-# homebrew
-alias brew="PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin brew"
-
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
 
@@ -42,3 +39,6 @@ alias path='echo $PATH | tr -s ":" "\n"'
 if [[ -f ~/.aliases.local ]]; then
   source ~/.aliases.local
 fi
+
+# brew x86_64
+alias ibrew="arch -x86_64 /usr/local/bin/brew"
