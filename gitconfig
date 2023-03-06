@@ -7,7 +7,7 @@
 [core]
   excludesfile = ~/.gitignore_global
 [ghq]
-  root = ~/Documents/github
+  root = ~/Documents/src
 [include]
   path = ~/.gitconfig.local
 [rebase]
