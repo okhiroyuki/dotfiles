@@ -1,0 +1,41 @@
+# Unix
+alias ..="cd .."
+alias ll="ls -al"
+alias ln="ln -v"
+alias mkdir="mkdir -p"
+
+alias clip='pbcopy'
+
+# exa
+if builtin command -v exa > /dev/null; then
+  alias ls="exa --icons"
+fi
+
+# tig status
+# brew install tig
+if builtin command -v tig > /dev/null; then
+  alias gs="tig status"
+else
+  alias gs='git status'
+fi
+
+# git
+alias g='git'
+alias gc='git commit'
+alias gd='git diff'
+alias gb='git branch'
+alias ga='git add'
+alias gf='git fetch --prune'
+
+# github
+if builtin command -v gh > /dev/null; then
+  alias ghb='gh browse'
+fi
+
+# Pretty print the path
+alias path='echo $PATH | tr -s ":" "\n"'
+
+# Include custom aliases
+if [[ -f ~/.aliases.local ]]; then
+  source ~/.aliases.local
+fi
