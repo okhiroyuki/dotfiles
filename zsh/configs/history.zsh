@@ -1,7 +1,7 @@
 # history
-HISTFILE=$HOME/.zsh-history
-HISTSIZE=10000
-SAVEHIST=10000
+export HISTFILE=$HOME/.zsh-history
+export HISTSIZE=10000
+export SAVEHIST=10000
 
 # share .zshhistory
 setopt inc_append_history
