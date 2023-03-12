@@ -1,3 +1,6 @@
+# give us access to ^Q
+stty -ixon
+
 bindkey '^F^R' anyframe-widget-execute-history
 
 # branch一覧をインクリメントサーチ & checkout
