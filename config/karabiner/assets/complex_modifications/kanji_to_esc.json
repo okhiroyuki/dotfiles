@@ -1,0 +1,21 @@
+{
+    "title": "kanji_to_enter",
+    "rules": [
+        {
+            "description": "漢字を esc に変換",
+            "manipulators": [
+                {
+                    "type": "basic",
+                    "from": {
+                        "key_code": "grave_accent_and_tilde"
+                    },
+                    "to": [
+                        {
+                            "key_code": "escape"
+                        }
+                    ]
+                }
+           ]
+        }
+    ]
+}
