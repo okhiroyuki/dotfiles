@@ -1,5 +1,5 @@
 {
-    "title": "kanji_to_enter",
+    "title": "keychronのカスタマイズ",
     "rules": [
         {
             "description": "漢字を esc に変換",

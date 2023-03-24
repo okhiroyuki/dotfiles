@@ -1,0 +1,41 @@
+{
+    "title": "japanese_eisuu+hjkl",
+    "rules": [
+        {
+            "description": "英数+hjklで移動",
+            "manipulators": [
+                {
+                    "type": "basic",
+                    "from": { "key_code": "japanese_eisuu", "modifiers": { "optional": [ "any" ] } },
+                    "to": [ { "set_variable": { "name": "vk1", "value": 1 } } ],
+                    "to_after_key_up": [ { "set_variable": { "name": "vk1", "value": 0 } } ],
+                    "to_if_alone": [ { "key_code": "japanese_eisuu" } ]
+                },
+                {
+                    "type": "basic",
+                    "conditions": [ { "type": "variable_if", "name": "vk1", "value": 1 } ],
+                    "from": { "key_code": "h", "modifiers": { "optional": [ "any" ] } },
+                    "to": [ { "key_code": "left_arrow" } ]
+                },
+                {
+                    "type": "basic",
+                    "conditions": [ { "type": "variable_if", "name": "vk1", "value": 1 } ],
+                    "from": { "key_code": "j", "modifiers": { "optional": [ "any" ] } },
+                    "to": [ { "key_code": "down_arrow" } ]
+                },
+                {
+                    "type": "basic",
+                    "conditions": [ { "type": "variable_if", "name": "vk1", "value": 1 } ],
+                    "from": { "key_code": "k", "modifiers": { "optional": [ "any" ] } },
+                    "to": [ { "key_code": "up_arrow" } ]
+                },
+                {
+                    "type": "basic",
+                    "conditions": [ { "type": "variable_if", "name": "vk1", "value": 1 } ],
+                    "from": { "key_code": "l", "modifiers": { "optional": [ "any" ] } },
+                    "to": [ { "key_code": "right_arrow" } ]
+                }
+           ]
+        }
+    ]
+}
