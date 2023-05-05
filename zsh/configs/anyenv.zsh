@@ -1,4 +1,5 @@
 # load anyenv if available
+export PATH="$HOME/.anyenv/bin:$PATH"
 
 if which anyenv &>/dev/null; then
    if ! [ -f /tmp/anyenv.cache ]
