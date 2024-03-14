@@ -7,5 +7,8 @@ alias mkdir="mkdir -p"
 # tig status
 alias gs="tig status"
 
+# pbcopy
+alias pbcopy='xsel --clipboard --input'
+
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
