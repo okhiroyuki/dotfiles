@@ -35,8 +35,6 @@ set wildmode=list:longest
 " 折り返し時に表示行単位での移動できるようにする
 nnoremap j gj
 nnoremap k gk
-" シンタックスハイライトの有効化
-syntax enable
 
 
 " Tab系
