@@ -5,17 +5,8 @@ alias ln="ln -v"
 alias mkdir="mkdir -p"
 
 # tig status
-# brew install tig
-if builtin command -v tig > /dev/null; then
-  alias gs="tig status"
-else
-  alias gs='git status'
-fi
+alias gs="tig status"
+alias gs='git status'
 
 # Pretty print the path
 alias path='echo $PATH | tr -s ":" "\n"'
-
-# Include custom aliases
-if [[ -f ~/.aliases.local ]]; then
-  source ~/.aliases.local
-fi

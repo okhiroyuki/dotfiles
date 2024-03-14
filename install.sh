@@ -15,4 +15,4 @@ sudo mkdir -p -m 755 /etc/apt/keyrings && wget -qO- https://cli.github.com/packa
 sudo apt-get install tig
 
 # rcup
-rcup -B devcontainer
+env RCRC=$HOME/dotfiles/rcrc rcup -f -B devcontainer
