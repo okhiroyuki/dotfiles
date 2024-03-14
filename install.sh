@@ -14,5 +14,11 @@ sudo mkdir -p -m 755 /etc/apt/keyrings && wget -qO- https://cli.github.com/packa
 # tig
 sudo apt-get install tig
 
+# vim
+sudo apt-get install vim-gui-common
+
+# starship
+curl -sS https://starship.rs/install.sh | sh -s -- --yes
+
 # rcup
 env RCRC=$HOME/dotfiles/rcrc rcup -f -B devcontainer
