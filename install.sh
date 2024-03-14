@@ -14,16 +14,5 @@ sudo mkdir -p -m 755 /etc/apt/keyrings && wget -qO- https://cli.github.com/packa
 # tig
 sudo apt-get install tig
 
-# fzf
-git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-~/.fzf/install
-
-# starship
-curl -sS https://starship.rs/install.sh | sh
-
-# sheldon
-curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
-    | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
-
 # rcup
 rcup -B devcontainer
