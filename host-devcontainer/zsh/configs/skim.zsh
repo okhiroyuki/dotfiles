@@ -1,1 +1,1 @@
-export PATH="$HOME/.skim/bin:PATH"
+export PATH="$HOME/.skim/bin:$PATH"
