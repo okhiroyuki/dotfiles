@@ -44,3 +44,6 @@ github = "kbwo/zsh-ghq-skim"
 
 [plugins.zsh-git-switch-branch-skim]
 github = "okhiroyuki/zsh-git-switch-branch-skim"
+
+[plugins.zsh-select-history-skim]
+github = "okhiroyuki/zsh-select-history-skim"

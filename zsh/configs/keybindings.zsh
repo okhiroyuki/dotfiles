@@ -3,6 +3,9 @@ stty -ixon
 
 bindkey '^F' autosuggest-accept
 
+zle -N zsh-select-history-skim
+bindkey '^R' zsh-select-history-skim
+
 # GHQでクローンしたGitリポジトリを表示
 zle -N zsh-ghq-skim
 bindkey '^F^G' zsh-ghq-skim
