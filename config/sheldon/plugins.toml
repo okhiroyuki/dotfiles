@@ -29,17 +29,18 @@ github = "romkatv/zsh-defer"
 [plugins.rust-zsh-completions]
 github = "ryutok/rust-zsh-completions"
 
-[plugins.zsh-completions]
-github = "zsh-users/zsh-completions"
-
 [plugins.zsh-syntax-highlighting]
 github = "zsh-users/zsh-syntax-highlighting"
+apply = ["defer"]
 
 [plugins.zsh-autosuggestions]
 github = "zsh-users/zsh-autosuggestions"
 
-[plugins.anyframe]
-github = "mollifier/anyframe"
-
 [plugins.compinit]
 inline = "autoload -Uz compinit && zsh-defer compinit"
+
+[plugins.zsh-ghq-skim]
+github = "kbwo/zsh-ghq-skim"
+
+[plugins.zsh-git-switch-branch-skim]
+github = "okhiroyuki/zsh-git-switch-branch-skim"

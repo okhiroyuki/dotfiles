@@ -1,10 +1,12 @@
 # give us access to ^Q
 stty -ixon
 
-bindkey '^F^R' anyframe-widget-execute-history
-
-# branch一覧をインクリメントサーチ & checkout
-bindkey '^F^B' anyframe-widget-checkout-git-branch
+bindkey '^F' autosuggest-accept
 
 # GHQでクローンしたGitリポジトリを表示
-bindkey '^F^G' anyframe-widget-cd-ghq-repository
+zle -N zsh-ghq-skim
+bindkey '^F^G' zsh-ghq-skim
+
+# branch一覧をインクリメントサーチ & checkout
+zle -N zsh-git-switch-branch-skim
+bindkey '^b' zsh-git-switch-branch-skim
