@@ -10,9 +10,6 @@ sudo mkdir -p -m 755 /etc/apt/keyrings && wget -qO- https://cli.github.com/packa
 sudo apt-get update \
 && sudo apt-get install rcm gh tig curl -y
 
-# mise
-curl https://mise.run | sh
-
 # skim
 git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim \
 && ~/.skim/install
