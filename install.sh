@@ -13,6 +13,10 @@ sudo apt-get update \
 # mise
 curl https://mise.run | sh
 
+# skim
+git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim \
+&& ~/.skim/install
+
 # starship
 curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
