@@ -6,13 +6,10 @@ if wezterm.config_builder then
   config = wezterm.config_builder()
 end
 
--- カラースキームの設定
 config.color_scheme = 'iceberg-dark'
-
--- フォントの設定
 config.font = wezterm.font 'HackGen35 Console NF'
-
--- フォントサイズの設定
 config.font_size = 16
+config.hide_tab_bar_if_only_one_tab = true
+config.adjust_window_size_when_changing_font_size = false
 
 return config
