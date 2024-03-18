@@ -11,7 +11,7 @@ config.font = wezterm.font_with_fallback {
   'HackGen35 Console NF',
   'Menlo Regular'
 }
-config.font_size = 16
+config.font_size = 14
 config.hide_tab_bar_if_only_one_tab = true
 config.adjust_window_size_when_changing_font_size = false
 config.enable_scroll_bar = true
