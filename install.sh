@@ -22,4 +22,5 @@ curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
     | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
 
 # rcup
-env RCRC=/workspaces/dotfiles/codespace.rcrc rcup -f -B devcontainer
+rsync  -a ./ $HOME/dotfiles
+env RCRC=$HOME/dotfiles/rcrc rcup -f -B devcontainer
