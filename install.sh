@@ -17,7 +17,7 @@ git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim \
 # starship
 curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
-sheldon
+# sheldon
 curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
     | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
 
