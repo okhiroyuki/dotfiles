@@ -17,9 +17,9 @@ git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim \
 # starship
 curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
-# sheldon
-# curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
-#     | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
+sheldon
+curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
+    | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
 
 # rcup
-env RCRC=$HOME/dotfiles/rcrc rcup -f -B devcontainer
+env RCRC=/workspaces/dotfiles/codespace.rcrc rcup -f -B devcontainer
