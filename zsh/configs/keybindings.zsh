@@ -7,8 +7,8 @@ zle -N zsh-select-history-skim
 bindkey '^R' zsh-select-history-skim
 
 # GHQでクローンしたGitリポジトリを表示
-zle -N zsh-ghq-skim
-bindkey '^F^G' zsh-ghq-skim
+zle -N zsh-ghq-fzf
+bindkey '^F^G' zsh-ghq-fzf
 
 # branch一覧をインクリメントサーチ & checkout
 zle -N zsh-git-switch-branch-skim
