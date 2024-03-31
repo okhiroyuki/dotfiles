@@ -25,16 +25,20 @@ defer = "{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}"
 
 [plugins.zsh-defer]
 github = "romkatv/zsh-defer"
+rev = "53a26e287fbbe2dcebb3aa1801546c6de32416fa"
 
 [plugins.rust-zsh-completions]
 github = "ryutok/rust-zsh-completions"
+tag = "1.16.0"
 
 [plugins.zsh-syntax-highlighting]
 github = "zsh-users/zsh-syntax-highlighting"
+tag = "0.8.0"
 apply = ["defer"]
 
 [plugins.zsh-autosuggestions]
 github = "zsh-users/zsh-autosuggestions"
+tag = "0.7.0"
 
 [plugins.compinit]
 inline = "autoload -Uz compinit && zsh-defer compinit"
