@@ -8,7 +8,7 @@ sudo mkdir -p -m 755 /etc/apt/keyrings && wget -qO- https://cli.github.com/packa
 && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 
 sudo apt-get update \
-&& sudo apt-get install rcm gh tig curl -y
+&& sudo apt-get install rcm gh tig curl fzf -y
 
 # skim
 git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim \
