@@ -42,12 +42,3 @@ tag = "v0.7.0"
 
 [plugins.compinit]
 inline = "autoload -Uz compinit && zsh-defer compinit"
-
-[plugins.zsh-ghq-fzf]
-github = "okhiroyuki/zsh-ghq-fzf"
-
-[plugins.zsh-git-switch-branch-skim]
-github = "okhiroyuki/zsh-git-switch-branch-skim"
-
-[plugins.zsh-select-history-skim]
-github = "okhiroyuki/zsh-select-history-skim"
