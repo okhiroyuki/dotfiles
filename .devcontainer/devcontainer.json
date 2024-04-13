@@ -4,6 +4,9 @@
   "name": "Debian",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "mcr.microsoft.com/devcontainers/base",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
   "initializeCommand": ".devcontainer/init.sh",
   "runArgs": [
     "--env-file",
