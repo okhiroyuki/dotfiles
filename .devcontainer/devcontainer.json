@@ -10,7 +10,7 @@
   "initializeCommand": ".devcontainer/init.sh",
   "runArgs": [
     "--env-file",
-    "./.env"
+    ".env"
   ]
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
