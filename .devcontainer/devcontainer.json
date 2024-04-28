@@ -3,14 +3,7 @@
 {
   "name": "Debian",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "initializeCommand": "bash .devcontainer/commands/initialize.sh",
-  "runArgs": [
-    "--env-file",
-    ".devcontainer/.env.devcontainer"
-  ],
+  "image": "mcr.microsoft.com/devcontainers/base",
   "customizations": {
     "vscode": {
       "extensions": [
