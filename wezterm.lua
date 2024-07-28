@@ -1,6 +1,7 @@
 local wezterm = require 'wezterm'
 
 local config = {}
+local act = wezterm.action
 
 if wezterm.config_builder then
   config = wezterm.config_builder()
@@ -21,4 +22,19 @@ config.initial_rows = 30
 config.initial_cols = 120
 config.line_height = 0.9
 config.cell_width = 0.9
+config.keys = {
+  {
+    key = 'LeftArrow',
+    mods = 'OPT',
+    action = act.SendKey {
+      key = 'b',
+      mods = 'ALT',
+    },
+  },
+  {
+    key = 'RightArrow',
+    mods = 'OPT',
+    action = act.SendKey { key = 'f', mods = 'ALT' },
+  }
+}
 return config
