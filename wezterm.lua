@@ -35,6 +35,16 @@ config.keys = {
     key = 'RightArrow',
     mods = 'OPT',
     action = act.SendKey { key = 'f', mods = 'ALT' },
+  },
+  {
+    key = "UpArrow",
+    mods = "OPT",
+    action = wezterm.action.SendKey { key = "e", mods = "CTRL" }
+  },
+  {
+    key = "DownArrow",
+    mods = "OPT",
+    action = act.SendKey { key = "a", mods = "CTRL" }
   }
 }
 return config
