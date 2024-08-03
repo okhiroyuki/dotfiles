@@ -1,0 +1,14 @@
+{
+  "name": "dotfiles",
+  "version": "1.0.0",
+  "description": "thoughtbot dotfiles ===================",
+  "main": "index.js",
+  "devDependencies": {
+    "dprint": "^0.47.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

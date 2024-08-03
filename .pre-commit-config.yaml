@@ -1,0 +1,25 @@
+---
+repos:
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [--strict, -c=.yamllint]
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+
+  - repo: local
+    hooks:
+      - id: dprint
+        name: dprint fmt
+        entry: npx dprint fmt
+        args: ["--allow-no-files"]
+        language: system
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        files: \.(ba)?sh$
+        language: system
