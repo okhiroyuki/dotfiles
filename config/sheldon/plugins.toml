@@ -17,7 +17,6 @@ shell = "zsh"
 defer = "{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}"
 
 [plugins]
-
 # For example:
 #
 # [plugins.base16]

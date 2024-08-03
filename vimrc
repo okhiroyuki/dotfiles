@@ -1,3 +1,4 @@
+# shellcheck disable=all
 " setting
 "文字コードをUFT-8に設定
 set fenc=utf-8
@@ -11,7 +12,6 @@ set autoread
 set hidden
 " 入力中のコマンドをステータスに表示する
 set showcmd
-
 
 " 見た目系
 " 行番号を表示
