@@ -1,3 +1,3 @@
-EXCLUDES=".devcontainer/* .github/* .npm/* .pre-commit-cache/* node_modules/* .editorconfig .gitignore .yamllint Brewfile dprint.json LICENSE package.json package-lock.json README.md renovate.json"
+EXCLUDES=".devcontainer/* .github/* .npm/* .pre-commit-cache/* node_modules/* .editorconfig .gitignore .node-version .yamllint Brewfile dprint.json LICENSE package.json package-lock.json README.md renovate.json"
 DOTFILES_DIRS="$HOME/dotfiles-local $HOME/dotfiles"
 COPY_ALWAYS="git_template/HEAD"
