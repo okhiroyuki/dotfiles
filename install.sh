@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# rcm
-sudo wget -q https://apt.tabfugni.cc/thoughtbot.gpg.key -O /etc/apt/trusted.gpg.d/thoughtbot.gpg \
-&& echo "deb https://apt.tabfugni.cc/debian/ stable main" | sudo tee /etc/apt/sources.list.d/thoughtbot.list
+# GPGキーをダウンロードして /etc/apt/keyrings に保存
+sudo mkdir -p /etc/apt/keyrings
+sudo wget -q https://apt.tabfugni.cc/thoughtbot.gpg.key -O /etc/apt/keyrings/thoughtbot.gpg
+
+# リポジトリの設定を /etc/apt/sources.list.d/thoughtbot.list に追加
+echo "deb [signed-by=/etc/apt/keyrings/thoughtbot.gpg] https://apt.tabfugni.cc/debian/ stable main" | sudo tee /etc/apt/sources.list.d/thoughtbot.list
 
 sudo apt-get update \
 && sudo apt-get install  -y --no-install-recommends \
