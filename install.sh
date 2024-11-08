@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # rcm
-sudo apt-get install software-properties-common
+sudo apt-get install software-properties-common -y --no-install-recommends
 sudo add-apt-repository ppa:martin-frost/thoughtbot-rcm
 
 sudo apt-get update \
