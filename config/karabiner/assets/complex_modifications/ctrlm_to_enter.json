@@ -4,22 +4,17 @@
     {
       "description": "Ctrl-M を Enter に変換",
       "manipulators": [
-        {
-          "type": "basic",
-          "from": {
-            "key_code": "m",
-            "modifiers": {
-              "mandatory": [
-                "control"
-              ]
-            }
-          },
-          "to": [
-            {
-              "key_code": "return_or_enter"
-            }
-          ]
-        }
+          {
+              "from": {
+                  "key_code": "m",
+                  "modifiers": {
+                      "mandatory": ["control"],
+                      "optional": ["left_shift", "left_option", "left_command"]
+                  }
+              },
+              "to": [{ "key_code": "return_or_enter" }],
+              "type": "basic"
+          }
       ]
     }
   ]
