@@ -5,8 +5,3 @@ FROM mcr.microsoft.com/devcontainers/typescript-node:1-22@sha256:b0b88ef6a5abf21
 
 COPY --from=shellcheck /bin/shellcheck /usr/bin/
 COPY --from=dockerfile-lint /bin/hadolint /usr/bin/hadolint
-
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        pre-commit \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
