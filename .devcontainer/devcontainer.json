@@ -6,8 +6,8 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/devcontainers/features/python": {
-      "installTools": "pre-commit"
+    "ghcr.io/devcontainers/features/python:1": {
+      "toolsToInstall": "pre-commit"
     }
   },
   "mounts": [
