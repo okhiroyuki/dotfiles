@@ -22,6 +22,7 @@ config.initial_rows = 30
 config.initial_cols = 120
 config.line_height = 0.9
 config.cell_width = 0.9
+config.audible_bell = "Disabled"
 config.keys = {
   {
     key = 'LeftArrow',
