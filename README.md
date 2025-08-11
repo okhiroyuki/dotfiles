@@ -10,6 +10,11 @@ Set zsh as your login shell:
 
 ## Install
 
+Install gh and Setup Github:
+
+    brew install gh
+    gh auth login
+
 Clone onto your laptop:
 
     git clone git://github.com/okhiroyuki/dotfiles.git ~/dotfiles
@@ -23,6 +28,10 @@ Install [rcm](https://github.com/thoughtbot/rcm):
 Install the dotfiles:
 
     env RCRC=$HOME/dotfiles/rcrc rcup
+
+Install brew bundle from .Brewfile
+
+    brew bundle --global
 
 After the initial installation, you can run `rcup` without the one-time variable
 `RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future
