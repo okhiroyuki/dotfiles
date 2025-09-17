@@ -4,7 +4,7 @@
   "description": "thoughtbot dotfiles ===================",
   "main": "index.js",
   "devDependencies": {
-    "dprint": "0.50.1"
+    "dprint": "0.50.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
