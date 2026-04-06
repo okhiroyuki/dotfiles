@@ -1,0 +1,22 @@
+[merge]
+  ff = only
+[commit]
+  template = ~/.gitmassage
+[fetch]
+  prune = true
+[core]
+  excludesfile = ~/.gitignore_global
+[ghq]
+  root = ~/Documents/src
+[include]
+  path = ~/.gitconfig.local
+[rebase]
+  autosquash = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[user]
+	name = Hiroyuki Okada
+	email = h.okada@kakehashi.life
