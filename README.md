@@ -48,7 +48,7 @@
 
 ```zsh
 git pull
-rcup
+rcup -B private  # または -B work / -B devcontainer
 ```
 
 `rcup` は何度実行しても安全なので、更新したら都度実行する。
@@ -85,21 +85,6 @@ rcup
 | `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される）                                                                  |
 
 通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
-
-プライベート用マシンの場合:
-
-```zsh
-rcup -B private
-```
-
-仕事用マシンの場合:
-
-```zsh
-rcup -B work
-```
-
-これにより `host-private/gitconfig` や `host-work/gitconfig` のような同名ファイルが、
-環境ごとに異なる内容で `~/.gitconfig` にリンクされる。両方同時に適用することは想定していない。
 
 ## 個人用カスタマイズ（dotfiles-local）
 
