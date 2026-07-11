@@ -102,8 +102,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "crit",
-            "if": "Bash(git commit*)"
+            "command": "crit --range origin/main..HEAD",
+            "if": "Bash(git push*)"
           }
         ]
       }
