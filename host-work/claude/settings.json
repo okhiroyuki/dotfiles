@@ -52,7 +52,9 @@
       "Bash(git ls-remote*)",
       "Bash(git rev-parse*)",
       "Bash(git describe*)",
-      "Bash(git shortlog*)"
+      "Bash(git shortlog*)",
+      "Bash(man rcup*)",
+      "Bash(rcup --help*)"
     ],
     "deny": [
       "Bash(pup * delete*)",
