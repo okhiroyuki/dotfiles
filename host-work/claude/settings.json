@@ -1,0 +1,29 @@
+{
+  "enabledPlugins": {
+    "crit@crit": true
+  },
+  "extraKnownMarketplaces": {
+    "crit": {
+      "source": {
+        "source": "github",
+        "repo": "tomasz-tomczyk/crit"
+      }
+    }
+  },
+  "theme": "dark",
+  "permissions": {
+    "deny": [
+      "Bash(pup * delete*)",
+      "Bash(pup * create*)",
+      "Bash(pup * update*)",
+      "Bash(pup * cancel*)",
+      "Bash(pup * disable*)",
+      "Bash(pup * revoke*)",
+      "Bash(pup * publish*)",
+      "Bash(pup * archive*)"
+    ],
+    "ask": [
+      "Bash(pup auth logout*)"
+    ]
+  }
+}

@@ -48,7 +48,7 @@
 
 ```zsh
 git pull
-rcup
+rcup -B private  # または -B work / -B devcontainer
 ```
 
 `rcup` は何度実行しても安全なので、更新したら都度実行する。
@@ -73,33 +73,13 @@ rcup
 
 ## 環境別オーバーレイ（private / work / devcontainer）
 
-同じマシン構成でも、プライベート用と仕事用で `gitconfig` や zsh 設定を分けたいことがある。
-これは rcm のホストタグ機能（`-B` オプション）で実現していて、`host-<タグ名>/` ディレクトリの中身が
-`rcup -B <タグ名>` を実行したときだけ追加でリンクされる仕組み。Claude Code の skill やプラグイン自動導入
-（`zsh/configs/claude.zsh`）も、共通化せずこの仕組みに乗せて private / work それぞれに置いている。
-
-| ディレクトリ         | 用途                 | 適用コマンド           | 主な内容                                                                             |
-| -------------------- | -------------------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| `host-private/`      | プライベート用マシン | `rcup -B private`      | `gitconfig`, `hammerspoon/`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*` |
-| `host-work/`         | 仕事用マシン         | `rcup -B work`         | `gitconfig`, `zprofile`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*`     |
-| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される）                                          |
+| ディレクトリ         | 用途                 | 適用コマンド           |
+| -------------------- | -------------------- | ---------------------- |
+| `host-private/`      | プライベート用マシン | `rcup -B private`      |
+| `host-work/`         | 仕事用マシン         | `rcup -B work`         |
+| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` |
 
 通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
-
-プライベート用マシンの場合:
-
-```zsh
-rcup -B private
-```
-
-仕事用マシンの場合:
-
-```zsh
-rcup -B work
-```
-
-これにより `host-private/gitconfig` や `host-work/gitconfig` のような同名ファイルが、
-環境ごとに異なる内容で `~/.gitconfig` にリンクされる。両方同時に適用することは想定していない。
 
 ## 個人用カスタマイズ（dotfiles-local）
 
