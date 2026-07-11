@@ -1,12 +1,19 @@
 {
   "enabledPlugins": {
-    "crit@crit": true
+    "crit@crit": true,
+    "product-skills@claude-code-skills": true
   },
   "extraKnownMarketplaces": {
     "crit": {
       "source": {
         "source": "github",
         "repo": "tomasz-tomczyk/crit"
+      }
+    },
+    "claude-code-skills": {
+      "source": {
+        "source": "github",
+        "repo": "alirezarezvani/claude-skills"
       }
     }
   },

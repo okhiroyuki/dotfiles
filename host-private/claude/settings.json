@@ -1,16 +1,4 @@
 {
-  "enabledPlugins": {
-    "crit@crit": true
-  },
-  "extraKnownMarketplaces": {
-    "crit": {
-      "source": {
-        "source": "github",
-        "repo": "tomasz-tomczyk/crit"
-      }
-    }
-  },
-  "theme": "dark",
   "permissions": {
     "allow": [
       "Bash(gh pr list*)",
@@ -66,9 +54,6 @@
       "Skill(update-config:*)",
       "WebFetch(domain:crit.md)"
     ],
-    "ask": [
-      "Bash(git push *)"
-    ],
     "deny": [
       "Bash(git branch -D*)",
       "Bash(git branch -d*)",
@@ -77,6 +62,28 @@
       "Bash(git push -f*)",
       "Bash(git reset --hard*)",
       "Bash(git clean -f*)"
+    ],
+    "ask": [
+      "Bash(git push *)"
     ]
-  }
+  },
+  "enabledPlugins": {
+    "crit@crit": true,
+    "product-skills@claude-code-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "crit": {
+      "source": {
+        "source": "github",
+        "repo": "tomasz-tomczyk/crit"
+      }
+    },
+    "claude-code-skills": {
+      "source": {
+        "source": "github",
+        "repo": "alirezarezvani/claude-skills"
+      }
+    }
+  },
+  "theme": "dark"
 }

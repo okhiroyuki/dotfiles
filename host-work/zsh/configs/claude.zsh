@@ -12,6 +12,11 @@ if which claude &>/dev/null && ! claude plugin list 2>/dev/null | grep -q "crit@
     claude plugin install crit@crit
 fi
 
+if which claude &>/dev/null && ! claude plugin list 2>/dev/null | grep -q "product-skills@claude-code-skills"; then
+    claude plugin marketplace add alirezarezvani/claude-skills
+    claude plugin install product-skills@claude-code-skills
+fi
+
 if which pup &>/dev/null && which claude &>/dev/null && [ ! -f "$HOME/.claude/skills/dd-pup/SKILL.md" ]; then
     pup skills install claude
 fi

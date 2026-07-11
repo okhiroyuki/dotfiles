@@ -9,6 +9,7 @@ fi
 
 claude plugin marketplace update
 claude plugin update crit@crit
+claude plugin update product-skills@claude-code-skills
 
 if which pup &>/dev/null; then
     pup skills install claude
