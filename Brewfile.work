@@ -1,6 +1,7 @@
 tap "homebrew/cask"
 tap "homebrew/core"
 tap "datadog-labs/pack"
+brew "crit"
 brew "curl"
 brew "gh"
 brew "ghq"
