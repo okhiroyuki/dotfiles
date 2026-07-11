@@ -69,6 +69,7 @@ rcup -B private  # または -B work
 | `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                        |
 | `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                              |
 | `scripts/`                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新） |
+| `claude/`                                           | Claude Code の全マシン共通設定（`~/.claude/` へ配置）。次項参照                              |
 | `host-private/` `host-work/`                        | 環境別オーバーレイ。次項参照                                                                 |
 | `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                                    |
 
@@ -80,6 +81,18 @@ rcup -B private  # または -B work
 | `host-work/`    | 仕事用マシン         | `rcup -B work`    |
 
 セットアップ後、自分の環境に応じていずれかを実行する。
+
+## Claude Code 設定（共通ルール + host 固有）
+
+Claude Code のルールは「共通は 1 箇所で管理し、各 host で個別に追加する」構造にしている。
+
+- `claude/rules/*.md` … 全マシン共通のルール（実体はここだけ）。タグ無しで全マシンの `~/.claude/rules/` へ配置される。
+- `claude/CLAUDE-common.md` … 共通ルールをまとめて読み込むインデックス。`~/.claude/CLAUDE-common.md` へ配置される。
+- `claude/skills/*` … 全マシン共通の skill。
+- `host-*/claude/CLAUDE.md` … 各 host のエントリポイント（`~/.claude/CLAUDE.md`）。`@CLAUDE-common.md` で共通を読み込み、その後に host 固有ルールを `@rules/xxx.md` で追加する。
+- `host-*/claude/rules/*.md` … その host だけのルール（例: `host-private/claude/rules/pre-commit.md`）。
+
+`rcup -B <tag>` を実行すると、共通ファイルと host 固有ファイルが同じ `~/.claude/rules/` にマージされる。共通ルールを直すときは `claude/rules/` の 1 ファイルを編集すればよい。
 
 ## 個人用カスタマイズ（dotfiles-local）
 
