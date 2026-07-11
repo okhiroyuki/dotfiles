@@ -98,11 +98,12 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash(git commit*)",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "crit --diff"
+            "command": "crit",
+            "if": "Bash(git commit*)"
           }
         ]
       }
