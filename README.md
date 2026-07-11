@@ -1,257 +1,117 @@
-# thoughtbot dotfiles
+# dotfiles
 
-![prompt](http://images.thoughtbot.com/thoughtbot-dotfiles-prompt.png)
+個人用の dotfiles リポジトリです。[thoughtbot/dotfiles](https://github.com/thoughtbot/dotfiles) をベースに、
+[rcm](https://github.com/thoughtbot/rcm)（`rcup`）でシンボリックリンクを管理しています。
 
-## Requirements
+## 必要条件
 
-Set zsh as your login shell:
+- macOS（一部設定は devcontainer / Linux でも利用）
+- [Homebrew](https://brew.sh/)
+- ログインシェルが zsh であること
 
-    chsh -s $(which zsh)
+  ```zsh
+  chsh -s $(which zsh)
+  ```
 
-## Install
+## セットアップ
 
-Install gh and Setup Github:
+1. リポジトリを clone する
 
-    brew install gh
-    gh auth login
+   ```zsh
+   git clone git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
+   cd ~/dotfiles
+   ```
 
-Clone onto your laptop:
+2. Homebrew でパッケージを入れる（`rcm` もここに含まれる）
 
-    git clone git://github.com/okhiroyuki/dotfiles.git ~/dotfiles
+   ```zsh
+   brew bundle
+   ```
 
-(Or, [fork and keep your fork updated](http://robots.thoughtbot.com/keeping-a-github-fork-updated)).
+   仕事用マシンでは `Brewfile.work` も併せて実行する。
 
-Install [rcm](https://github.com/thoughtbot/rcm):
+   ```zsh
+   brew bundle --file=Brewfile.work
+   ```
 
-    brew install rcm
+3. `rcup` でシンボリックリンクを張る（初回のみ `RCRC` を指定）
 
-Install the dotfiles:
+   ```zsh
+   env RCRC=$HOME/dotfiles/rcrc rcup
+   ```
 
-    env RCRC=$HOME/dotfiles/rcrc rcup
+   2 回目以降は `rcrc` 自体が `~/.rcrc` にリンクされるため、`rcup` だけで良い。
 
-Install brew bundle from .Brewfile
+4. 自分の環境（private / work / devcontainer）に応じたオーバーレイを追加で適用する（後述）。
 
-    brew bundle --global
+## 更新
 
-After the initial installation, you can run `rcup` without the one-time variable
-`RCRC` being set (`rcup` will symlink the repo's `rcrc` to `~/.rcrc` for future
-runs of `rcup`). [See example](https://github.com/thoughtbot/dotfiles/blob/master/rcrc).
+```zsh
+git pull
+rcup
+```
 
-This command will create symlinks for config files in your home directory.
-Setting the `RCRC` environment variable tells `rcup` to use standard
-configuration options:
+`rcup` は何度実行しても安全なので、更新したら都度実行する。
 
-- Exclude the `README.md`, `README-ES.md` and `LICENSE` files, which are part of
-  the `dotfiles` repository but do not need to be symlinked in.
-- Give precedence to personal overrides which by default are placed in
-  `~/dotfiles-local`
-- Please configure the `rcrc` file if you'd like to make personal
-  overrides in a different directory
+## 構成
 
-## Update
+| パス | 役割 |
+| --- | --- |
+| `rcrc` | `rcup` の設定（除外パターン、`dotfiles-local` の場所など） |
+| `Brewfile` / `Brewfile.work` | Homebrew パッケージ定義（共通 / 仕事用） |
+| `aliases` | シェルエイリアス（`~/.aliases`） |
+| `gitignore` | グローバル gitignore（`~/.gitignore`） |
+| `gitmassage` | コミットメッセージテンプレート（`~/.gitmassage`） |
+| `mise.toml` | [mise](https://mise.jdx.dev/) のツールバージョン定義 |
+| `tigrc` / `vimrc` / `wezterm.lua` / `zshrc` | 各ツールの設定ファイル |
+| `config/` | `~/.config` 配下に配置する設定（sheldon, karabiner） |
+| `zsh/configs/` | 追加の zsh 設定群（`~/.zsh/configs`） |
+| `starship/` | [starship](https://starship.rs/) プロンプト設定 |
+| `claude/` | Claude Code の設定・スキル。詳細は [claude/README.md](claude/README.md) を参照 |
+| `host-private/` `host-work/` `host-devcontainer/` | 環境別オーバーレイ。次項参照 |
+| `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外） |
 
-From time to time you should pull down any updates to these dotfiles, and run
+## 環境別オーバーレイ（private / work / devcontainer）
 
-    rcup
+同じマシン構成でも、プライベート用と仕事用で `gitconfig` や zsh 設定を分けたいことがある。
+これは rcm のホストタグ機能（`-B` オプション）で実現していて、`host-<タグ名>/` ディレクトリの中身が
+`rcup -B <タグ名>` を実行したときだけ追加でリンクされる仕組み。
 
-to link any new files and install new vim plugins. **Note** You _must_ run
-`rcup` after pulling to ensure that all files in plugins are properly installed,
-but you can safely run `rcup` multiple times so update early and update often!
+| ディレクトリ | 用途 | 適用コマンド | 主な内容 |
+| --- | --- | --- | --- |
+| `host-private/` | プライベート用マシン | `rcup -B private` | `gitconfig`, `hammerspoon/`, `zsh/configs/*` |
+| `host-work/` | 仕事用マシン | `rcup -B work` | `gitconfig`, `zprofile`, `zsh/configs/*` |
+| `host-devcontainer/` | devcontainer 環境 | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される） |
 
-## Make your own customizations
+通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
 
-Create a directory for your personal customizations:
+プライベート用マシンの場合:
 
-    mkdir ~/dotfiles-local
+```zsh
+rcup -B private
+```
 
-Put your customizations in `~/dotfiles-local` appended with `.local`:
+仕事用マシンの場合:
+
+```zsh
+rcup -B work
+```
+
+これにより `host-private/gitconfig` や `host-work/gitconfig` のような同名ファイルが、
+環境ごとに異なる内容で `~/.gitconfig` にリンクされる。両方同時に適用することは想定していない。
+
+## 個人用カスタマイズ（dotfiles-local）
+
+このリポジトリに含めたくない個人設定は `~/dotfiles-local` に置く（`rcrc` の `DOTFILES_DIRS` で参照される）。
 
 - `~/dotfiles-local/aliases.local`
-- `~/dotfiles-local/git_template.local/*`
-- `~/dotfiles-local/gitconfig.local`
-- `~/dotfiles-local/psqlrc.local` (we supply a blank `.psqlrc.local` to prevent `psql` from
-  throwing an error, but you should overwrite the file with your own copy)
-- `~/dotfiles-local/tmux.conf.local`
-- `~/dotfiles-local/vimrc.local`
-- `~/dotfiles-local/vimrc.bundles.local`
 - `~/dotfiles-local/zshrc.local`
+- `~/dotfiles-local/vimrc.local`
 - `~/dotfiles-local/zsh/configs/*`
 
-For example, your `~/dotfiles-local/aliases.local` might look like this:
+`~/dotfiles-local/zsh/configs` には `pre` / `post` の特別なサブディレクトリがあり、
+`pre` は最初に、`post` は最後に読み込まれる。
 
-    # Productivity
-    alias todo='$EDITOR ~/.todo'
+## ライセンス
 
-Your `~/dotfiles-local/gitconfig.local` might look like this:
-
-    [alias]
-      l = log --pretty=colored
-    [pretty]
-      colored = format:%Cred%h%Creset %s %Cgreen(%cr) %C(bold blue)%an%Creset
-    [user]
-      name = Dan Croak
-      email = dan@thoughtbot.com
-
-Your `~/dotfiles-local/vimrc.local` might look like this:
-
-    " Color scheme
-    colorscheme github
-    highlight NonText guibg=#060606
-    highlight Folded  guibg=#0A0A0A guifg=#9090D0
-
-If you don't wish to install a vim plugin from the default set of vim plugins in
-`.vimrc.bundles`, you can ignore the plugin by calling it out with `UnPlug` in
-your `~/.vimrc.bundles.local`.
-
-    " Don't install vim-scripts/tComment
-    UnPlug 'tComment'
-
-`UnPlug` can be used to install your own fork of a plugin or to install a shared
-plugin with different custom options.
-
-    " Only load vim-coffee-script if a Coffeescript buffer is created
-    UnPlug 'vim-coffee-script'
-    Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
-
-    " Use a personal fork of vim-run-interactive
-    UnPlug 'vim-run-interactive'
-    Plug '$HOME/plugins/vim-run-interactive'
-
-To extend your `git` hooks, create executable scripts in
-`~/dotfiles-local/git_template.local/hooks/*` files.
-
-Your `~/dotfiles-local/zshrc.local` might look like this:
-
-    # load pyenv if available
-    if which pyenv &>/dev/null ; then
-      eval "$(pyenv init -)"
-    fi
-
-Your `~/dotfiles-local/vimrc.bundles.local` might look like this:
-
-    Plug 'Lokaltog/vim-powerline'
-    Plug 'stephenmckinney/vim-solarized-powerline'
-
-## zsh Configurations
-
-Additional zsh configuration can go under the `~/dotfiles-local/zsh/configs` directory. This
-has two special subdirectories: `pre` for files that must be loaded first, and
-`post` for files that must be loaded last.
-
-For example, `~/dotfiles-local/zsh/configs/pre/virtualenv` makes use of various shell
-features which may be affected by your settings, so load it first:
-
-    # Load the virtualenv wrapper
-    . /usr/local/bin/virtualenvwrapper.sh
-
-Setting a key binding can happen in `~/dotfiles-local/zsh/configs/keys`:
-
-    # Grep anywhere with ^G
-    bindkey -s '^G' ' | grep '
-
-Some changes, like `chpwd`, must happen in `~/dotfiles-local/zsh/configs/post/chpwd`:
-
-    # Show the entries in a directory whenever you cd in
-    function chpwd {
-      ls
-    }
-
-This directory is handy for combining dotfiles from multiple teams; one team
-can add the `virtualenv` file, another `keys`, and a third `chpwd`.
-
-The `~/dotfiles-local/zshrc.local` is loaded after `~/dotfiles-local/zsh/configs`.
-
-## vim Configurations
-
-Similarly to the zsh configuration directory as described above, vim
-automatically loads all files in the `~/dotfiles-local/vim/plugin` directory. This does not
-have the same `pre` or `post` subdirectory support that our `zshrc` has.
-
-This is an example `~/dotfiles-local/vim/plugin/c.vim`. It is loaded every time vim starts,
-regardless of the file name:
-
-    # Indent C programs according to BSD style(9)
-    set cinoptions=:0,t0,+4,(4
-    autocmd BufNewFile,BufRead *.[ch] setlocal sw=0 ts=8 noet
-
-## What's in it?
-
-[vim](http://www.vim.org/) configuration:
-
-- [fzf](https://github.com/junegunn/fzf.vim) for fuzzy file/buffer/tag finding.
-- [Rails.vim](https://github.com/tpope/vim-rails) for enhanced navigation of
-  Rails file structure via `gf` and `:A` (alternate), `:Rextract` partials,
-  `:Rinvert` migrations, etc.
-- Run many kinds of tests [from vim]([https://github.com/janko-m/vim-test)
-- Set `<leader>` to a single space.
-- Switch between the last two files with space-space.
-- Syntax highlighting for Markdown, HTML, JavaScript, Ruby, Go, Elixir, more.
-- Use [Ag](https://github.com/ggreer/the_silver_searcher) instead of Grep when
-  available.
-- Map `<leader>ct` to re-index ctags.
-- Use [vim-mkdir](https://github.com/pbrisbin/vim-mkdir) for automatically
-  creating non-existing directories before writing the buffer.
-- Use [vim-plug](https://github.com/junegunn/vim-plug) to manage plugins.
-
-[tmux](http://robots.thoughtbot.com/a-tmux-crash-course)
-configuration:
-
-- Improve color resolution.
-- Remove administrative debris (session name, hostname, time) in status bar.
-- Set prefix to `Ctrl+s`
-- Soften status bar color from harsh green to light gray.
-
-[git](http://git-scm.com/) configuration:
-
-- Adds a `create-branch` alias to create feature branches.
-- Adds a `delete-branch` alias to delete feature branches.
-- Adds a `merge-branch` alias to merge feature branches into master.
-- Adds an `up` alias to fetch and rebase `origin/master` into the feature
-  branch. Use `git up -i` for interactive rebases.
-- Adds `post-{checkout,commit,merge}` hooks to re-index your ctags.
-- Adds `pre-commit` and `prepare-commit-msg` stubs that delegate to your local
-  config.
-- Adds `trust-bin` alias to append a project's `bin/` directory to `$PATH`.
-
-[Ruby](https://www.ruby-lang.org/en/) configuration:
-
-- Add trusted binstubs to the `PATH`.
-- Load the ASDF version manager.
-
-Shell aliases and scripts:
-
-- `b` for `bundle`.
-- `g` with no arguments is `git status` and with arguments acts like `git`.
-- `migrate` for `bin/rails db:migrate db:rollback && bin/rails db:migrate db:test:prepare`.
-- `mcd` to make a directory and change into it.
-- `replace foo bar **/*.rb` to find and replace within a given list of files.
-- `tat` to attach to tmux session named the same as the current directory.
-- `v` for `$VISUAL`.
-
-## Thanks
-
-Thank you, [contributors](https://github.com/thoughtbot/dotfiles/contributors)!
-Also, thank you to Corey Haines, Gary Bernhardt, and others for sharing your
-dotfiles and other shell scripts from which we derived inspiration for items
-in this project.
-
-## License
-
-dotfiles is copyright © 2009-2018 thoughtbot. It is free software, and may be
-redistributed under the terms specified in the [`LICENSE`] file.
-
-[`LICENSE`]: /LICENSE
-
-## About thoughtbot
-
-![thoughtbot](http://presskit.thoughtbot.com/images/thoughtbot-logo-for-readmes.svg)
-
-dotfiles is maintained and funded by thoughtbot, inc.
-The names and logos for thoughtbot are trademarks of thoughtbot, inc.
-
-We love open source software!
-See [our other projects][community].
-We are [available for hire][hire].
-
-[community]: https://thoughtbot.com/community?utm_source=github
-[hire]: https://thoughtbot.com/hire-us?utm_source=github
+[LICENSE](LICENSE) を参照。
