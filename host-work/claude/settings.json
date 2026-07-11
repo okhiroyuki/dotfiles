@@ -103,5 +103,18 @@
       "Bash(git push *)",
       "Bash(pup auth logout*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "crit --diff"
+          }
+        ]
+      }
+    ]
   }
 }

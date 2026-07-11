@@ -11,7 +11,6 @@ claude plugin marketplace update
 claude plugin update crit@crit
 claude plugin update product-skills@claude-code-skills
 claude plugin update skill-scanner@skillplugs
-claude pluign update secrets-guard@hsoft-claude-plugins
 
 if which pup &>/dev/null; then
     pup skills install claude

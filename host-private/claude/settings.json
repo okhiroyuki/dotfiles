@@ -71,8 +71,7 @@
   "enabledPlugins": {
     "crit@crit": true,
     "product-skills@claude-code-skills": true,
-    "skill-scanner@skillplugs": true,
-    "secrets-guard@hsoft-claude-plugins": true
+    "skill-scanner@skillplugs": true
   },
   "extraKnownMarketplaces": {
     "crit": {
@@ -92,14 +91,21 @@
         "source": "github",
         "repo": "skillplugs/plugins"
       }
-    },
-    "hsoft-claude-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "hsoftai/hsoft-claude-plugins"
-      }
     }
   },
   "language": "japanese",
-  "theme": "dark"
+  "theme": "dark",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "crit --diff"
+          }
+        ]
+      }
+    ]
+  }
 }
