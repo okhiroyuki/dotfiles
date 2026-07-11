@@ -8,6 +8,8 @@ description: Git運用ルール
 - コミットメッセージの書式・品質は `commit-message.md` に従う
 - 変更がない場合は空コミットを作らない
 - コミット前に `git status` / `git diff` で変更内容を必ず確認する
+- `git commit` と `git push` は `&&` で連結せず、別々のコマンド実行に分ける
+  - push前hook（`crit --range origin/main..HEAD`）は`git push`コマンド全体の実行前に発火するため、連結すると発火時点でcommitが未実行になり、レビュー対象の差分が空になる
 
 ## ブランチ操作
 
