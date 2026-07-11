@@ -8,4 +8,4 @@ if ! which claude &>/dev/null; then
 fi
 
 claude plugin marketplace update
-claude plugin update crit
+claude plugin update crit@crit
