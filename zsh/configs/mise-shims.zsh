@@ -8,5 +8,8 @@
 #   which prepends /usr/bin and friends *after* zshenv already ran, so
 #   this needs to be re-applied here too.
 if [ -d "$HOME/.local/share/mise/shims" ]; then
-  export PATH="$HOME/.local/share/mise/shims:$PATH"
+  case ":$PATH:" in
+    *":$HOME/.local/share/mise/shims:"*) ;;
+    *) export PATH="$HOME/.local/share/mise/shims:$PATH" ;;
+  esac
 fi

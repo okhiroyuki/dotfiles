@@ -54,6 +54,7 @@
       "Bash(git checkout *)",
       "Bash(git cherry-pick *)",
       "Bash(crit *)",
+      "Bash(scapple *)",
       "Bash(ls *)",
       "Bash(echo *)",
       "Bash(tr *)",
