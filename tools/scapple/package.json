@@ -1,0 +1,30 @@
+{
+  "name": "scapple",
+  "version": "1.0.0",
+  "description": "ScappleのXMLをノードと接続関係の構造化JSONに変換するCLI",
+  "private": true,
+  "bin": {
+    "scapple": "./dist/bin/scapple.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx bin/scapple.ts"
+  },
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.11.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "fast-xml-parser": "5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "tsx": "4.23.0",
+    "typescript": "7.0.2"
+  }
+}
