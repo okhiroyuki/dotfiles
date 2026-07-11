@@ -69,6 +69,7 @@ rcup -B private  # または -B work
 | `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                        |
 | `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                              |
 | `scripts/`                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新） |
+| `tools/`                                            | グローバル CLI ツールのソース置き場。`rcup` の symlink 対象外。詳細は [`tools/README.md`](tools/README.md) を参照 |
 | `claude/`                                           | Claude Code の全マシン共通設定（`~/.claude/` へ配置）。次項参照                              |
 | `host-private/` `host-work/`                        | 環境別オーバーレイ。次項参照                                                                 |
 | `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                                    |
