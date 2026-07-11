@@ -24,6 +24,8 @@
       "Bash(gh label list *)",
       "Bash(gh api *)",
       "Bash(gh search *)",
+      "Bash(brew search *)",
+      "Bash(brew info *)",
       "Bash(gh browse*)",
       "Bash(gh status*)",
       "Bash(git status *)",
@@ -51,6 +53,16 @@
       "Bash(git checkout *)",
       "Bash(git cherry-pick *)",
       "Bash(crit *)",
+      "Bash(ls *)",
+      "Bash(echo *)",
+      "Bash(tr *)",
+      "Bash(cat *)",
+      "Bash(ps *)",
+      "Bash(date *)",
+      "Bash(find *)",
+      "Bash(which *)",
+      "Bash(readlink *)",
+      "Bash(cd *)",
       "Skill(update-config)",
       "Skill(update-config:*)",
       "WebFetch(domain:crit.md)"
@@ -94,19 +106,5 @@
     }
   },
   "language": "japanese",
-  "theme": "dark",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "crit --range origin/main..HEAD",
-            "if": "Bash(git push*)"
-          }
-        ]
-      }
-    ]
-  }
+  "theme": "dark"
 }
