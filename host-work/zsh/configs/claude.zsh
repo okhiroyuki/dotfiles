@@ -21,6 +21,16 @@ if which pup &>/dev/null && which claude &>/dev/null && [ ! -f "$HOME/.claude/sk
     pup skills install claude
 fi
 
+if which claude &>/dev/null && ! claude plugin list 2>/dev/null | grep -q "skill-scanner@skillplugs"; then
+    claude plugin marketplace add skillplugs/plugins
+    claude plugin install skill-scanner@skillplugs
+fi
+
+if which claude &>/dev/null && ! claude plugin list 2>/dev/null | grep -q "secrets-guard@hsoft-claude-plugins"; then
+    claude plugin marketplace add hsoftai/hsoft-claude-plugins
+    claude plugin install secrets-guard@hsoft-claude-plugins
+fi
+
 _claude_plugin_update_stamp="$HOME/.cache/claude/plugin-update-stamp"
 if which claude &>/dev/null && { [ ! -f "$_claude_plugin_update_stamp" ] || [ -n "$(find "$_claude_plugin_update_stamp" -mtime +1)" ]; }; then
     ~/dotfiles/scripts/update-plugins.sh

@@ -1,8 +1,10 @@
 {
+  "$schema": "https://storage.googleapis.com/claude-code-public-settings-schema.json",
   "language": "japanese",
   "enabledPlugins": {
     "crit@crit": true,
-    "product-skills@claude-code-skills": true
+    "product-skills@claude-code-skills": true,
+    "skill-scanner@skillplugs": true
   },
   "extraKnownMarketplaces": {
     "crit": {
@@ -15,6 +17,12 @@
       "source": {
         "source": "github",
         "repo": "alirezarezvani/claude-skills"
+      }
+    },
+    "skillplugs": {
+      "source": {
+        "source": "github",
+        "repo": "skillplugs/plugins"
       }
     }
   },

@@ -1,5 +1,5 @@
 {
-  "language": "japanese",
+  "$schema": "https://storage.googleapis.com/claude-code-public-settings-schema.json",
   "permissions": {
     "allow": [
       "Bash(gh pr list *)",
@@ -70,7 +70,9 @@
   },
   "enabledPlugins": {
     "crit@crit": true,
-    "product-skills@claude-code-skills": true
+    "product-skills@claude-code-skills": true,
+    "skill-scanner@skillplugs": true,
+    "secrets-guard@hsoft-claude-plugins": true
   },
   "extraKnownMarketplaces": {
     "crit": {
@@ -84,7 +86,20 @@
         "source": "github",
         "repo": "alirezarezvani/claude-skills"
       }
+    },
+    "skillplugs": {
+      "source": {
+        "source": "github",
+        "repo": "skillplugs/plugins"
+      }
+    },
+    "hsoft-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "hsoftai/hsoft-claude-plugins"
+      }
     }
   },
+  "language": "japanese",
   "theme": "dark"
 }
