@@ -1,3 +1,7 @@
+---
+description: Claude Codeの設定ルール
+---
+
 ## Claude Code の settings.json 編集ルール
 
 - `~/.claude/settings.json` に相当する変更を行う際は、`host-work/claude/settings.json` と `host-private/claude/settings.json` の両方を編集対象として扱う（両ファイルは共通化されておらず、独立している）
