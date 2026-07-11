@@ -5,7 +5,7 @@
 
 ## 必要条件
 
-- macOS（一部設定は devcontainer / Linux でも利用）
+- macOS
 - [Homebrew](https://brew.sh/)
 - ログインシェルが zsh であること
 
@@ -42,20 +42,17 @@
 
    2 回目以降は `rcrc` 自体が `~/.rcrc` にリンクされるため、`rcup` だけで良い。
 
-4. 自分の環境（private / work / devcontainer）に応じたオーバーレイを追加で適用する（後述）。
+4. 自分の環境（private / work）に応じたオーバーレイを追加で適用する（後述）。
 
 ## 更新
 
 ```zsh
 git pull
 rcup
-rcup -B private  # または -B work / -B devcontainer
+rcup -B private  # または -B work
 ```
 
-`rcup` は何度実行しても安全なので、更新したら都度実行する。**`rcup` だけではオーバーレイ
-（`host-private/` などタグ付きディレクトリ）はリンクされない。** 自分の環境用の `-B <tag>` 付き
-`rcup` も必ずセットで実行すること（例えば `host-private/claude/settings.json` を編集したのに
-`rcup -B private` を忘れると、`~/.claude/settings.json` が古いまま残る）。
+オーバーレイのファイルを変更した場合は `-B <tag>` 付きの `rcup` も忘れずに実行する。
 
 ## 構成
 
@@ -72,21 +69,17 @@ rcup -B private  # または -B work / -B devcontainer
 | `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                        |
 | `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                              |
 | `scripts/`                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新） |
-| `host-private/` `host-work/` `host-devcontainer/`   | 環境別オーバーレイ。次項参照                                                                 |
+| `host-private/` `host-work/`                        | 環境別オーバーレイ。次項参照                                                                 |
 | `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                                    |
 
-## 環境別オーバーレイ（private / work / devcontainer）
+## 環境別オーバーレイ（private / work）
 
-| ディレクトリ         | 用途                 | 適用コマンド           |
-| -------------------- | -------------------- | ---------------------- |
-| `host-private/`      | プライベート用マシン | `rcup -B private`      |
-| `host-work/`         | 仕事用マシン         | `rcup -B work`         |
-| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` |
+| ディレクトリ    | 用途                 | 適用コマンド      |
+| --------------- | -------------------- | ----------------- |
+| `host-private/` | プライベート用マシン | `rcup -B private` |
+| `host-work/`    | 仕事用マシン         | `rcup -B work`    |
 
-通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
-`rcup` と `-B <tag>` 付き `rcup` は独立したコマンドで、`rcup` を実行しても `-B <tag>` は自動では
-走らない。オーバーレイ側のファイルを変更・追加したときも、反映するには毎回 `rcup -B <tag>` を
-再実行する必要がある。
+セットアップ後、自分の環境に応じていずれかを実行する。
 
 ## 個人用カスタマイズ（dotfiles-local）
 
