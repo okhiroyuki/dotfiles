@@ -37,7 +37,7 @@
 3. `rcup` でシンボリックリンクを張る（初回のみ `RCRC` を指定）
 
    ```zsh
-   env RCRC=$HOME/dotfiles/rcrc rcup
+   env RCRC=$(pwd)/rcrc rcup
    ```
 
    2 回目以降は `rcrc` 自体が `~/.rcrc` にリンクされるため、`rcup` だけで良い。
