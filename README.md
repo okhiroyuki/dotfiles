@@ -55,33 +55,34 @@ rcup
 
 ## 構成
 
-| パス                                                | 役割                                                                           |
-| --------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `rcrc`                                              | `rcup` の設定（除外パターン、`dotfiles-local` の場所など）                     |
-| `Brewfile` / `Brewfile.work`                        | Homebrew パッケージ定義（共通 / 仕事用）                                       |
-| `aliases`                                           | シェルエイリアス（`~/.aliases`）                                               |
-| `gitignore`                                         | グローバル gitignore（`~/.gitignore`）                                         |
-| `gitmassage`                                        | コミットメッセージテンプレート（`~/.gitmassage`）                              |
-| `mise.toml`                                         | [mise](https://mise.jdx.dev/) のツールバージョン定義                           |
-| `tigrc` / `vimrc` / `wezterm.lua` / `zshrc`         | 各ツールの設定ファイル                                                         |
-| `config/`                                           | `~/.config` 配下に配置する設定（sheldon, karabiner）                           |
-| `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                          |
-| `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                |
-| `claude/`                                           | Claude Code の設定・スキル。詳細は [claude/README.md](claude/README.md) を参照 |
-| `host-private/` `host-work/` `host-devcontainer/`   | 環境別オーバーレイ。次項参照                                                   |
-| `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                      |
+| パス                                                | 役割                                                                                         |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `rcrc`                                              | `rcup` の設定（除外パターン、`dotfiles-local` の場所など）                                   |
+| `Brewfile` / `Brewfile.work`                        | Homebrew パッケージ定義（共通 / 仕事用）                                                     |
+| `aliases`                                           | シェルエイリアス（`~/.aliases`）                                                             |
+| `gitignore`                                         | グローバル gitignore（`~/.gitignore`）                                                       |
+| `gitmassage`                                        | コミットメッセージテンプレート（`~/.gitmassage`）                                            |
+| `mise.toml`                                         | [mise](https://mise.jdx.dev/) のツールバージョン定義                                         |
+| `tigrc` / `vimrc` / `wezterm.lua` / `zshrc`         | 各ツールの設定ファイル                                                                       |
+| `config/`                                           | `~/.config` 配下に配置する設定（sheldon, karabiner）                                         |
+| `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                        |
+| `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                              |
+| `scripts/`                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新） |
+| `host-private/` `host-work/` `host-devcontainer/`   | 環境別オーバーレイ。次項参照                                                                 |
+| `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                                    |
 
 ## 環境別オーバーレイ（private / work / devcontainer）
 
 同じマシン構成でも、プライベート用と仕事用で `gitconfig` や zsh 設定を分けたいことがある。
 これは rcm のホストタグ機能（`-B` オプション）で実現していて、`host-<タグ名>/` ディレクトリの中身が
-`rcup -B <タグ名>` を実行したときだけ追加でリンクされる仕組み。
+`rcup -B <タグ名>` を実行したときだけ追加でリンクされる仕組み。Claude Code の skill やプラグイン自動導入
+（`zsh/configs/claude.zsh`）も、共通化せずこの仕組みに乗せて private / work それぞれに置いている。
 
-| ディレクトリ         | 用途                 | 適用コマンド           | 主な内容                                     |
-| -------------------- | -------------------- | ---------------------- | -------------------------------------------- |
-| `host-private/`      | プライベート用マシン | `rcup -B private`      | `gitconfig`, `hammerspoon/`, `zsh/configs/*` |
-| `host-work/`         | 仕事用マシン         | `rcup -B work`         | `gitconfig`, `zprofile`, `zsh/configs/*`     |
-| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される）  |
+| ディレクトリ         | 用途                 | 適用コマンド           | 主な内容                                                                             |
+| -------------------- | -------------------- | ---------------------- | ------------------------------------------------------------------------------------ |
+| `host-private/`      | プライベート用マシン | `rcup -B private`      | `gitconfig`, `hammerspoon/`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*` |
+| `host-work/`         | 仕事用マシン         | `rcup -B work`         | `gitconfig`, `zprofile`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*`     |
+| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される）                                          |
 
 通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
 

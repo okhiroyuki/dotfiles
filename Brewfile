@@ -1,3 +1,4 @@
+brew "crit"
 brew "curl"
 brew "fzf"
 brew "gh"
