@@ -54,7 +54,9 @@
       "Bash(git describe*)",
       "Bash(git shortlog*)",
       "Bash(man rcup*)",
-      "Bash(rcup --help*)"
+      "Bash(rcup --help*)",
+      "Bash(grep *)",
+      "Bash(git add *)"
     ],
     "deny": [
       "Bash(git branch -D*)",
