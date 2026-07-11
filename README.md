@@ -56,22 +56,22 @@ rcup -B private  # または -B work
 
 ## 構成
 
-| パス                                                                | 役割                                                                                         |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `rcrc`                                                              | `rcup` の設定（除外パターン、`dotfiles-local` の場所など）                                   |
-| `Brewfile` / `Brewfile.work`                                        | Homebrew パッケージ定義（共通 / 仕事用）                                                     |
-| `aliases`                                                           | シェルエイリアス（`~/.aliases`）                                                             |
-| `gitignore`                                                         | グローバル gitignore（`~/.gitignore`）                                                       |
-| `gitmassage`                                                        | コミットメッセージテンプレート（`~/.gitmassage`）                                            |
-| `mise.toml`                                                         | [mise](https://mise.jdx.dev/) のツールバージョン定義                                         |
-| `tigrc` / `vimrc` / `wezterm.lua` / `zshrc` / `zshenv` / `zprofile` | 各ツールの設定ファイル                                                                       |
-| `config/`                                                           | `~/.config` 配下に配置する設定（sheldon, karabiner）                                         |
-| `zsh/configs/`                                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                        |
-| `starship/`                                                         | [starship](https://starship.rs/) プロンプト設定                                              |
-| `scripts/`                                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新） |
-| `claude/`                                                           | Claude Code の全マシン共通設定（`~/.claude/` へ配置）。次項参照                              |
-| `host-private/` `host-work/`                                        | 環境別オーバーレイ。次項参照                                                                 |
-| `dprint.json` `.pre-commit-config.yaml` `.yamllint`                 | このリポジトリ自身の lint / format 設定（symlink 対象外）                                    |
+| パス                                                | 役割                                                                                         |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `rcrc`                                              | `rcup` の設定（除外パターン、`dotfiles-local` の場所など）                                   |
+| `Brewfile` / `Brewfile.work`                        | Homebrew パッケージ定義（共通 / 仕事用）                                                     |
+| `aliases`                                           | シェルエイリアス（`~/.aliases`）                                                             |
+| `gitignore`                                         | グローバル gitignore（`~/.gitignore`）                                                       |
+| `gitmassage`                                        | コミットメッセージテンプレート（`~/.gitmassage`）                                            |
+| `mise.toml`                                         | [mise](https://mise.jdx.dev/) のツールバージョン定義                                         |
+| `tigrc` / `vimrc` / `wezterm.lua` / `zshrc`         | 各ツールの設定ファイル                                                                       |
+| `config/`                                           | `~/.config` 配下に配置する設定（sheldon, karabiner）                                         |
+| `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                        |
+| `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                              |
+| `scripts/`                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新） |
+| `claude/`                                           | Claude Code の全マシン共通設定（`~/.claude/` へ配置）。次項参照                              |
+| `host-private/` `host-work/`                        | 環境別オーバーレイ。次項参照                                                                 |
+| `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                                    |
 
 ## 環境別オーバーレイ（private / work）
 
