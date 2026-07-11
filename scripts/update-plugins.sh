@@ -9,3 +9,7 @@ fi
 
 claude plugin marketplace update
 claude plugin update crit@crit
+
+if which pup &>/dev/null; then
+    pup skills install claude
+fi

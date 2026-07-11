@@ -12,6 +12,10 @@ if which claude &>/dev/null && ! claude plugin list 2>/dev/null | grep -q "crit@
     claude plugin install crit@crit
 fi
 
+if which pup &>/dev/null && which claude &>/dev/null && [ ! -f "$HOME/.claude/skills/dd-pup/SKILL.md" ]; then
+    pup skills install claude
+fi
+
 _claude_plugin_update_stamp="$HOME/.cache/claude/plugin-update-stamp"
 if which claude &>/dev/null && { [ ! -f "$_claude_plugin_update_stamp" ] || [ -n "$(find "$_claude_plugin_update_stamp" -mtime +1)" ]; }; then
     ~/dotfiles/scripts/update-plugins.sh
