@@ -36,9 +36,9 @@ Claude Code のプラグインは `claude plugin marketplace add` / `claude plug
 
 新しくプラグインを導入したら、この表に行を追加して状態を更新すること。
 
-| プラグイン | マーケットプレイス | 用途 | 状態 | インストールコマンド |
-| --- | --- | --- | --- | --- |
-| crit | `tomasz-tomczyk/crit` | ローカルファーストのレビューツール。diffやドキュメント、実行中のアプリをブラウザでレビューできる。 | 未導入 | `claude plugin marketplace add tomasz-tomczyk/crit`<br>`claude plugin install crit@crit` |
+| プラグイン | マーケットプレイス    | 用途                                                                                               | 状態   | インストールコマンド                                                                     |
+| ---------- | --------------------- | -------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------- |
+| crit       | `tomasz-tomczyk/crit` | ローカルファーストのレビューツール。diffやドキュメント、実行中のアプリをブラウザでレビューできる。 | 未導入 | `claude plugin marketplace add tomasz-tomczyk/crit`<br>`claude plugin install crit@crit` |
 
 ## 管理しないもの
 
