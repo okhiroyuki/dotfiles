@@ -56,7 +56,8 @@
       "Bash(man rcup*)",
       "Bash(rcup --help*)",
       "Bash(grep *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m *)"
     ],
     "deny": [
       "Bash(git branch -D*)",

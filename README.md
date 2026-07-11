@@ -48,10 +48,14 @@
 
 ```zsh
 git pull
+rcup
 rcup -B private  # または -B work / -B devcontainer
 ```
 
-`rcup` は何度実行しても安全なので、更新したら都度実行する。
+`rcup` は何度実行しても安全なので、更新したら都度実行する。**`rcup` だけではオーバーレイ
+（`host-private/` などタグ付きディレクトリ）はリンクされない。** 自分の環境用の `-B <tag>` 付き
+`rcup` も必ずセットで実行すること（例えば `host-private/claude/settings.json` を編集したのに
+`rcup -B private` を忘れると、`~/.claude/settings.json` が古いまま残る）。
 
 ## 構成
 
@@ -80,6 +84,9 @@ rcup -B private  # または -B work / -B devcontainer
 | `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` |
 
 通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
+`rcup` と `-B <tag>` 付き `rcup` は独立したコマンドで、`rcup` を実行しても `-B <tag>` は自動では
+走らない。オーバーレイ側のファイルを変更・追加したときも、反映するには毎回 `rcup -B <tag>` を
+再実行する必要がある。
 
 ## 個人用カスタマイズ（dotfiles-local）
 
