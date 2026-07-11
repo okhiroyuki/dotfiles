@@ -1,0 +1,14 @@
+{
+  "enabledPlugins": {
+    "crit@crit": true
+  },
+  "extraKnownMarketplaces": {
+    "crit": {
+      "source": {
+        "source": "github",
+        "repo": "tomasz-tomczyk/crit"
+      }
+    }
+  },
+  "theme": "dark"
+}

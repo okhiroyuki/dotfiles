@@ -78,11 +78,11 @@ rcup
 `rcup -B <タグ名>` を実行したときだけ追加でリンクされる仕組み。Claude Code の skill やプラグイン自動導入
 （`zsh/configs/claude.zsh`）も、共通化せずこの仕組みに乗せて private / work それぞれに置いている。
 
-| ディレクトリ         | 用途                 | 適用コマンド           | 主な内容                                                                                                 |
-| -------------------- | -------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| `host-private/`      | プライベート用マシン | `rcup -B private`      | `gitconfig`, `hammerspoon/`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*`                     |
-| `host-work/`         | 仕事用マシン         | `rcup -B work`         | `gitconfig`, `zprofile`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*`, `claude/settings.json` |
-| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される）                                                              |
+| ディレクトリ         | 用途                 | 適用コマンド           | 主な内容                                                                                                     |
+| -------------------- | -------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `host-private/`      | プライベート用マシン | `rcup -B private`      | `gitconfig`, `hammerspoon/`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*`, `claude/settings.json` |
+| `host-work/`         | 仕事用マシン         | `rcup -B work`         | `gitconfig`, `zprofile`, `zsh/configs/*`（`claude.zsh` 含む）, `claude/skills/*`, `claude/settings.json`     |
+| `host-devcontainer/` | devcontainer 環境    | `rcup -B devcontainer` | 最小構成（`install.sh` から自動実行される）                                                                  |
 
 通常のセットアップ（`rcup`）を終えたあと、自分の環境に応じて **どちらか一方** を追加で実行する。
 
