@@ -76,7 +76,7 @@
       "Bash(rcup --help *)",
       "Bash(grep *)",
       "Bash(git add *)",
-      "Bash(git commit -m *)",
+      "Bash(git commit *)",
       "Bash(git checkout *)",
       "Bash(git cherry-pick *)",
       "Bash(crit *)",
