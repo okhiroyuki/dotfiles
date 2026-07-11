@@ -8,9 +8,13 @@ if ! which claude &>/dev/null; then
 fi
 
 claude plugin marketplace update
-claude plugin update crit@crit
-claude plugin update product-skills@claude-code-skills
-claude plugin update skill-scanner@skillplugs
+
+settings_file="$HOME/.claude/settings.json"
+if which jq &>/dev/null && [ -f "$settings_file" ]; then
+    for plugin in $(jq -r '.enabledPlugins // {} | keys[]' "$settings_file"); do
+        claude plugin update "$plugin"
+    done
+fi
 
 if which pup &>/dev/null; then
     pup skills install claude
