@@ -1,3 +1,4 @@
+brew "yusukebe/tap/ax"
 brew "crit"
 brew "curl"
 brew "fzf"
