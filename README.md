@@ -18,7 +18,7 @@ and managed with [rcm](https://github.com/thoughtbot/rcm).
 Clone the repository into `~/dotfiles`:
 
 ```zsh
-git clone --recurse-submodules git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
+git clone git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
@@ -53,13 +53,6 @@ rcup -B private   # or -B work
 
 Put personal settings you do not want in this repository under `~/dotfiles-local`.
 `rcup` reads that directory the same way as `~/dotfiles` and symlinks its files into your home directory.
-
-## For developers
-
-The repository layout and the mechanism that switches settings between private and work
-machines are documented under `.claude/rules/` for AI agents.
-Claude Code loads them automatically, so ask the AI, or read
-[`.claude/rules/config-scope.md`](.claude/rules/config-scope.md).
 
 ## License
 
