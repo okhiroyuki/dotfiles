@@ -29,7 +29,6 @@
   },
   "permissions": {
     "allow": [
-      // ===== GitHub CLI (gh) =====
       "Bash(gh pr list *)",
       "Bash(gh pr view *)",
       "Bash(gh pr diff *)",
@@ -54,10 +53,8 @@
       "Bash(gh search *)",
       "Bash(gh browse *)",
       "Bash(gh status *)",
-      // ===== Homebrew =====
       "Bash(brew search *)",
       "Bash(brew info *)",
-      // ===== Git (読み取り専用) =====
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -76,16 +73,16 @@
       "Bash(git rev-parse *)",
       "Bash(git describe *)",
       "Bash(git shortlog *)",
-      // ===== Git (変更を伴う操作) =====
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git switch *)",
       "Bash(git checkout *)",
       "Bash(git cherry-pick *)",
-      // ===== その他ツール =====
       "Bash(crit *)",
       "Bash(scapple *)",
-      // ===== 汎用コマンド(読み取り専用) =====
+      "Bash(claude mcp list*)",
+      "Bash(claude plugin list*)",
+      "Bash(claude plugin marketplace list*)",
       "Bash(man *)",
       "Bash(col *)",
       "Bash(grep *)",
@@ -99,44 +96,33 @@
       "Bash(which *)",
       "Bash(readlink *)",
       "Bash(cd *)",
-      // ===== フラグ =====
       "Bash(* --version*)",
       "Bash(* --help*)",
-      // ===== Skill =====
       "Skill(update-config)",
       "Skill(update-config:*)",
-      // ===== WebFetch: crit =====
       "WebFetch(domain:crit.md)",
-      // ===== Anthropic / Claude =====
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:api.anthropic.com)",
       "WebFetch(domain:code.claude.com)",
-      // ===== GitHub =====
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:gist.github.com)",
-      // ===== Renovate ====
       "WebFetch(domain:docs.renovatebot.com)",
-      // ===== 技術ドキュメント =====
       "WebFetch(domain:developer.mozilla.org)",
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:docs.python.org)",
       "WebFetch(domain:docs.docker.com)",
       "WebFetch(domain:kubernetes.io)",
-      // ===== npm / パッケージ管理 =====
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:registry.npmjs.org)",
       "WebFetch(domain:pypi.org)",
       "WebFetch(domain:crates.io)",
       "WebFetch(domain:pnpm.io)",
-      // ===== シェル / 開発環境ツール =====
       "WebFetch(domain:mise.jdx.dev)",
       "WebFetch(domain:direnv.net)",
       "WebFetch(domain:dprint.dev)",
-      // ===== Homebrew =====
       "WebFetch(domain:formulae.brew.sh)",
       "WebFetch(domain:docs.brew.sh)",
-      // ===== Git =====
       "WebFetch(domain:git-scm.com)"
     ],
     "deny": [
