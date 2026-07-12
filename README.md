@@ -5,7 +5,7 @@ and managed with [rcm](https://github.com/thoughtbot/rcm).
 
 - Manages settings (zsh, git, starship, and more) in this repository and symlinks them into your home directory with `rcup`.
 - Switches packages and some settings between **private** and **work** machines.
-- Keeps machine-local personal settings out of the repository in `~/dotfiles-local`.
+- Keeps machine-local / domain-specific personal settings out of version control in `local/` (gitignored).
 
 ## Requirements
 
@@ -51,8 +51,8 @@ rcup -B private   # or -B work
 
 ## Make your own customizations
 
-Put personal settings you do not want in this repository under `~/dotfiles-local`.
-`rcup` reads that directory the same way as `~/dotfiles` and symlinks its files into your home directory.
+Put personal or domain-specific settings you do not want committed under `local/` (see [local/README.md](local/README.md)).
+It is gitignored, but `rcup` reads it the same way as the rest of `~/dotfiles` and symlinks its files into your home directory.
 
 ## License
 
