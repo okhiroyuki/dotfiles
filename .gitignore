@@ -147,3 +147,7 @@ dist
 .npm
 .pre-commit-cache
 .DS_Store
+
+## machine-local / domain-specific dotfiles (see local/README.md)
+local/*
+!local/README.md
