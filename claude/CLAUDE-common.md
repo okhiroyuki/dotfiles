@@ -8,4 +8,3 @@
 @rules/git.md
 @rules/japanese-tech-writing.md
 @rules/security.md
-@rules/claude-settings.md
