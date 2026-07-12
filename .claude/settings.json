@@ -3,7 +3,6 @@
   "permissions": {
     "allow": [
       "Read(//Users/okhiroyuki/dotfiles/**)",
-      "Edit(//Users/okhiroyuki/dotfiles/.claude/**)",
       "Bash(lsrc *)",
       "Bash(pre-commit run *)",
       "Bash(git add:*)",

@@ -1,3 +1,0 @@
-[submodule "host-work"]
-	path = host-work
-	url = git@github.com:okhiroyuki/dotfiles-work.git
