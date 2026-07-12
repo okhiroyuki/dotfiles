@@ -41,9 +41,11 @@ CI失敗の原因分析、マージ可否の判断、コンフリクト解消方
    `gh auth refresh -h github.com -s workflow` をユーザーに依頼（認証設定の変更なので自分では実行しない）。追加後に再マージ。
 
 7. **Dependency Dashboardの承認待ちを確認**
-   `gh issue list --repo <owner>/<repo> --state open --author app/renovate` でDashboard issueを特定し、本文に
-   **「Pending Approval」**セクションがあるか確認。あれば承認待ち（メジャー更新など）が滞留している。
+   `--author app/renovate` はbotに対して機能しないため、jq側でauthor判定してDashboard issueを特定する:
+   `gh issue list --repo <owner>/<repo> --state open --json number,title,author --jq '.[] | select(.title=="Dependency Dashboard" and .author.login=="app/renovate") | .number'`
+   得られたissue番号の本文に**「Pending Approval」**セクションがあるか確認する。あれば承認待ち（メジャー更新など）が滞留している。
    無ければ承認ゲートで止まっているものは無い。「Awaiting Schedule」はスケジュール待ちで停止ではない。
+   issueが無効なリポジトリでは `gh issue list` がエラー終了するため、複数リポジトリを回す際は個別に失敗を無視して続行する。
 
 ## 成功基準（MUST）
 - マージ候補と判定したPRは、マージ方式確認 → CI pass再確認 → マージ、まで完了している。
