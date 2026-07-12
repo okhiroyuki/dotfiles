@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if ! command -v soracom >/dev/null 2>&1; then
-  echo "soracom CLIが見つかりません。'brew bundle --file=Brewfile.work' を実行してください。" >&2
+  echo "soracom CLIが見つかりません。'brew bundle --file=host-work/Brewfile' を実行してください。" >&2
   exit 1
 fi
 

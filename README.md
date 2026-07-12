@@ -28,14 +28,14 @@ Keep the `brew bundle` file and the `rcup -B` tag in sync.
 Private machine:
 
 ```zsh
-brew bundle
+brew bundle --file=host-private/Brewfile
 env RCRC=$HOME/dotfiles/rcrc rcup -B private
 ```
 
 Work machine:
 
 ```zsh
-brew bundle --file=Brewfile.work
+brew bundle --file=host-work/Brewfile
 env RCRC=$HOME/dotfiles/rcrc rcup -B work
 ```
 
