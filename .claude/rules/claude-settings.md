@@ -22,4 +22,5 @@ description: Claude Codeの設定ルール
 ## Claude Code の plugin 更新ルール
 
 - 「pluginを更新して」等の依頼を受けたら、`claude plugin update` を個別に叩くのではなく `scripts/update-plugins.sh` を実行する
-  - marketplace更新・enabledPluginsの全plugin更新・`pup skills install claude` をまとめて行うスクリプトのため
+  - marketplace更新・enabledPluginsの全plugin更新をまとめて行うスクリプトのため
+- pup付属スキルの導入・更新は `scripts/update-plugins.sh` の対象外。`host-work/zsh/configs/claude.zsh` のシェル起動時ガード（`dd-pup/SKILL.md` 未存在時のみ `pup skills install claude` を実行）のみで管理する

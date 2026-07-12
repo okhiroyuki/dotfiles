@@ -15,7 +15,3 @@ if which jq &>/dev/null && [ -f "$settings_file" ]; then
         claude plugin update "$plugin"
     done
 fi
-
-if which pup &>/dev/null; then
-    pup skills install claude
-fi
