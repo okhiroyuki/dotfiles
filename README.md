@@ -1,104 +1,66 @@
 # dotfiles
 
-個人用の dotfiles リポジトリです。[thoughtbot/dotfiles](https://github.com/thoughtbot/dotfiles) をベースに、
-[rcm](https://github.com/thoughtbot/rcm)（`rcup`）でシンボリックリンクを管理しています。
+Personal dotfiles for macOS, based on [thoughtbot/dotfiles](https://github.com/thoughtbot/dotfiles)
+and managed with [rcm](https://github.com/thoughtbot/rcm).
 
-## 必要条件
+- Manages settings (zsh, git, starship, and more) in this repository and symlinks them into your home directory with `rcup`.
+- Switches packages and some settings between **private** and **work** machines.
+- Keeps machine-local personal settings out of the repository in `~/dotfiles-local`.
+
+## Requirements
 
 - macOS
 - [Homebrew](https://brew.sh/)
-- ログインシェルが zsh であること
+- zsh as your login shell
 
-  ```zsh
-  chsh -s $(which zsh)
-  ```
+## Install
 
-## セットアップ
+Clone the repository into `~/dotfiles`:
 
-1. リポジトリを clone する
+```zsh
+git clone git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+```
 
-   ```zsh
-   git clone git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
-   cd ~/dotfiles
-   ```
+Then run **either** the private or the work setup, depending on the machine.
+Keep the `brew bundle` file and the `rcup -B` tag in sync.
 
-2. Homebrew でパッケージを入れる（`rcm` もここに含まれる）
+Private machine:
 
-   ```zsh
-   brew bundle
-   ```
+```zsh
+brew bundle
+env RCRC=$HOME/dotfiles/rcrc rcup -B private
+```
 
-   仕事用マシンでは `Brewfile.work` も併せて実行する。
+Work machine:
 
-   ```zsh
-   brew bundle --file=Brewfile.work
-   ```
+```zsh
+brew bundle --file=Brewfile.work
+env RCRC=$HOME/dotfiles/rcrc rcup -B work
+```
 
-3. `rcup` でシンボリックリンクを張る（初回のみ `RCRC` を指定）
+`env RCRC=...` tells `rcup` where the config file is on the first run.
+It then symlinks that `rcrc` to `~/.rcrc`, so later runs need only `rcup -B private` (or `-B work`).
 
-   ```zsh
-   env RCRC=$(pwd)/rcrc rcup
-   ```
-
-   2 回目以降は `rcrc` 自体が `~/.rcrc` にリンクされるため、`rcup` だけで良い。
-
-4. 自分の環境（private / work）に応じたオーバーレイを追加で適用する（後述）。
-
-## 更新
+## Update
 
 ```zsh
 git pull
-rcup
-rcup -B private  # または -B work
+rcup -B private   # or -B work
 ```
 
-オーバーレイのファイルを変更した場合は `-B <tag>` 付きの `rcup` も忘れずに実行する。
+## Make your own customizations
 
-## 構成
+Put personal settings you do not want in this repository under `~/dotfiles-local`.
+`rcup` reads that directory the same way as `~/dotfiles` and symlinks its files into your home directory.
 
-| パス                                                | 役割                                                                                                              |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `rcrc`                                              | `rcup` の設定（除外パターン、`dotfiles-local` の場所など）                                                        |
-| `Brewfile` / `Brewfile.work`                        | Homebrew パッケージ定義（共通 / 仕事用）                                                                          |
-| `aliases`                                           | シェルエイリアス（`~/.aliases`）                                                                                  |
-| `gitignore`                                         | グローバル gitignore（`~/.gitignore`）                                                                            |
-| `gitmassage`                                        | コミットメッセージテンプレート（`~/.gitmassage`）                                                                 |
-| `mise.toml`                                         | [mise](https://mise.jdx.dev/) のツールバージョン定義                                                              |
-| `tigrc` / `vimrc` / `wezterm.lua` / `zshrc`         | 各ツールの設定ファイル                                                                                            |
-| `config/`                                           | `~/.config` 配下に配置する設定（sheldon, karabiner）                                                              |
-| `zsh/configs/`                                      | 追加の zsh 設定群（`~/.zsh/configs`）                                                                             |
-| `starship/`                                         | [starship](https://starship.rs/) プロンプト設定                                                                   |
-| `scripts/`                                          | このリポジトリのメンテナンス用スクリプト置き場（例: `update-plugins.sh` でプラグインを更新）                      |
-| `tools/`                                            | グローバル CLI ツールのソース置き場。`rcup` の symlink 対象外。詳細は [`tools/README.md`](tools/README.md) を参照 |
-| `claude/`                                           | Claude Code の全マシン共通設定（`~/.claude/` へ配置）。次項参照                                                   |
-| `host-private/` `host-work/`                        | 環境別オーバーレイ。次項参照                                                                                      |
-| `dprint.json` `.pre-commit-config.yaml` `.yamllint` | このリポジトリ自身の lint / format 設定（symlink 対象外）                                                         |
+## For developers
 
-## 環境別オーバーレイ（private / work）
+The repository layout and the mechanism that switches settings between private and work
+machines are documented under `.claude/rules/` for AI agents.
+Claude Code loads them automatically, so ask the AI, or read
+[`.claude/rules/config-scope.md`](.claude/rules/config-scope.md).
 
-| ディレクトリ    | 用途                 | 適用コマンド      |
-| --------------- | -------------------- | ----------------- |
-| `host-private/` | プライベート用マシン | `rcup -B private` |
-| `host-work/`    | 仕事用マシン         | `rcup -B work`    |
+## License
 
-セットアップ後、自分の環境に応じていずれかを実行する。
-
-## Claude Code 設定（共通ルール + host 固有）
-
-Claude Code のルールは「共通は 1 箇所で管理し、各 host で個別に追加する」構造にしている。配置規則の詳細は [`.claude/rules/config-scope.md`](.claude/rules/config-scope.md) を参照。
-
-## 個人用カスタマイズ（dotfiles-local）
-
-このリポジトリに含めたくない個人設定は `~/dotfiles-local` に置く（`rcrc` の `DOTFILES_DIRS` で参照される）。
-
-- `~/dotfiles-local/aliases.local`
-- `~/dotfiles-local/zshrc.local`
-- `~/dotfiles-local/vimrc.local`
-- `~/dotfiles-local/zsh/configs/*`
-
-`~/dotfiles-local/zsh/configs` には `pre` / `post` の特別なサブディレクトリがあり、
-`pre` は最初に、`post` は最後に読み込まれる。
-
-## ライセンス
-
-[LICENSE](LICENSE) を参照。
+See [LICENSE](LICENSE).
