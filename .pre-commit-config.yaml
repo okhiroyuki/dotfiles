@@ -6,6 +6,12 @@ repos:
       - id: yamllint
         args: [--strict, -c=.yamllint]
 
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-json
+        exclude: -lock\.json$
+
   - repo: local
     hooks:
       - id: dprint
