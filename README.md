@@ -18,7 +18,7 @@ and managed with [rcm](https://github.com/thoughtbot/rcm).
 Clone the repository into `~/dotfiles`:
 
 ```zsh
-git clone git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
+git clone --recurse-submodules git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
