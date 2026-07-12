@@ -2,3 +2,4 @@
 node = "latest"
 pre-commit = "latest"
 pnpm = "latest"
+python = "3.12"
