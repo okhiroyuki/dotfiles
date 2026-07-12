@@ -4,7 +4,9 @@
     "allow": [
       "Read(//Users/okhiroyuki/dotfiles/**)",
       "Bash(lsrc *)",
-      "Bash(pre-commit run *)"
+      "Bash(pre-commit run *)",
+      "WebFetch(domain:starship.rs)",
+      "WebFetch(domain:sheldon.cli.rs)"
     ]
   }
 }
