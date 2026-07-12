@@ -47,6 +47,7 @@
       "Bash(git shortlog *)",
       "Bash(man *)",
       "Bash(rcup --help *)",
+      "Bash(lsrc *)",
       "Bash(col *)",
       "Bash(grep *)",
       "Bash(git add *)",
