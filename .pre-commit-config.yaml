@@ -10,6 +10,7 @@ repos:
     hooks:
       - id: dprint
         name: dprint fmt
-        entry: npx dprint fmt
+        entry: dprint fmt
         args: ["--allow-no-files"]
-        language: system
+        language: node
+        additional_dependencies: ["dprint@0.55.1"]
