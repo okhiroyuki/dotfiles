@@ -9,3 +9,4 @@
 @rules/japanese-tech-writing.md
 @rules/security.md
 @rules/claude-config-sync.md
+@rules/permission-allowlist.md

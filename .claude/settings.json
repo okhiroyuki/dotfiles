@@ -5,6 +5,8 @@
       "Read(//Users/okhiroyuki/dotfiles/**)",
       "Bash(lsrc *)",
       "Bash(pre-commit run *)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
       "WebFetch(domain:starship.rs)",
       "WebFetch(domain:sheldon.cli.rs)"
     ]
