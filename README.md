@@ -85,15 +85,7 @@ rcup -B private  # または -B work
 
 ## Claude Code 設定（共通ルール + host 固有）
 
-Claude Code のルールは「共通は 1 箇所で管理し、各 host で個別に追加する」構造にしている。
-
-- `claude/rules/*.md` … 全マシン共通のルール（実体はここだけ）。タグ無しで全マシンの `~/.claude/rules/` へ配置される。
-- `claude/CLAUDE-common.md` … 共通ルールをまとめて読み込むインデックス。`~/.claude/CLAUDE-common.md` へ配置される。
-- `claude/skills/*` … 全マシン共通の skill。
-- `host-*/claude/CLAUDE.md` … 各 host のエントリポイント（`~/.claude/CLAUDE.md`）。`@CLAUDE-common.md` で共通を読み込み、その後に host 固有ルールを `@rules/xxx.md` で追加する。
-- `host-*/claude/rules/*.md` … その host だけのルール（例: `host-private/claude/rules/pre-commit.md`）。
-
-`rcup -B <tag>` を実行すると、共通ファイルと host 固有ファイルが同じ `~/.claude/rules/` にマージされる。共通ルールを直すときは `claude/rules/` の 1 ファイルを編集すればよい。
+Claude Code のルールは「共通は 1 箇所で管理し、各 host で個別に追加する」構造にしている。配置規則の詳細は [`.claude/rules/config-scope.md`](.claude/rules/config-scope.md) を参照。
 
 ## 個人用カスタマイズ（dotfiles-local）
 
