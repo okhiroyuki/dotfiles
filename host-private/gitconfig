@@ -17,6 +17,8 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[submodule]
+    recurse = true
 [user]
 	name = Hiroyuki Okada
 	email = ok.okada.hiroyuki@gmail.com
