@@ -78,6 +78,7 @@
       "Bash(git switch *)",
       "Bash(git checkout *)",
       "Bash(git cherry-pick *)",
+      "Bash(git push *)",
       "Bash(crit *)",
       "Bash(scapple *)",
       "Bash(claude mcp list*)",
@@ -135,9 +136,6 @@
       "Bash(git clean -f *)",
       "Bash(curl *)",
       "Bash(wget *)"
-    ],
-    "ask": [
-      "Bash(git push *)"
     ]
   }
 }
