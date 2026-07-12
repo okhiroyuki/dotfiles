@@ -18,3 +18,8 @@ description: Claude Codeの設定ルール
   - 共通の場合: `zsh/configs/_claude.zsh` に既存と同じ形のインストールブロックを追加する
   - 環境固有の場合: `host-work/zsh/configs/claude.zsh` または `host-private/zsh/configs/claude.zsh`（なければ新規作成）に追加する
 - `scripts/update-plugins.sh` は `settings.json` の `enabledPlugins` を動的に読むため、追記不要
+
+## Claude Code の plugin 更新ルール
+
+- 「pluginを更新して」等の依頼を受けたら、`claude plugin update` を個別に叩くのではなく `scripts/update-plugins.sh` を実行する
+  - marketplace更新・enabledPluginsの全plugin更新・`pup skills install claude` をまとめて行うスクリプトのため
