@@ -34,6 +34,7 @@
       "Bash(git show *)",
       "Bash(git branch *)",
       "Bash(git fetch *)",
+      "Bash(git pull *)",
       "Bash(git blame *)",
       "Bash(git tag *)",
       "Bash(git remote -v *)",
