@@ -20,7 +20,7 @@
   },
   "type": "module",
   "dependencies": {
-    "fast-xml-parser": "5.9.3"
+    "fast-xml-parser": "5.10.0"
   },
   "devDependencies": {
     "@types/node": "26.1.1",
