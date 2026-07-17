@@ -19,4 +19,4 @@ repos:
         entry: dprint fmt
         args: ["--allow-no-files"]
         language: node
-        additional_dependencies: ["dprint@0.55.1"]
+        additional_dependencies: ["dprint@0.55.2"]
