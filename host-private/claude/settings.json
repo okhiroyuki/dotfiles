@@ -79,6 +79,7 @@
       "Bash(git checkout *)",
       "Bash(git cherry-pick *)",
       "Bash(git push *)",
+      "Bash(pnpm test *)",
       "Bash(ax *)",
       "Bash(crit *)",
       "Bash(scapple *)",
