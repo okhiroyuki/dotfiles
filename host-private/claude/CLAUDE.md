@@ -16,6 +16,11 @@
 @rules/skill-management.md
 @rules/japanese-tech-writing.md
 
+## ツール利用
+
+@rules/semble.md
+@rules/web-access.md
+
 ## セキュリティ・権限
 
 @rules/security.md
