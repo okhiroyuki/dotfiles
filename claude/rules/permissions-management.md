@@ -1,9 +1,5 @@
 ---
 description: 確認プロンプトの蓄積に気づいたときに permission-promotion スキルを必ず使う
-paths:
-  - ".claude/settings.json"
-  - ".claude/settings.local.json"
-  - "~/.claude/settings.json"
 ---
 
 確認プロンプトが繰り返し発生しても、その場での即時昇格提案はしない。

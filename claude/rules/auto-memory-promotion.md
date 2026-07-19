@@ -1,10 +1,5 @@
 ---
 description: Auto Memoryの同一パターン蓄積に気づいたときに memory-promotion スキルを必ず使う
-paths:
-  - ".claude/skills/**/*"
-  - ".claude/rules/**/*"
-  - ".claude/CLAUDE.md"
-  - "~/.claude/projects/*/memory/**"
 ---
 
 Auto Memory を参照・更新する中で、同じパターンが3回以上出現していると気づいたら、
