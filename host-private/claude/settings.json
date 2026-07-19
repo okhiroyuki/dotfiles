@@ -113,19 +113,6 @@
       "Bash(wget *)"
     ]
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/guard-main-push.sh"
-          }
-        ]
-      }
-    ]
-  },
   "enabledPlugins": {
     "crit@crit": true,
     "product-skills@claude-code-skills": true,
