@@ -29,3 +29,7 @@
 ## Auto Memory運用
 
 @rules/auto-memory-promotion.md
+
+## ローカル・業務ドメイン固有（マシン固有）
+
+@rules/local.md
