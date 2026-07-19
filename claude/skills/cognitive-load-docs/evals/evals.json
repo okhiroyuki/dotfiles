@@ -7,10 +7,9 @@
       "expected_output": "冒頭の概要をZFS内部実装等のExplanationから切り離した1〜2文に絞り、7個のサブコマンドをMiller's Lawに従って3〜4個以内のグループへ再分類し、「3回連続失敗で自動無効化」「pruneのデフォルト30日」といった仕様にWHY(理由)を添えて構成する",
       "files": [],
       "expectations": [
-        "冒頭の概要が「何か/何ができるか」の1〜2文に絞られており、ZFSのcopy-on-write・per-jobデータセット等の内部実装説明が独立したセクション(「しくみ」等)に分離・後置されている",
-        "7個のサブコマンド(init/watch/rollback/list/prune/diff/export)が単一の平坦な箇条書きではなく、3〜4個以内の意味的グループ(例: 監視系/復旧系/管理系)に再分類されている",
+        "冒頭の概要が「何か/何ができるか」の1〜2文に絞られており、ZFSのcopy-on-write・per-jobデータセット等の内部実装説明が独立したセクション(「しくみ」等)に分離・後置されている（Featuresや概要に内部実装の理由づけを重複して書かない）",
+        "7個のサブコマンド(init/watch/rollback/list/prune/diff/export)が単一の平坦な箇条書き・単一テーブルではなく、3〜4個以内の意味的グループ(例: 監視系/参照系/復旧系)に再分類されている",
         "「watch中のジョブが3回連続失敗すると自動的に無効化される」という挙動にWHY(理由)が明記されている",
-        "pruneのデフォルト30日ルールにWHY(理由)が明記されている",
         "設定ファイル(~/.snapcron/config.yaml)の説明がReferenceとして独立しており、インストール手順(Tutorial)の文中に混在していない"
       ]
     },
@@ -20,11 +19,11 @@
       "expected_output": "ドラフトに埋め込まれた構成上の欠陥(冒頭でのExplanationとTutorialの混在、地図なしでの理論への飛び込み、設定オプション8項目の未グルーピング、WHYのないルール列挙、ワーカー/エージェントの用語揺れ、内部実装説明の使い方説明への混入)を検出し、種別分離・地図設置・チャンク化・WHY付与・用語統一で再構成している",
       "files": [],
       "expectations": [
-        "冒頭の概要が1〜2文に絞られており、Actor Modelの歴史的背景(1973年、Carl Hewitt)などのExplanation内容が独立したセクション(「しくみ」等)に分離・後置されている",
+        "冒頭の概要が1〜2文に絞られており、Actor Modelの歴史的背景(1973年、Carl Hewitt)などのExplanation内容が独立したセクション(「しくみ」等)に分離・後置されている。Extraneousとして冒頭から追い出す際、情報そのものを削除・欠落させず、後置セクションへ必ず保存している",
         "インストール〜ジョブ投入までのTutorial的手順が、理論説明を挟まず連続して読める位置に配置されている",
-        "8個の設定オプション(max_retries/retry_backoff/timeout_ms/dead_letter_queue/priority_levels/persistence_backend/metrics_enabled/graceful_shutdown_timeout_ms)が3〜4個以内のグループに再分類されている",
-        "「冪等に実装」「ブロッキングI/O禁止」「パニックハンドラ禁止」の3ルールそれぞれにWHY(理由)が明記されている",
-        "「ワーカー」「エージェント」という同一概念への異なる呼び方が一方に統一され、両方が併存していない",
+        "8個の設定オプション(max_retries/retry_backoff/timeout_ms/dead_letter_queue/priority_levels/persistence_backend/metrics_enabled/graceful_shutdown_timeout_ms)が単一の平坦な箇条書き・単一テーブルではなく、3〜4個以内のグループに再分類されている",
+        "「冪等に実装」「ブロッキングI/O禁止」「パニックハンドラ禁止」の3ルール全てにWHY(理由)が明記されている（一部のルールだけでなく全てに付与されている）",
+        "「ワーカー」「エージェント」という同一概念への異なる呼び方について、単に一方を黙って削るのではなく、表記を統一する旨を明示した上で一方に統一している",
         "work-stealingスケジューラ等の内部実装の説明が、使い方の説明(Tutorial/Reference)から独立したセクションに分離されている"
       ]
     }
