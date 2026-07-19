@@ -126,6 +126,27 @@
     <Note ID="18" Position="600,300" Width="10.0" Height="10.0">
       <ImageData Type="jpg" Name="latte-art-example.jpg">/9k=</ImageData>
     </Note>
+    <Note ID="19" FontSize="12.0" Position="800,300" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>抽出量</String>
+      <ConnectedNoteIDs>20-21</ConnectedNoteIDs>
+    </Note>
+    <Note ID="20" FontSize="12.0" Position="900,340" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>濃度</String>
+      <ConnectedNoteIDs>19, 21</ConnectedNoteIDs>
+    </Note>
+    <Note ID="21" FontSize="12.0" Position="850,400" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>投入量</String>
+      <ConnectedNoteIDs>19-20</ConnectedNoteIDs>
+    </Note>
   </Notes>
   <Stacks>
     <Stack>0-2</Stack>
