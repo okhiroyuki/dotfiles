@@ -20,10 +20,18 @@ interface RawNote {
   String?: string | number;
   ConnectedNoteIDs?: string | number;
   PointsToNoteIDs?: string | number;
+  /** テキストの代わりに画像を貼り付けたノート。本文は持たず、ファイル名のみプレースホルダとして拾う。 */
+  ImageData?: { "@_Name"?: string };
 }
 
-export function parseScap(filepath: string): ScapDocument {
-  const xml = readFileSync(filepath, "utf-8");
+/** String要素を持たない画像ノートは、本体データ(base64)を捨ててファイル名だけをプレースホルダ化する。 */
+function extractText(note: RawNote): string {
+  if (note.String !== undefined) return String(note.String).trim();
+  if (note.ImageData?.["@_Name"]) return `[image: ${note.ImageData["@_Name"]}]`;
+  return "";
+}
+
+export function parseScapXml(xml: string): ScapDocument {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
@@ -35,11 +43,15 @@ export function parseScap(filepath: string): ScapDocument {
 
   const notes: ScapNote[] = rawNotes.map((note) => ({
     id: Number(note["@_ID"]),
-    text: String(note.String ?? "").trim(),
+    text: extractText(note),
     connectedTo: parseIdRange(note.ConnectedNoteIDs),
     pointsTo: parseIdRange(note.PointsToNoteIDs),
   }));
   const stacks: number[][] = rawStacks.map((s) => parseIdRange(s));
 
   return { notes, stacks };
+}
+
+export function parseScap(filepath: string): ScapDocument {
+  return parseScapXml(readFileSync(filepath, "utf-8"));
 }
