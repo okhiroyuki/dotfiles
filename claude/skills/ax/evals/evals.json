@@ -1,0 +1,25 @@
+{
+  "skill_name": "ax",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "https://docs.python.org/3/library/functions.html#zip を見て、zip関数の引数と返り値を要約して",
+      "expected_output": "ax CLIでページを取得・要約し、bare curlや正規表現によるHTMLパースを使わない",
+      "files": [],
+      "expectations": [
+        "シグネチャ・引数(*iterables, strict)・返り値(タプルのイテレータ)・デフォルト動作(最短で打ち切り)への言及がある",
+        "余計な再探索（アンカー指定の再試行等）を伴わず、少ない呼び出し回数で完了している"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "https://news.ycombinator.com/ のトップ5件の記事タイトルとポイント数を教えて",
+      "expected_output": "ax CLIの--outline/--row等で構造化抽出し、bare curlや正規表現によるHTMLパースを使わない",
+      "files": [],
+      "expectations": [
+        "5件のタイトルとポイント数を提示している",
+        "抽出結果が検証可能な形（stderrのN rows extracted等）で確認されている、または抽出根拠に言及がある"
+      ]
+    }
+  ]
+}
