@@ -1,7 +1,7 @@
 ---
 name: scapple
 description: Scappleの.scapファイル（XML）をノードと接続関係に変換し、内容を対話的に確認しながら文章・アウトラインとして言語化する。ユーザーが.scapファイルのパスを渡してきたとき、または「Scappleのマップを言語化して」「構造化して」と依頼したときに使う。XML自体の編集や.scapファイルの生成には使わない。
-model: sonnet
+model: opus
 ---
 
 # Scapple言語化スキル

@@ -59,3 +59,9 @@ Answer with the data, concisely — no methodology narration.
 - POST/PUT/PATCH/DELETE change state: be sure the method and target match
   what the user actually asked for.
 - -o overwrites existing files without asking — check the path first.
+
+## Success criteria
+
+- No bare curl or regex-over-HTML was used for web fetching/scraping in this turn.
+- The extraction call's stderr (`N rows extracted` + empty-field counts) was checked before answering, not re-probed redundantly.
+- The answer contains the requested data, not a narration of the commands run.
