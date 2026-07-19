@@ -46,8 +46,86 @@
       </Appearance>
       <String>コーヒーカップ</String>
     </Note>
+    <Note ID="7" FontSize="12.0" Position="0,150" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>豆の産地</String>
+      <ConnectedNoteIDs>8-12</ConnectedNoteIDs>
+    </Note>
+    <Note ID="8" FontSize="12.0" Position="-100,190" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>酸味</String>
+      <ConnectedNoteIDs>7</ConnectedNoteIDs>
+    </Note>
+    <Note ID="9" FontSize="12.0" Position="-50,220" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>香り</String>
+      <ConnectedNoteIDs>7</ConnectedNoteIDs>
+    </Note>
+    <Note ID="10" FontSize="12.0" Position="0,250" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>コク</String>
+      <ConnectedNoteIDs>7</ConnectedNoteIDs>
+    </Note>
+    <Note ID="11" FontSize="12.0" Position="50,220" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>価格</String>
+      <ConnectedNoteIDs>7</ConnectedNoteIDs>
+    </Note>
+    <Note ID="12" FontSize="12.0" Position="100,190" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>標高</String>
+      <ConnectedNoteIDs>7</ConnectedNoteIDs>
+    </Note>
+    <Note ID="13" FontSize="12.0" Position="400,150" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>ミルクを温める</String>
+      <ConnectedNoteIDs>16</ConnectedNoteIDs>
+    </Note>
+    <Note ID="14" FontSize="12.0" Position="400,190" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>泡立てる</String>
+      <ConnectedNoteIDs>16</ConnectedNoteIDs>
+    </Note>
+    <Note ID="15" FontSize="12.0" Position="400,230" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>注ぐ</String>
+      <ConnectedNoteIDs>16</ConnectedNoteIDs>
+    </Note>
+    <Note ID="16" FontSize="12.0" Position="600,190" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>ラテアート</String>
+      <ConnectedNoteIDs>13-15, 17</ConnectedNoteIDs>
+    </Note>
+    <Note ID="17" FontSize="12.0" Position="750,190" Width="80.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>満足感</String>
+      <ConnectedNoteIDs>16</ConnectedNoteIDs>
+    </Note>
   </Notes>
   <Stacks>
     <Stack>0-2</Stack>
+    <Stack>13-15</Stack>
   </Stacks>
 </ScappleDocument>
