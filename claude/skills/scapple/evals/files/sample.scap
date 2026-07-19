@@ -123,6 +123,9 @@
       <String>満足感</String>
       <ConnectedNoteIDs>16</ConnectedNoteIDs>
     </Note>
+    <Note ID="18" Position="600,300" Width="10.0" Height="10.0">
+      <ImageData Type="jpg" Name="latte-art-example.jpg">/9k=</ImageData>
+    </Note>
   </Notes>
   <Stacks>
     <Stack>0-2</Stack>
