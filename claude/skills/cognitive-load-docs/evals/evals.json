@@ -1,0 +1,32 @@
+{
+  "skill_name": "cognitive-load-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "以下の情報をもとに、新しいCLIツール `snapcron`(定期実行タスクのスナップショットを取ってロールバックできるツール)のREADME.mdを書いてください。情報の順序は気にしなくて良いので、読みやすい構成に整理してください。\n\n- snapcronはcronジョブの実行前後にファイルシステムのスナップショットを自動取得し、失敗時に自動ロールバックできるCLIツール\n- インストールは `brew install snapcron`\n- 設定ファイルは `~/.snapcron/config.yaml`\n- 主要なCLIサブコマンドは: `snapcron init`, `snapcron watch <job>`, `snapcron rollback <snapshot-id>`, `snapcron list`, `snapcron prune --older-than`, `snapcron diff <id1> <id2>`, `snapcron export <id>`\n- スナップショットはZFSのcopy-on-write機能を使っており、差分のみ保存するため容量効率が良い\n- watchモードで監視中のジョブが3回連続失敗すると自動的に無効化される仕様\n- exportで書き出したスナップショットはtarballになる\n- pruneはデフォルトで30日以上前のスナップショットを削除する\n- 内部ではジョブごとに独立したZFSデータセットを作成しており、これによりスナップショット取得がミリ秒オーダーで完了する\n- 設定ファイルには watch対象のジョブ一覧、スナップショット保持ポリシー、通知先(Slack webhook等)を書く\n- ライセンスはMIT\n- コントリビューションガイドはCONTRIBUTING.mdを参照\n\nこの情報を元に、読みやすいREADME.mdの本文を書いてください。",
+      "expected_output": "冒頭の概要をZFS内部実装等のExplanationから切り離した1〜2文に絞り、7個のサブコマンドをMiller's Lawに従って3〜4個以内のグループへ再分類し、「3回連続失敗で自動無効化」「pruneのデフォルト30日」といった仕様にWHY(理由)を添えて構成する",
+      "files": [],
+      "expectations": [
+        "冒頭の概要が「何か/何ができるか」の1〜2文に絞られており、ZFSのcopy-on-write・per-jobデータセット等の内部実装説明が独立したセクション(「しくみ」等)に分離・後置されている",
+        "7個のサブコマンド(init/watch/rollback/list/prune/diff/export)が単一の平坦な箇条書きではなく、3〜4個以内の意味的グループ(例: 監視系/復旧系/管理系)に再分類されている",
+        "「watch中のジョブが3回連続失敗すると自動的に無効化される」という挙動にWHY(理由)が明記されている",
+        "pruneのデフォルト30日ルールにWHY(理由)が明記されている",
+        "設定ファイル(~/.snapcron/config.yaml)の説明がReferenceとして独立しており、インストール手順(Tutorial)の文中に混在していない"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "次のflowqueue(Rust製の分散ジョブキュークレート)のREADME原稿を、読みやすい構成にレビュー・再構成してください。\n\nflowqueueは分散ジョブキューを実現するためのRustクレートです。内部的にはActor Modelを採用しており、各ワーカーはメールボックスを介してメッセージを受信します。Actor Modelは1973年にCarl Hewittらによって提案された並行計算モデルで、状態を持つ独立したアクター同士が非同期メッセージパッシングのみで協調する設計です。この設計によりロックフリーな並行処理が実現でき、CPUコア数に応じてワーカー(エージェントとも呼ぶ)を自動スケールできます。\n\nまず `cargo add flowqueue` を実行してインストールしてください。次に `Queue::new()` でキューを作成し、`queue.push(job)` でジョブを投入します。ジョブは `execute()` メソッドを実装した構造体です。エージェント(前述のワーカーのこと)の数はデフォルトでCPUコア数と同じですが、`Queue::with_workers(n)` で変更できます。\n\n設定オプションは以下の通りです。\n- max_retries: 失敗時の最大リトライ回数\n- retry_backoff: リトライ間隔の指数バックオフ係数\n- timeout_ms: ジョブのタイムアウト(ミリ秒)\n- dead_letter_queue: 失敗ジョブの退避先キュー名\n- priority_levels: 優先度レベル数\n- persistence_backend: 永続化バックエンド(sqlite/redis/memory)\n- metrics_enabled: メトリクス収集の有効化\n- graceful_shutdown_timeout_ms: シャットダウン時の猶予時間(ミリ秒)\n\nジョブは必ず冪等に実装してください。また execute() 内で長時間のブロッキングI/Oを行ってはいけません。パニックを起こすハンドラは登録しないでください。\n\n以下はメール送信ジョブの実装例です。\n\n```rust\nstruct EmailJob { to: String, body: String }\nimpl Job for EmailJob {\n    fn execute(&self) -> Result<()> {\n        smtp_client::send(&self.to, &self.body)\n    }\n}\n```\n\n内部実装では各ワーカーはtokioのタスクとしてspawnされ、work-stealingスケジューラによってタスクが再配分されます。これによりワーカー間の負荷が均される仕組みです。",
+      "expected_output": "ドラフトに埋め込まれた構成上の欠陥(冒頭でのExplanationとTutorialの混在、地図なしでの理論への飛び込み、設定オプション8項目の未グルーピング、WHYのないルール列挙、ワーカー/エージェントの用語揺れ、内部実装説明の使い方説明への混入)を検出し、種別分離・地図設置・チャンク化・WHY付与・用語統一で再構成している",
+      "files": [],
+      "expectations": [
+        "冒頭の概要が1〜2文に絞られており、Actor Modelの歴史的背景(1973年、Carl Hewitt)などのExplanation内容が独立したセクション(「しくみ」等)に分離・後置されている",
+        "インストール〜ジョブ投入までのTutorial的手順が、理論説明を挟まず連続して読める位置に配置されている",
+        "8個の設定オプション(max_retries/retry_backoff/timeout_ms/dead_letter_queue/priority_levels/persistence_backend/metrics_enabled/graceful_shutdown_timeout_ms)が3〜4個以内のグループに再分類されている",
+        "「冪等に実装」「ブロッキングI/O禁止」「パニックハンドラ禁止」の3ルールそれぞれにWHY(理由)が明記されている",
+        "「ワーカー」「エージェント」という同一概念への異なる呼び方が一方に統一され、両方が併存していない",
+        "work-stealingスケジューラ等の内部実装の説明が、使い方の説明(Tutorial/Reference)から独立したセクションに分離されている"
+      ]
+    }
+  ]
+}
