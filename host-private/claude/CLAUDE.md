@@ -24,4 +24,8 @@
 ## セキュリティ・権限
 
 @rules/security.md
-@rules/permission-allowlist.md
+@rules/permissions-management.md
+
+## Auto Memory運用
+
+@rules/auto-memory-promotion.md
