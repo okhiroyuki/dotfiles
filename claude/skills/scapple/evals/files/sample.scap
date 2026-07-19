@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScappleDocument Version="1.2" ID="00000000-0000-0000-0000-000000000000">
+  <Notes>
+    <Note ID="0" FontSize="12.0" Position="0,0" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>豆を挽く</String>
+    </Note>
+    <Note ID="1" FontSize="12.0" Position="0,40" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>お湯を注ぐ</String>
+    </Note>
+    <Note ID="2" FontSize="12.0" Position="0,80" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>3分待つ</String>
+    </Note>
+    <Note ID="3" FontSize="12.0" Position="200,0" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>焙煎度</String>
+      <ConnectedNoteIDs>4</ConnectedNoteIDs>
+    </Note>
+    <Note ID="4" FontSize="12.0" Position="200,40" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>味</String>
+      <ConnectedNoteIDs>3</ConnectedNoteIDs>
+    </Note>
+    <Note ID="5" FontSize="12.0" Position="200,80" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>抽出時間</String>
+      <PointsToNoteIDs>4</PointsToNoteIDs>
+    </Note>
+    <Note ID="6" FontSize="12.0" Position="400,0" Width="100.0">
+      <Appearance>
+        <Alignment>Left</Alignment>
+      </Appearance>
+      <String>コーヒーカップ</String>
+    </Note>
+  </Notes>
+  <Stacks>
+    <Stack>0-2</Stack>
+  </Stacks>
+</ScappleDocument>

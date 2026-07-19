@@ -1,0 +1,27 @@
+{
+  "skill_name": "scapple",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "evals/files/sample.scap を言語化して",
+      "expected_output": "scapple CLIで生JSONに変換した上で（生XMLを直接読まず）、スタック(0-2)を手順として、焙煎度⇄味の無向関係、抽出時間→味の有向（因果）関係を区別して文章化する。孤立ノード「コーヒーカップ」の扱いをユーザーに質問するか、明示的に扱いを述べる",
+      "files": ["evals/files/sample.scap"],
+      "expectations": [
+        "スタック(0-2)を手順として文章化している",
+        "焙煎度⇄味を無向（関連）、抽出時間→味を有向（因果）として明確に区別している",
+        "孤立ノード「コーヒーカップ」の扱いを、憶測で断定せずユーザーへの確認事項として明示している"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "evals/files/sample.scap をoutline形式で言語化して",
+      "expected_output": "outline形式で出力し、生JSONをそのまま見せない。有向・無向の区別を維持する",
+      "files": ["evals/files/sample.scap"],
+      "expectations": [
+        "outline形式（階層構造）で出力している",
+        "scapple CLIの生JSON出力をそのまま提示していない",
+        "有向・無向の区別がoutline中でも維持されている"
+      ]
+    }
+  ]
+}
