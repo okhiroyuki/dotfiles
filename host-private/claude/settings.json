@@ -54,7 +54,6 @@
       "Bash(git push *)",
       "Bash(pnpm test *)",
       "Bash(ax *)",
-      "Bash(crit *)",
       "Bash(scapple *)",
       "Bash(claude mcp list*)",
       "Bash(claude plugin list*)",
@@ -76,7 +75,6 @@
       "Bash(* --help*)",
       "Skill(update-config)",
       "Skill(update-config:*)",
-      "WebFetch(domain:crit.md)",
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:api.anthropic.com)",
       "WebFetch(domain:code.claude.com)",
@@ -114,17 +112,10 @@
     ]
   },
   "enabledPlugins": {
-    "crit@crit": true,
     "product-skills@claude-code-skills": true,
     "skill-scanner@skillplugs": true
   },
   "extraKnownMarketplaces": {
-    "crit": {
-      "source": {
-        "source": "github",
-        "repo": "tomasz-tomczyk/crit"
-      }
-    },
     "claude-code-skills": {
       "source": {
         "source": "github",
