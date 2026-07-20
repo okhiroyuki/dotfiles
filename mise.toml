@@ -9,7 +9,7 @@ dprint = "0.55"
 shellcheck = "0.11.0"
 actionlint = "1"
 yamllint = "1"
-lefthook = "1"
+lefthook = "2.1.10"
 # yamllintはpipxバックエンドでインストールされるが、システムにpipxが無い環境では
 # mise管理下のuv(uvx)がpipxの代替実行手段として使われるため、依存として明示する。
 uv = "0"
