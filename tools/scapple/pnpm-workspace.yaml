@@ -1,3 +1,6 @@
 ---
+# esbuild（tsx の依存）のビルドを許可する。pnpm 11 はビルドスクリプトを持つ依存を
+# 見つけると allowBuilds の雛形を書き出して承認を求め、未承認のままだと
+# ERR_PNPM_IGNORED_BUILDS でインストールに失敗する。true にして明示的に許可する。
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true

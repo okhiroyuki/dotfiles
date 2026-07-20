@@ -23,3 +23,17 @@ test("降順の範囲もパースする", () => {
 test("数値化できない断片は無視する", () => {
   assert.deepEqual(parseIdRange("1, x, 3"), [1, 3]);
 });
+
+test("片側が欠けた範囲は不正値として捨てる", () => {
+  assert.deepEqual(parseIdRange("5-"), []);
+  assert.deepEqual(parseIdRange("-3"), []);
+  assert.deepEqual(parseIdRange("2, 5-, 7"), [2, 7]);
+});
+
+test("ハイフンが2つ以上ある断片は捨てる", () => {
+  assert.deepEqual(parseIdRange("1-2-3"), []);
+});
+
+test("上限を超える巨大な範囲は展開しない", () => {
+  assert.deepEqual(parseIdRange("1-100000000"), []);
+});

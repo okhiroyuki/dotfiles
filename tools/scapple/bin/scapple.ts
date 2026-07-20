@@ -20,8 +20,19 @@ if (values.help || positionals.length === 0) {
   process.exit(0);
 }
 
+if (values.format !== "json" && values.format !== "text") {
+  console.error(`未知の形式: ${values.format}（json | text のいずれかを指定してください）`);
+  process.exit(1);
+}
+
 const filepath = positionals[0];
-const doc = parseScap(filepath);
+let doc;
+try {
+  doc = parseScap(filepath);
+} catch (e) {
+  console.error(`エラー: ${filepath} を解析できませんでした: ${(e as Error).message}`);
+  process.exit(1);
+}
 
 if (values.format === "text") {
   const byId = new Map(doc.notes.map((n) => [n.id, n.text]));
