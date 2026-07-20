@@ -1,18 +1,15 @@
-*.pyc
-*.sw[nop]
+# グローバル(~/.gitignore)は全リポジトリに効くため、OS・エディタのゴミと
+# 「どのリポジトリでも決して追跡しない」ものだけに限定する。
+# プロジェクト構造に依存する無視（log/ tmp/ node_modules/ vendor/ db/*.sqlite3 等）は
+# 各リポジトリの .gitignore に置く。ここに書くと、それらを追跡する別プロジェクトで
+# 意図せずファイルが隠れる事故につながる。
+
+# OS / エディタ
 .DS_Store
-.bundle
-.byebug_history
-.env
-.git/
-/bower_components/
-/log
-/node_modules/
-/tmp
-/vendor
-db/*.sqlite3
-log/*.log
-rerun.txt
-tmp/**/*
+*.sw[nop]
+*.pyc
 /tags
+
+# 機密（どのリポジトリでも誤コミットを防ぐ）
+.env
 .env.devcontainer
