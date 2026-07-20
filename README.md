@@ -54,6 +54,22 @@ rcup -B private   # or -B work
 Put personal or domain-specific settings you do not want committed under `local/` (see [local/README.md](local/README.md)).
 It is gitignored, but `rcup` reads it the same way as the rest of `~/dotfiles` and symlinks its files into your home directory.
 
+## Development
+
+Lint and test are defined as [mise](https://mise.jdx.dev/) tasks in `mise.toml`, so CI, your local shell, and the git hooks all run the exact same checks.
+
+```zsh
+mise install        # install the pinned tools (dprint, shellcheck, actionlint, yamllint, ...)
+lefthook install    # enable the git hooks (pre-commit: lint, pre-push: test)
+
+mise run check      # everything CI runs (lint + test)
+mise run lint       # dprint / yamllint / shellcheck / actionlint
+mise run fmt        # apply dprint formatting
+mise run test       # scapple: typecheck + tests
+```
+
+CI (`.github/workflows/check.yml`) simply runs `mise run check`.
+
 ## License
 
 See [LICENSE](LICENSE).

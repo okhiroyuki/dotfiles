@@ -1,5 +1,8 @@
 ---
 extends: default
+# 生成物はlint対象外（yamllint . でnode_modules等を拾わないように）
+ignore: |
+  **/node_modules/**
 rules:
     line-length:
         max: 140

@@ -4,12 +4,24 @@
     "allow": [
       "Read(~/dotfiles/**)",
       "Bash(lsrc *)",
-      "Bash(pre-commit run *)",
+      "Bash(mise run *)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "WebFetch(domain:starship.rs)",
       "WebFetch(domain:sheldon.cli.rs)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
     ]
   }
 }
