@@ -28,8 +28,8 @@ install_pytool() {
     python3 -m pip install --user --break-system-packages "$pkg"
   fi
 }
-install_pytool "yamllint==1.38.0" yamllint
-install_pytool "shellcheck-py==0.10.0.1" shellcheck
+install_pytool "yamllint" yamllint
+install_pytool "shellcheck-py" shellcheck
 
 # scapple の依存（npm レジストリ経由）
 if [ -d "$project_dir/tools/scapple" ]; then

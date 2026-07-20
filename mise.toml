@@ -1,14 +1,14 @@
 # メジャー固定にして、マシン・時期によるバージョンずれ（再現性の低下）を防ぐ。
 # メジャー内の最新パッチは取り込まれる。新しいメジャーへ上げたいときはここを更新する。
 [tools]
-node = "v22.23.1"
-pnpm = "11.15.1"
+node = "22"
+pnpm = "11"
 python = "3.14"
 # lint/フック系ツール。CI・ローカル・gitフックが同じバージョンを共有する。
 dprint = "0.55"
 shellcheck = "0.10"
-actionlint = "1.7"
-yamllint = "1.38"
+actionlint = "1"
+yamllint = "1"
 lefthook = "1"
 
 # チェックの定義はこの mise.toml が単一の真実の源。
