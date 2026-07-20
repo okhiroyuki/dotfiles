@@ -5,7 +5,7 @@
 [fetch]
   prune = true
 [core]
-  excludesfile = ~/.gitignore_global
+  excludesfile = ~/.gitignore
 [ghq]
   root = ~/Documents/src
 [include]

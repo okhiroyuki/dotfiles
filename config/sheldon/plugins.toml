@@ -30,14 +30,17 @@ rev = "53a26e287fbbe2dcebb3aa1801546c6de32416fa"
 github = "ryutok/rust-zsh-completions"
 tag = "1.16.0"
 
+# zsh-autosuggestions は zsh-syntax-highlighting より前に読み込む（公式推奨）。
+# どちらも defer で遅延ロードし、シェル起動を速くする。
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+tag = "v0.7.0"
+apply = ["defer"]
+
 [plugins.zsh-syntax-highlighting]
 github = "zsh-users/zsh-syntax-highlighting"
 tag = "0.8.0"
 apply = ["defer"]
-
-[plugins.zsh-autosuggestions]
-github = "zsh-users/zsh-autosuggestions"
-tag = "v0.7.0"
 
 [plugins.compinit]
 inline = "autoload -Uz compinit && zsh-defer compinit"
