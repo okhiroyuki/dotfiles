@@ -10,6 +10,9 @@ shellcheck = "0.10"
 actionlint = "1"
 yamllint = "1"
 lefthook = "1"
+# yamllintはpipxバックエンドでインストールされるが、システムにpipxが無い環境では
+# mise管理下のuv(uvx)がpipxの代替実行手段として使われるため、依存として明示する。
+uv = "0"
 
 # チェックの定義はこの mise.toml が単一の真実の源。
 # CI（.github/workflows/check.yml）も lefthook も同じ `mise run` を呼ぶ。
