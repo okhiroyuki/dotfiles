@@ -60,7 +60,7 @@ Lint and test are defined as [mise](https://mise.jdx.dev/) tasks in `mise.toml`,
 
 ```zsh
 mise install        # install the pinned tools (dprint, shellcheck, actionlint, yamllint, ...)
-lefthook install    # enable the git hooks (pre-commit: lint, pre-push: test)
+mise run setup      # enable the git hooks (pre-commit: lint, pre-push: test)
 
 mise run check      # everything CI runs (lint + test)
 mise run lint       # dprint / yamllint / shellcheck / actionlint

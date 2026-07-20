@@ -14,6 +14,10 @@ lefthook = "1"
 # チェックの定義はこの mise.toml が単一の真実の源。
 # CI（.github/workflows/check.yml）も lefthook も同じ `mise run` を呼ぶ。
 
+[tasks.setup]
+description = "gitフックを有効化する（初回のみ）"
+run = "lefthook install"
+
 [tasks.fmt]
 description = "dprintでフォーマットを適用する"
 run = "dprint fmt"

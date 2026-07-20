@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+# 同一ブランチで新しい実行が始まったら、進行中の古い実行を打ち切る。
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
