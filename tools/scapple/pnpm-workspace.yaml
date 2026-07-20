@@ -1,3 +1,5 @@
 ---
-allowBuilds:
-  esbuild: set this to true or false
+# esbuild（tsx の依存）のビルドスクリプトは実行しなくてもtsx/テストが動くため、
+# 明示的に無視する。未宣言だと pnpm 11 の CI インストールが ERR_PNPM_IGNORED_BUILDS で失敗する。
+ignoredBuiltDependencies:
+  - esbuild
