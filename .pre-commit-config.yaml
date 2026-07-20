@@ -12,6 +12,19 @@ repos:
       - id: check-json
         exclude: -lock\.json$
 
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        # shellcheckはzshを未サポート。pre-commitは.zshもshellと識別するため、
+        # 対象を実際のbashスクリプトに限定して誤検出を避ける。
+        files: ^scripts/.*\.sh$
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+
   - repo: local
     hooks:
       - id: dprint
