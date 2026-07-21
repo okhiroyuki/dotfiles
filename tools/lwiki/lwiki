@@ -1,0 +1,329 @@
+#!/usr/bin/env python3
+"""lwiki — LLM-wiki の配管CLI。
+
+保存先(root)をXDG設定に一度決めておけば、任意のcwdから記憶の蓄積(add/log)・
+読み込み(search/read)・再インデックス(reindex)ができる。
+
+中身の執筆・分類・相互リンクの判断は行わない（それはllm-wikiスキル=LLMの担当）。
+このCLIは「ファイル配置・_index.md/_log.md更新・qmd再インデックス・検索呼び出し」
+という機械的な配管だけを担う。
+
+依存はPython標準ライブラリのみ（3.8+）。qmd検索はサブプロセスに委譲する。
+"""
+
+import argparse
+import datetime
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+# ---- カテゴリ定義 ------------------------------------------------------------
+# category(CLI引数) -> (実ディレクトリ名, _index.md のセクション見出し)
+CATEGORIES = {
+    "decision": ("Decisions", "Decisions"),
+    "prd": ("PRDs", "PRDs"),
+    "concept": ("Concepts", "Concepts"),
+    "research": ("research", "Research"),
+    "session": ("sessions", "Sessions"),
+}
+DATED = {"session"}  # ファイル名を YYYY-MM-DD-<slug>.md にするカテゴリ
+
+
+def today() -> str:
+    return datetime.date.today().isoformat()
+
+
+def eprint(*args) -> None:
+    print(*args, file=sys.stderr)
+
+
+# ---- 設定(XDG) --------------------------------------------------------------
+def config_path() -> Path:
+    base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    return Path(base) / "llm-wiki" / "config.toml"
+
+
+def load_config() -> dict:
+    """最小TOML(flatな key = "value")を手でパースする。tomllib非依存で3.8+動作。"""
+    p = config_path()
+    if not p.exists():
+        return {}
+    cfg = {}
+    for line in p.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        cfg[key.strip()] = val.strip().strip('"').strip("'")
+    return cfg
+
+
+def save_root(path: str) -> Path:
+    p = config_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text('root = "%s"\n' % path, encoding="utf-8")
+    return p
+
+
+def get_root(required: bool = True) -> Path:
+    root = load_config().get("root")
+    if not root:
+        if required:
+            eprint("エラー: 保存先(root)が未設定です。`lwiki config set-root <path>` で設定してください。")
+            sys.exit(2)
+        return None
+    return Path(os.path.expanduser(root))
+
+
+def get_wiki_root() -> Path:
+    """wiki/ ディレクトリ(=_index.md/_log.md の場所)を返す。"""
+    root = get_root()
+    wiki = root / "wiki"
+    if not wiki.is_dir():
+        eprint("エラー: %s が見つかりません。rootが正しいか確認してください。" % wiki)
+        sys.exit(2)
+    return wiki
+
+
+# ---- qmd 呼び出し -----------------------------------------------------------
+def run_qmd(args, root: Path) -> int:
+    if shutil.which("qmd") is None:
+        eprint("警告: qmd が見つかりません。検索/再インデックスをスキップしました。")
+        return 127
+    try:
+        return subprocess.run(["qmd", *args], cwd=str(root)).returncode
+    except OSError as e:
+        eprint("警告: qmd の実行に失敗しました: %s" % e)
+        return 1
+
+
+def slugify(text: str) -> str:
+    s = text.strip().lower()
+    s = re.sub(r"[\s_]+", "-", s)
+    s = re.sub(r"[^a-z0-9-]", "", s)
+    s = re.sub(r"-+", "-", s).strip("-")
+    return s
+
+
+# ---- _index.md / _log.md 操作 ----------------------------------------------
+def next_adr_number(decisions_dir: Path) -> int:
+    mx = 0
+    if decisions_dir.is_dir():
+        for f in decisions_dir.iterdir():
+            m = re.match(r"ADR-(\d+)", f.name)
+            if m:
+                mx = max(mx, int(m.group(1)))
+    return mx + 1
+
+
+def insert_index_entry(index_file: Path, section: str, link_path: str, title: str, summary: str) -> None:
+    lines = index_file.read_text(encoding="utf-8").splitlines()
+    # セクション見出しを探す
+    sec_idx = None
+    for i, ln in enumerate(lines):
+        if ln.strip() == "## " + section:
+            sec_idx = i
+            break
+    if sec_idx is None:
+        eprint("エラー: _index.md にセクション '## %s' が見つかりません。" % section)
+        sys.exit(2)
+    # 次の '## ' 見出し(=セクション終端)を探す
+    end = len(lines)
+    for i in range(sec_idx + 1, len(lines)):
+        if lines[i].startswith("## "):
+            end = i
+            break
+    # セクション末尾の空行を除いた挿入位置を求める
+    insert_at = end
+    while insert_at - 1 > sec_idx and lines[insert_at - 1].strip() == "":
+        insert_at -= 1
+    entry = "- [%s](%s) — %s" % (title, link_path, summary) if summary else "- [%s](%s)" % (title, link_path)
+    # 直前が説明行(空行でもリスト項目でもない)なら、説明行とリストの間に空行を挟む
+    prev = lines[insert_at - 1] if insert_at - 1 > sec_idx else ""
+    if prev.strip() and not prev.lstrip().startswith("- "):
+        lines.insert(insert_at, "")
+        insert_at += 1
+    lines.insert(insert_at, entry)
+    # "Last updated:" を更新
+    for i, ln in enumerate(lines):
+        if "Last updated:" in ln:
+            lines[i] = re.sub(r"Last updated:\s*\d{4}-\d{2}-\d{2}", "Last updated: " + today(), ln)
+            break
+    index_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def append_log(log_file: Path, block: str) -> None:
+    existing = log_file.read_text(encoding="utf-8") if log_file.exists() else ""
+    if existing and not existing.endswith("\n"):
+        existing += "\n"
+    log_file.write_text(existing + "\n" + block.rstrip("\n") + "\n", encoding="utf-8")
+
+
+# ---- サブコマンド -----------------------------------------------------------
+def cmd_config(args) -> int:
+    if args.action == "set-root":
+        path = os.path.abspath(os.path.expanduser(args.path))
+        if not (Path(path) / "wiki").is_dir():
+            eprint("警告: %s/wiki が存在しません。保存先として設定しますが構造を確認してください。" % path)
+        p = save_root(path)
+        print("root を設定しました: %s" % path)
+        print("設定ファイル: %s" % p)
+    elif args.action == "get":
+        root = get_root(required=False)
+        print(root if root else "(未設定)")
+    elif args.action == "path":
+        print(config_path())
+    return 0
+
+
+def cmd_search(args) -> int:
+    root = get_root()
+    return run_qmd(["query", args.query, *args.qmd_args], root)
+
+
+def cmd_read(args) -> int:
+    root = get_root()
+    target = (root / args.relpath)
+    if not target.exists():
+        # wiki/ 起点でも解決を試みる
+        alt = root / "wiki" / args.relpath
+        if alt.exists():
+            target = alt
+        else:
+            eprint("エラー: ファイルが見つかりません: %s" % args.relpath)
+            return 2
+    sys.stdout.write(target.read_text(encoding="utf-8"))
+    return 0
+
+
+def read_body(args) -> str:
+    if args.body_file:
+        return Path(os.path.expanduser(args.body_file)).read_text(encoding="utf-8").rstrip("\n")
+    if args.stdin:
+        return sys.stdin.read().rstrip("\n")
+    return ""
+
+
+def cmd_add(args) -> int:
+    wiki = get_wiki_root()
+    dir_name, section = CATEGORIES[args.category]
+    target_dir = wiki / dir_name
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    slug = args.slug or slugify(args.title)
+    if not slug:
+        eprint("エラー: slug を自動生成できませんでした（タイトルが非ASCIIの可能性）。--slug を指定してください。")
+        return 2
+
+    # ファイル名の決定
+    if args.category == "decision":
+        num = next_adr_number(target_dir)
+        filename = "ADR-%03d-%s.md" % (num, slug)
+    elif args.category in DATED:
+        filename = "%s-%s.md" % (today(), slug)
+    else:
+        filename = "%s.md" % slug
+
+    target = target_dir / filename
+    if target.exists():
+        eprint("エラー: 既に存在します: %s（上書きしません）" % target)
+        return 2
+
+    body = read_body(args)
+
+    # frontmatter は Decisions のみ（SKILL.md仕様）
+    if args.category == "decision":
+        fm = "---\ndate: %s\nstatus: draft\ntags: []\nmodels_considered: []\n---\n\n" % today()
+        content = fm + "# %s\n\n%s\n" % (args.title, body)
+    else:
+        content = "# %s\n\n%s\n" % (args.title, body)
+    target.write_text(content, encoding="utf-8")
+
+    link_path = "%s/%s" % (dir_name, filename)
+    index_file = wiki / "_index.md"
+    insert_index_entry(index_file, section, link_path, args.title, args.summary or "")
+
+    log_file = wiki / "_log.md"
+    log_block = "## [%s] add | %s\n- wiki/%s を新規作成\n- _index.md の %s セクションにエントリを追加、Last updated を %s に更新" % (
+        today(), args.title, link_path, section, today(),
+    )
+    append_log(log_file, log_block)
+
+    print("作成しました: wiki/%s" % link_path)
+    print("_index.md / _log.md を更新しました。")
+
+    if not args.no_reindex:
+        rc = run_qmd(["update"], get_root())
+        if rc == 0:
+            run_qmd(["embed"], get_root())
+    return 0
+
+
+def cmd_log(args) -> int:
+    wiki = get_wiki_root()
+    log_file = wiki / "_log.md"
+    block = "## [%s] %s" % (today(), args.message)
+    append_log(log_file, block)
+    print("_log.md に追記しました。")
+    return 0
+
+
+def cmd_reindex(args) -> int:
+    root = get_root()
+    rc = run_qmd(["update"], root)
+    if rc == 0:
+        rc = run_qmd(["embed"], root)
+    if rc == 0:
+        print("再インデックスが完了しました。")
+    return rc
+
+
+# ---- パーサ -----------------------------------------------------------------
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="lwiki", description="LLM-wiki の配管CLI（保存先設定・蓄積・読み込み・再インデックス）")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    pc = sub.add_parser("config", help="保存先(root)の設定・確認")
+    pc.add_argument("action", choices=["set-root", "get", "path"])
+    pc.add_argument("path", nargs="?", help="set-root のときの保存先パス")
+    pc.set_defaults(func=cmd_config)
+
+    ps = sub.add_parser("search", help="qmd で意味検索する（root配下・任意のcwdから）")
+    ps.add_argument("query")
+    ps.add_argument("qmd_args", nargs=argparse.REMAINDER, help="qmd query に渡す追加引数")
+    ps.set_defaults(func=cmd_search)
+
+    pr = sub.add_parser("read", help="root配下のページを表示する")
+    pr.add_argument("relpath")
+    pr.set_defaults(func=cmd_read)
+
+    pa = sub.add_parser("add", help="ページを新規作成し index/log 更新・再インデックスまで行う")
+    pa.add_argument("--category", required=True, choices=list(CATEGORIES.keys()))
+    pa.add_argument("--title", required=True)
+    pa.add_argument("--summary", default="", help="_index.md の1行要約")
+    pa.add_argument("--slug", help="ファイル名のslug（省略時はtitleから自動生成、非ASCIIなら必須）")
+    pa.add_argument("--body-file", help="本文を読み込むファイル")
+    pa.add_argument("--stdin", action="store_true", help="本文を標準入力から読む")
+    pa.add_argument("--no-reindex", action="store_true", help="qmd 再インデックスをスキップ")
+    pa.set_defaults(func=cmd_add)
+
+    pl = sub.add_parser("log", help="_log.md に1行追記する")
+    pl.add_argument("message", help='例: "add | ○○を記録"')
+    pl.set_defaults(func=cmd_log)
+
+    pi = sub.add_parser("reindex", help="qmd update && qmd embed を実行する")
+    pi.set_defaults(func=cmd_reindex)
+
+    return p
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
