@@ -13,5 +13,14 @@ if [ -d /opt/homebrew/bin ]; then
   esac
 fi
 
+# ~/dotfiles/tools/lwiki の lwiki CLI をどのディレクトリからでも使えるようにする。
+# tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。
+if [ -d "$HOME/dotfiles/tools/lwiki" ]; then
+  case ":$PATH:" in
+    *":$HOME/dotfiles/tools/lwiki:"*) ;;
+    *) export PATH="$HOME/dotfiles/tools/lwiki:$PATH" ;;
+  esac
+fi
+
 [[ -f ~/.zsh/configs/mise-shims.zsh ]] && source ~/.zsh/configs/mise-shims.zsh
 [[ -f ~/.zsh/configs/pnpm.zsh ]] && source ~/.zsh/configs/pnpm.zsh

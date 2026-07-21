@@ -151,3 +151,10 @@ dist
 ## machine-local / domain-specific dotfiles (see local/README.md)
 local/*
 !local/README.md
+
+## Python (tools/lwiki 等)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
