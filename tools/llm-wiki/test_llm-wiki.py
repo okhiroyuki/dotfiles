@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""lwiki のブラックボックステスト（標準ライブラリのみ）。
+"""llm-wiki のブラックボックステスト（標準ライブラリのみ）。
 
 CLI を一時 root に対して実行し、ファイル配置・_index.md/_log.md 更新・
 命名規則・エラー処理を検証する。qmd には依存しない（--no-reindex を使う）。
 
-実行: python3 tools/lwiki/test_lwiki.py
+実行: python3 tools/llm-wiki/test_llm-wiki.py
 """
 
 import os
@@ -14,7 +14,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent / "lwiki"
+SCRIPT = Path(__file__).resolve().parent / "llm-wiki"
 
 INDEX_TEMPLATE = """# Wiki Index
 

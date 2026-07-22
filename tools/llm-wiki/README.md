@@ -1,4 +1,4 @@
-# lwiki
+# llm-wiki
 
 LLM-wiki の**配管 CLI**。保存先(root)を一度設定しておけば、任意のディレクトリから
 記憶の蓄積・読み込み・再インデックスができる。
@@ -14,43 +14,43 @@ LLM-wiki の**配管 CLI**。保存先(root)を一度設定しておけば、任
 
 ## セットアップ
 
-`~/dotfiles/tools/lwiki` は `zshenv` で PATH に追加済みなので、シェルを開き直せば
-`lwiki` コマンドがどこからでも使える。初回に保存先を設定する。
+`~/dotfiles/tools/llm-wiki` は `zshenv` で PATH に追加済みなので、シェルを開き直せば
+`llm-wiki` コマンドがどこからでも使える。初回に保存先を設定する。
 
 ```sh
-lwiki config set-root ~/Documents/llm-wiki
+llm-wiki config set-root ~/Documents/llm-wiki
 ```
 
 設定は `~/.config/llm-wiki/config.toml`（XDG）に保存され、リポジトリにはコミットされない。
 
 ## コマンド
 
-| コマンド                              | 役割                                                                   |
-| ------------------------------------- | ---------------------------------------------------------------------- |
-| `lwiki config set-root <path>`        | 保存先(root)を設定する                                                 |
-| `lwiki config get`                    | 現在の root を表示する                                                 |
-| `lwiki config path`                   | 設定ファイルのパスを表示する                                           |
-| `lwiki search <query> [-- <qmd引数>]` | `qmd query` で意味検索する（root 配下・任意の cwd から）               |
-| `lwiki read <relpath>`                | root（または root/wiki）配下のページを表示する                         |
-| `lwiki list [--category <cat>]`       | カテゴリ別にページ（パスとタイトル）を一覧する                         |
-| `lwiki add ...`                       | ページを新規作成し、`_index.md`/`_log.md` 更新・再インデックスまで行う |
-| `lwiki log "<msg>"`                   | `_log.md` に1行追記する                                                |
-| `lwiki reindex`                       | `qmd update && qmd embed` を実行する                                   |
+| コマンド                                 | 役割                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| `llm-wiki config set-root <path>`        | 保存先(root)を設定する                                                 |
+| `llm-wiki config get`                    | 現在の root を表示する                                                 |
+| `llm-wiki config path`                   | 設定ファイルのパスを表示する                                           |
+| `llm-wiki search <query> [-- <qmd引数>]` | `qmd query` で意味検索する（root 配下・任意の cwd から）               |
+| `llm-wiki read <relpath>`                | root（または root/wiki）配下のページを表示する                         |
+| `llm-wiki list [--category <cat>]`       | カテゴリ別にページ（パスとタイトル）を一覧する                         |
+| `llm-wiki add ...`                       | ページを新規作成し、`_index.md`/`_log.md` 更新・再インデックスまで行う |
+| `llm-wiki log "<msg>"`                   | `_log.md` に1行追記する                                                |
+| `llm-wiki reindex`                       | `qmd update && qmd embed` を実行する                                   |
 
-### `lwiki add`
+### `llm-wiki add`
 
 ```sh
 # 意思決定(ADR)。ADR番号は Decisions/ を走査して自動採番する
-echo "本文…" | lwiki add --category decision \
+echo "本文…" | llm-wiki add --category decision \
   --title "Claude vs GPT でClaudeを採用" --slug claude-vs-gpt \
   --summary "コスト・日本語性能で採用" --stdin
 
 # 概念ページ。本文はファイルから
-lwiki add --category concept --title "HPKI" --slug hpki \
+llm-wiki add --category concept --title "HPKI" --slug hpki \
   --summary "医療従事者の電子署名基盤" --body-file /tmp/hpki.md
 
 # セッション。ファイル名は YYYY-MM-DD-<slug>.md になる
-lwiki add --category session --title "○○薬局 訪問レポート" --slug foo-visit \
+llm-wiki add --category session --title "○○薬局 訪問レポート" --slug foo-visit \
   --summary "要望ヒアリング" --stdin < notes.md
 ```
 
