@@ -10,7 +10,7 @@ LLM-wiki の**配管 CLI**。保存先(root)を一度設定しておけば、任
 ## 前提
 
 - Python 3.8+（標準ライブラリのみ。サードパーティ依存なし）
-- 検索・再インデックスに [`qmd`](https://github.com/) を使う（`qmd` が PATH に無い場合、`search`/`reindex` は警告を出してスキップする）
+- 検索・再インデックスに [`qmd`](https://github.com/tobi/qmd) を使う（`qmd` が PATH に無い場合、`search`/`reindex` は警告を出してスキップする）
 
 ## セットアップ
 
@@ -60,8 +60,10 @@ lwiki add --category session --title "○○薬局 訪問レポート" --slug fo
 | `--title`                 | ページタイトル（`# 見出し` と `_index.md` のリンク文言になる）          |
 | `--summary`               | `_index.md` の1行要約                                                   |
 | `--slug`                  | ファイル名の slug。省略時は title から自動生成。title が非ASCIIなら必須 |
-| `--body-file` / `--stdin` | 本文の入力元。省略時は見出しだけのスタブ                                |
+| `--status`                | `decision` の frontmatter `status`（既定: `draft`。例: `accepted`）     |
+| `--body-file` / `--stdin` | 本文の入力元（排他）。省略時は見出しだけのスタブ                        |
 | `--no-reindex`            | `qmd` 再インデックスをスキップ                                          |
+| `--dry-run`               | 書き込まず、作成予定のファイル・index/log 更新内容だけ表示する          |
 
 カテゴリと配置・ファイル名・frontmatter の対応:
 

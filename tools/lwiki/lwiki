@@ -46,6 +46,29 @@ def config_path() -> Path:
     return Path(base) / "llm-wiki" / "config.toml"
 
 
+def _toml_escape(s: str) -> str:
+    """TOML basic string 用に \\ と " をエスケープする。"""
+    return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _toml_unescape(s: str) -> str:
+    """basic string 内の \\ / \" / \\n / \\t を復元する。"""
+    out = []
+    i = 0
+    while i < len(s):
+        c = s[i]
+        if c == "\\" and i + 1 < len(s):
+            nxt = s[i + 1]
+            repl = {"\\": "\\", '"': '"', "n": "\n", "t": "\t"}.get(nxt)
+            if repl is not None:
+                out.append(repl)
+                i += 2
+                continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
 def load_config() -> dict:
     """最小TOML(flatな key = "value")を手でパースする。tomllib非依存で3.8+動作。"""
     p = config_path()
@@ -57,14 +80,20 @@ def load_config() -> dict:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, val = line.partition("=")
-        cfg[key.strip()] = val.strip().strip('"').strip("'")
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
+            quote, inner = val[0], val[1:-1]
+            # basic string(")のみエスケープを解釈。literal string(')は素通し
+            cfg[key.strip()] = _toml_unescape(inner) if quote == '"' else inner
+        else:
+            cfg[key.strip()] = val
     return cfg
 
 
 def save_root(path: str) -> Path:
     p = config_path()
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text('root = "%s"\n' % path, encoding="utf-8")
+    p.write_text('root = "%s"\n' % _toml_escape(path), encoding="utf-8")
     return p
 
 
@@ -251,16 +280,29 @@ def cmd_add(args) -> int:
         return 2
 
     body = read_body(args)
+    link_path = "%s/%s" % (dir_name, filename)
+
+    # --status は decision の frontmatter 用。他カテゴリでは無視する旨を伝える
+    if args.status is not None and args.category != "decision":
+        eprint("警告: --status は decision 以外では無視されます。")
+    status = args.status or "draft"
 
     # frontmatter は Decisions のみ（SKILL.md仕様）
     if args.category == "decision":
-        fm = "---\ndate: %s\nstatus: draft\ntags: []\nmodels_considered: []\n---\n\n" % today()
+        fm = "---\ndate: %s\nstatus: %s\ntags: []\nmodels_considered: []\n---\n\n" % (today(), status)
         content = fm + "# %s\n\n%s\n" % (args.title, body)
     else:
         content = "# %s\n\n%s\n" % (args.title, body)
-    target.write_text(content, encoding="utf-8")
 
-    link_path = "%s/%s" % (dir_name, filename)
+    if args.dry_run:
+        print("[dry-run] 実際には書き込みません。次を行う予定です:")
+        print("  作成: wiki/%s" % link_path)
+        print("  _index.md: '## %s' セクションにエントリを追加、Last updated を更新" % section)
+        print("  _log.md: add ログを追記")
+        print("  再インデックス: %s" % ("スキップ(--no-reindex)" if args.no_reindex else "qmd update && embed を実行"))
+        return 0
+
+    target.write_text(content, encoding="utf-8")
     insert_index_entry(index_file, section, link_path, args.title, args.summary or "")
 
     log_file = wiki / "_log.md"
@@ -273,9 +315,12 @@ def cmd_add(args) -> int:
     print("_index.md / _log.md を更新しました。")
 
     if not args.no_reindex:
-        rc = run_qmd(["update"], get_root())
+        root = get_root()
+        rc = run_qmd(["update"], root)
         if rc == 0:
-            run_qmd(["embed"], get_root())
+            rc = run_qmd(["embed"], root)
+        if rc != 0:
+            print("注意: 検索インデックスは未更新です。qmd が使えるようになったら `lwiki reindex` を実行してください。")
     return 0
 
 
@@ -363,10 +408,12 @@ def build_parser() -> argparse.ArgumentParser:
     pa.add_argument("--title", required=True)
     pa.add_argument("--summary", default="", help="_index.md の1行要約")
     pa.add_argument("--slug", help="ファイル名のslug（省略時はtitleから自動生成、非ASCIIなら必須）")
+    pa.add_argument("--status", help="decision の frontmatter status（既定: draft。例: accepted）")
     body_src = pa.add_mutually_exclusive_group()
     body_src.add_argument("--body-file", help="本文を読み込むファイル")
     body_src.add_argument("--stdin", action="store_true", help="本文を標準入力から読む")
     pa.add_argument("--no-reindex", action="store_true", help="qmd 再インデックスをスキップ")
+    pa.add_argument("--dry-run", action="store_true", help="書き込まず、実行内容だけ表示する")
     pa.set_defaults(func=cmd_add)
 
     pl = sub.add_parser("log", help="_log.md に1行追記する")

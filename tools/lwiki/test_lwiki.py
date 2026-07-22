@@ -112,6 +112,62 @@ class LwikiTest(unittest.TestCase):
         # Last updated が更新される
         self.assertNotIn("Last updated: 2020-01-01", self.index_text())
 
+    # ---- config: 特殊文字を含む root がラウンドトリップする ----
+    def test_config_roundtrip_special_chars(self):
+        weird = self.base / 'a"b\\c dir'  # 引用符・バックスラッシュ・空白を含む
+        weird.mkdir()
+        r = self.run_cli("config", "set-root", str(weird))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        got = self.run_cli("config", "get")
+        self.assertEqual(got.stdout.strip(), str(weird))
+
+    # ---- add: --status で decision の frontmatter status を指定できる ----
+    def test_add_decision_status_option(self):
+        r = self.run_cli(
+            "add", "--category", "decision", "--title", "Accepted One",
+            "--slug", "acc", "--status", "accepted", "--no-reindex",
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        adr = self.root / "wiki" / "Decisions" / "ADR-004-acc.md"
+        self.assertIn("status: accepted", adr.read_text(encoding="utf-8"))
+
+    # ---- add: --status は decision 以外では無視され警告される ----
+    def test_add_status_ignored_for_non_decision(self):
+        r = self.run_cli(
+            "add", "--category", "concept", "--title", "C", "--slug", "c",
+            "--status", "accepted", "--no-reindex",
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("無視", r.stderr)
+        self.assertNotIn("status:", (self.root / "wiki" / "Concepts" / "c.md").read_text(encoding="utf-8"))
+
+    # ---- add: --dry-run は何も書き込まない ----
+    def test_add_dry_run_writes_nothing(self):
+        before_index, before_log = self.index_text(), self.log_text()
+        r = self.run_cli(
+            "add", "--category", "concept", "--title", "Preview", "--slug", "preview",
+            "--summary", "s", "--no-reindex", "--dry-run",
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("[dry-run]", r.stdout)
+        self.assertFalse((self.root / "wiki" / "Concepts" / "preview.md").exists())
+        self.assertEqual(self.index_text(), before_index)
+        self.assertEqual(self.log_text(), before_log)
+
+    # ---- add: qmd 不在時は作成後に再インデックス案内を出す ----
+    def test_add_reindex_hint_when_qmd_missing(self):
+        env = dict(os.environ, XDG_CONFIG_HOME=str(self.xdg), PATH="/nonexistent-xyz")
+        r = subprocess.run(
+            [sys.executable, str(SCRIPT), "add", "--category", "concept",
+             "--title", "NoQmd", "--slug", "noqmd", "--summary", "s"],
+            capture_output=True, text=True, env=env,
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        # ページは作成される
+        self.assertTrue((self.root / "wiki" / "Concepts" / "noqmd.md").exists())
+        # 未インデックスの案内が出る
+        self.assertIn("検索インデックスは未更新", r.stdout)
+
     # ---- add: concept (空セクションへの初挿入で空行が入る) ----
     def test_add_concept_blank_line_after_description(self):
         r = self.run_cli(
