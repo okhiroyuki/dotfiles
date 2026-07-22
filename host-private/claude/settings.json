@@ -72,6 +72,7 @@
       "Bash(which *)",
       "Bash(readlink *)",
       "Bash(cd *)",
+      "Bash(lwiki *)",
       "Bash(* --version*)",
       "Bash(* --help*)",
       "Skill(update-config)",
