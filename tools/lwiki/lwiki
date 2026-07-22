@@ -119,14 +119,17 @@ def next_adr_number(decisions_dir: Path) -> int:
     return mx + 1
 
 
-def insert_index_entry(index_file: Path, section: str, link_path: str, title: str, summary: str) -> None:
-    lines = index_file.read_text(encoding="utf-8").splitlines()
-    # セクション見出しを探す
-    sec_idx = None
+def find_section_index(lines: list, section: str):
+    """'## <section>' 見出しの行番号を返す。無ければ None。"""
     for i, ln in enumerate(lines):
         if ln.strip() == "## " + section:
-            sec_idx = i
-            break
+            return i
+    return None
+
+
+def insert_index_entry(index_file: Path, section: str, link_path: str, title: str, summary: str) -> None:
+    lines = index_file.read_text(encoding="utf-8").splitlines()
+    sec_idx = find_section_index(lines, section)
     if sec_idx is None:
         eprint("エラー: _index.md にセクション '## %s' が見つかりません。" % section)
         sys.exit(2)
@@ -165,6 +168,9 @@ def append_log(log_file: Path, block: str) -> None:
 # ---- サブコマンド -----------------------------------------------------------
 def cmd_config(args) -> int:
     if args.action == "set-root":
+        if not args.path:
+            eprint("エラー: set-root には保存先パスを指定してください。例: lwiki config set-root ~/Documents/llm-wiki")
+            return 2
         path = os.path.abspath(os.path.expanduser(args.path))
         if not (Path(path) / "wiki").is_dir():
             eprint("警告: %s/wiki が存在しません。保存先として設定しますが構造を確認してください。" % path)
@@ -201,7 +207,11 @@ def cmd_read(args) -> int:
 
 def read_body(args) -> str:
     if args.body_file:
-        return Path(os.path.expanduser(args.body_file)).read_text(encoding="utf-8").rstrip("\n")
+        p = Path(os.path.expanduser(args.body_file))
+        if not p.is_file():
+            eprint("エラー: --body-file が見つかりません: %s" % args.body_file)
+            sys.exit(2)
+        return p.read_text(encoding="utf-8").rstrip("\n")
     if args.stdin:
         return sys.stdin.read().rstrip("\n")
     return ""
@@ -232,6 +242,14 @@ def cmd_add(args) -> int:
         eprint("エラー: 既に存在します: %s（上書きしません）" % target)
         return 2
 
+    # ファイルを書き込む前に _index.md のセクション有無を確認しておく。
+    # ここで弾かないと、本文だけ作られて index/log 未更新の中途半端な状態になる。
+    index_file = wiki / "_index.md"
+    index_lines = index_file.read_text(encoding="utf-8").splitlines()
+    if find_section_index(index_lines, section) is None:
+        eprint("エラー: _index.md にセクション '## %s' が見つかりません。ページは作成していません。" % section)
+        return 2
+
     body = read_body(args)
 
     # frontmatter は Decisions のみ（SKILL.md仕様）
@@ -243,7 +261,6 @@ def cmd_add(args) -> int:
     target.write_text(content, encoding="utf-8")
 
     link_path = "%s/%s" % (dir_name, filename)
-    index_file = wiki / "_index.md"
     insert_index_entry(index_file, section, link_path, args.title, args.summary or "")
 
     log_file = wiki / "_log.md"
@@ -305,8 +322,9 @@ def build_parser() -> argparse.ArgumentParser:
     pa.add_argument("--title", required=True)
     pa.add_argument("--summary", default="", help="_index.md の1行要約")
     pa.add_argument("--slug", help="ファイル名のslug（省略時はtitleから自動生成、非ASCIIなら必須）")
-    pa.add_argument("--body-file", help="本文を読み込むファイル")
-    pa.add_argument("--stdin", action="store_true", help="本文を標準入力から読む")
+    body_src = pa.add_mutually_exclusive_group()
+    body_src.add_argument("--body-file", help="本文を読み込むファイル")
+    body_src.add_argument("--stdin", action="store_true", help="本文を標準入力から読む")
     pa.add_argument("--no-reindex", action="store_true", help="qmd 再インデックスをスキップ")
     pa.set_defaults(func=cmd_add)
 

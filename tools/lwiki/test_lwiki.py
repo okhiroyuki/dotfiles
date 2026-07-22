@@ -84,6 +84,13 @@ class LwikiTest(unittest.TestCase):
         path = self.run_cli("config", "path")
         self.assertIn("llm-wiki/config.toml", path.stdout)
 
+    # ---- config set-root をパス無しで実行してもクラッシュしない ----
+    def test_config_set_root_without_path(self):
+        r = self.run_cli("config", "set-root")
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("Traceback", r.stderr)
+        self.assertIn("パス", r.stderr)
+
     # ---- add: decision ----
     def test_add_decision_autonumber_and_frontmatter(self):
         r = self.run_cli(
@@ -143,6 +150,61 @@ class LwikiTest(unittest.TestCase):
         dup = self.run_cli(*args)
         self.assertEqual(dup.returncode, 2)
         self.assertIn("既に存在", dup.stderr)
+
+    # ---- add: 存在しない --body-file はトレースバックせずエラー終了 ----
+    def test_add_missing_body_file_errors_cleanly(self):
+        r = self.run_cli(
+            "add", "--category", "concept", "--title", "NoBody", "--slug", "nobody",
+            "--summary", "s", "--body-file", str(self.base / "does-not-exist.md"),
+            "--no-reindex",
+        )
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("Traceback", r.stderr)
+        self.assertIn("body-file", r.stderr)
+        # 本文ファイルは作られない
+        self.assertFalse((self.root / "wiki" / "Concepts" / "nobody.md").exists())
+
+    # ---- add: --body-file と --stdin の同時指定は排他エラー ----
+    def test_add_body_file_and_stdin_mutually_exclusive(self):
+        r = self.run_cli(
+            "add", "--category", "concept", "--title", "Both", "--slug", "both",
+            "--summary", "s", "--body-file", "/tmp/x.md", "--stdin", "--no-reindex",
+            stdin="本文",
+        )
+        self.assertEqual(r.returncode, 2)
+        self.assertFalse((self.root / "wiki" / "Concepts" / "both.md").exists())
+
+    # ---- add: セクション欠落時はファイルを作らず index/log も変えない ----
+    def test_add_missing_section_leaves_no_orphan(self):
+        # PRDs セクションを含まない _index.md に差し替える
+        idx = self.root / "wiki" / "_index.md"
+        idx.write_text("# Wiki Index\n\nLast updated: 2020-01-01\n\n## Concepts\n概念\n",
+                       encoding="utf-8")
+        before_index = self.index_text()
+        before_log = self.log_text()
+        r = self.run_cli(
+            "add", "--category", "prd", "--title", "Orphan", "--slug", "orphan",
+            "--summary", "s", "--no-reindex",
+        )
+        self.assertEqual(r.returncode, 2)
+        self.assertIn("セクション", r.stderr)
+        # 本文ファイルが残っていない（孤児化しない）
+        self.assertFalse((self.root / "wiki" / "PRDs" / "orphan.md").exists())
+        # index/log は無変更
+        self.assertEqual(self.index_text(), before_index)
+        self.assertEqual(self.log_text(), before_log)
+
+    # ---- add: --body-file 正常系 ----
+    def test_add_with_body_file(self):
+        bf = self.base / "body.md"
+        bf.write_text("ファイル本文\n", encoding="utf-8")
+        r = self.run_cli(
+            "add", "--category", "concept", "--title", "FromFile", "--slug", "fromfile",
+            "--summary", "s", "--body-file", str(bf), "--no-reindex",
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        content = (self.root / "wiki" / "Concepts" / "fromfile.md").read_text(encoding="utf-8")
+        self.assertIn("ファイル本文", content)
 
     # ---- read: root 相対 / wiki 相対フォールバック ----
     def test_read_resolves_paths(self):
