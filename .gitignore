@@ -152,7 +152,7 @@ dist
 local/*
 !local/README.md
 
-## Python (tools/lwiki 等)
+## Python (tools/llm-wiki 等)
 __pycache__/
 *.py[cod]
 .pytest_cache/

@@ -50,10 +50,10 @@ description = "scappleのテストと型検査を実行する"
 dir = "tools/scapple"
 run = "pnpm install --frozen-lockfile && pnpm exec tsc --noEmit && pnpm test"
 
-[tasks."test:lwiki"]
-description = "lwiki CLIのテストを実行する"
-run = "python3 tools/lwiki/test_lwiki.py"
+[tasks."test:llm-wiki"]
+description = "llm-wiki CLIのテストを実行する"
+run = "python3 tools/llm-wiki/test_llm-wiki.py"
 
 [tasks.check]
 description = "CI相当の全チェック（lint + test）"
-depends = ["lint", "test", "test:lwiki"]
+depends = ["lint", "test", "test:llm-wiki"]
