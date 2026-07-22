@@ -11,4 +11,7 @@ pre-commit:
 pre-push:
   commands:
     test:
+      # scapple 配下を変更した push だけテストを走らせる。
+      # 無関係な push（rules/skills 等）では skip され高速化する。取りこぼしは CI が担保する。
+      glob: "tools/scapple/**"
       run: mise run test
