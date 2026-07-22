@@ -206,6 +206,39 @@ class LwikiTest(unittest.TestCase):
         content = (self.root / "wiki" / "Concepts" / "fromfile.md").read_text(encoding="utf-8")
         self.assertIn("ファイル本文", content)
 
+    # ---- list: カテゴリ別に一覧し、タイトルも表示する ----
+    def test_list_groups_and_shows_titles(self):
+        self.run_cli("add", "--category", "concept", "--title", "RAG", "--slug", "rag",
+                     "--summary", "s", "--no-reindex")
+        self.run_cli("add", "--category", "concept", "--title", "HPKI", "--slug", "hpki",
+                     "--summary", "s", "--no-reindex")
+        self.run_cli("add", "--category", "prd", "--title", "One Pager", "--slug", "one",
+                     "--summary", "s", "--no-reindex")
+        r = self.run_cli("list")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("## Concepts", r.stdout)
+        self.assertIn("- Concepts/rag.md — RAG", r.stdout)
+        self.assertIn("- Concepts/hpki.md — HPKI", r.stdout)
+        self.assertIn("## PRDs", r.stdout)
+        self.assertIn("- PRDs/one.md — One Pager", r.stdout)
+
+    # ---- list --category: 指定カテゴリのみ ----
+    def test_list_filtered_by_category(self):
+        self.run_cli("add", "--category", "concept", "--title", "RAG", "--slug", "rag",
+                     "--summary", "s", "--no-reindex")
+        self.run_cli("add", "--category", "prd", "--title", "One Pager", "--slug", "one",
+                     "--summary", "s", "--no-reindex")
+        r = self.run_cli("list", "--category", "concept")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("Concepts/rag.md", r.stdout)
+        self.assertNotIn("PRDs/one.md", r.stdout)
+
+    # ---- list: 対象が空ならその旨を出す（research は setUp で空） ----
+    def test_list_empty(self):
+        r = self.run_cli("list", "--category", "research")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("ページがありません", r.stdout)
+
     # ---- read: root 相対 / wiki 相対フォールバック ----
     def test_read_resolves_paths(self):
         r1 = self.run_cli("read", "wiki/_index.md")

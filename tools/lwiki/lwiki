@@ -298,6 +298,43 @@ def cmd_reindex(args) -> int:
     return rc
 
 
+def first_heading(path: Path) -> str:
+    """ファイル先頭の '# 見出し' を返す。無ければ空文字。"""
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            s = line.strip()
+            if s.startswith("# "):
+                return s[2:].strip()
+    except OSError:
+        pass
+    return ""
+
+
+def cmd_list(args) -> int:
+    wiki = get_wiki_root()
+    cats = [args.category] if args.category else list(CATEGORIES.keys())
+    printed = False
+    for cat in cats:
+        dir_name, section = CATEGORIES[cat]
+        d = wiki / dir_name
+        if not d.is_dir():
+            continue
+        files = sorted(f for f in d.iterdir() if f.is_file() and f.suffix == ".md")
+        if not files:
+            continue
+        if printed:
+            print()
+        printed = True
+        print("## %s" % section)
+        for f in files:
+            rel = "%s/%s" % (dir_name, f.name)
+            title = first_heading(f)
+            print("- %s — %s" % (rel, title) if title else "- %s" % rel)
+    if not printed:
+        print("(ページがありません)")
+    return 0
+
+
 # ---- パーサ -----------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="lwiki", description="LLM-wiki の配管CLI（保存先設定・蓄積・読み込み・再インデックス）")
@@ -316,6 +353,10 @@ def build_parser() -> argparse.ArgumentParser:
     pr = sub.add_parser("read", help="root配下のページを表示する")
     pr.add_argument("relpath")
     pr.set_defaults(func=cmd_read)
+
+    pls = sub.add_parser("list", help="カテゴリ別にページを一覧する")
+    pls.add_argument("--category", choices=list(CATEGORIES.keys()), help="指定カテゴリのみ一覧する")
+    pls.set_defaults(func=cmd_list)
 
     pa = sub.add_parser("add", help="ページを新規作成し index/log 更新・再インデックスまで行う")
     pa.add_argument("--category", required=True, choices=list(CATEGORIES.keys()))

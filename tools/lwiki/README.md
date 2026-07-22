@@ -32,6 +32,7 @@ lwiki config set-root ~/Documents/llm-wiki
 | `lwiki config path`                   | 設定ファイルのパスを表示する                                           |
 | `lwiki search <query> [-- <qmd引数>]` | `qmd query` で意味検索する（root 配下・任意の cwd から）               |
 | `lwiki read <relpath>`                | root（または root/wiki）配下のページを表示する                         |
+| `lwiki list [--category <cat>]`       | カテゴリ別にページ（パスとタイトル）を一覧する                          |
 | `lwiki add ...`                       | ページを新規作成し、`_index.md`/`_log.md` 更新・再インデックスまで行う |
 | `lwiki log "<msg>"`                   | `_log.md` に1行追記する                                                |
 | `lwiki reindex`                       | `qmd update && qmd embed` を実行する                                   |
