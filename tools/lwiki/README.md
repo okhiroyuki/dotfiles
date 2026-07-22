@@ -10,7 +10,7 @@ LLM-wiki の**配管 CLI**。保存先(root)を一度設定しておけば、任
 ## 前提
 
 - Python 3.8+（標準ライブラリのみ。サードパーティ依存なし）
-- 検索・再インデックスに [`qmd`](https://github.com/) を使う（`qmd` が PATH に無い場合、`search`/`reindex` は警告を出してスキップする）
+- 検索・再インデックスに [`qmd`](https://github.com/tobi/qmd) を使う（`qmd` が PATH に無い場合、`search`/`reindex` は警告を出してスキップする）
 
 ## セットアップ
 
@@ -32,6 +32,7 @@ lwiki config set-root ~/Documents/llm-wiki
 | `lwiki config path`                   | 設定ファイルのパスを表示する                                           |
 | `lwiki search <query> [-- <qmd引数>]` | `qmd query` で意味検索する（root 配下・任意の cwd から）               |
 | `lwiki read <relpath>`                | root（または root/wiki）配下のページを表示する                         |
+| `lwiki list [--category <cat>]`       | カテゴリ別にページ（パスとタイトル）を一覧する                         |
 | `lwiki add ...`                       | ページを新規作成し、`_index.md`/`_log.md` 更新・再インデックスまで行う |
 | `lwiki log "<msg>"`                   | `_log.md` に1行追記する                                                |
 | `lwiki reindex`                       | `qmd update && qmd embed` を実行する                                   |
@@ -59,8 +60,10 @@ lwiki add --category session --title "○○薬局 訪問レポート" --slug fo
 | `--title`                 | ページタイトル（`# 見出し` と `_index.md` のリンク文言になる）          |
 | `--summary`               | `_index.md` の1行要約                                                   |
 | `--slug`                  | ファイル名の slug。省略時は title から自動生成。title が非ASCIIなら必須 |
-| `--body-file` / `--stdin` | 本文の入力元。省略時は見出しだけのスタブ                                |
+| `--status`                | `decision` の frontmatter `status`（既定: `draft`。例: `accepted`）     |
+| `--body-file` / `--stdin` | 本文の入力元（排他）。省略時は見出しだけのスタブ                        |
 | `--no-reindex`            | `qmd` 再インデックスをスキップ                                          |
+| `--dry-run`               | 書き込まず、作成予定のファイル・index/log 更新内容だけ表示する          |
 
 カテゴリと配置・ファイル名・frontmatter の対応:
 
