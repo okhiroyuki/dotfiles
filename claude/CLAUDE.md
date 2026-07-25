@@ -20,6 +20,7 @@
 
 @rules/semble.md
 @rules/web-access.md
+@rules/llm-wiki.md
 
 ## セキュリティ
 
