@@ -31,6 +31,39 @@ test("Stringノートのテキストと無向・有向の接続を区別して�
   assert.deepEqual(note0?.pointsTo, [2]);
 });
 
+test("矢印付きの線は無向の接続として二重に数えない", () => {
+  // Scappleは矢印を引くと、線として両端の ConnectedNoteIDs にも相手を記録する。
+  const xml = wrap(`
+    <Note ID="0" Position="0,0" Width="10.0">
+      <String>原因</String>
+      <ConnectedNoteIDs>1</ConnectedNoteIDs>
+      <PointsToNoteIDs>1</PointsToNoteIDs>
+    </Note>
+    <Note ID="1" Position="0,0" Width="10.0">
+      <String>結果</String>
+      <ConnectedNoteIDs>0</ConnectedNoteIDs>
+    </Note>
+  `);
+  const doc = parseScapXml(xml);
+  assert.deepEqual(doc.notes[0]?.connectedTo, []);
+  assert.deepEqual(doc.notes[0]?.pointsTo, [1]);
+  assert.deepEqual(doc.notes[1]?.connectedTo, []);
+});
+
+test("矢印と無関係な無向の接続は残す", () => {
+  const xml = wrap(`
+    <Note ID="0" Position="0,0" Width="10.0">
+      <String>A</String>
+      <ConnectedNoteIDs>1-2</ConnectedNoteIDs>
+      <PointsToNoteIDs>2</PointsToNoteIDs>
+    </Note>
+    <Note ID="1" Position="0,0" Width="10.0"><String>B</String></Note>
+    <Note ID="2" Position="0,0" Width="10.0"><String>C</String></Note>
+  `);
+  const doc = parseScapXml(xml);
+  assert.deepEqual(doc.notes[0]?.connectedTo, [1]);
+});
+
 test("スタックをID配列として順序どおりパースする", () => {
   const xml = wrap(
     `
