@@ -71,8 +71,6 @@
       "Bash(readlink *)",
       "Bash(cd *)",
       "Bash(llm-wiki *)",
-      "Bash(* --version*)",
-      "Bash(* --help*)",
       "Read(~/.claude/skills/**)",
       "Skill(update-config)",
       "Skill(update-config:*)",
