@@ -5,6 +5,33 @@
 /** 1つの範囲が展開してよいID数の上限。壊れた/悪意ある入力による巨大配列確保を防ぐ。 */
 const MAX_RANGE_SIZE = 10_000;
 
+/**
+ * parseIdRangeの逆変換。連続する2つ以上のIDは "1-3" の範囲表記にまとめる。
+ * 実ファイルの ConnectedNoteIDs が "1-2, 6-10, 28" と2連続からまとめているのに合わせている。
+ *
+ * 区切り文字は要素によって異なる。Scapple自身は ConnectedNoteIDs を ", " で、
+ * AutoFit を "," で書き出すため、呼び出し側から指定する。
+ */
+export function formatIdRange(ids: number[], separator = ", "): string {
+  const sorted = [...new Set(ids)].sort((a, b) => a - b);
+  if (sorted.length === 0) return "";
+
+  const parts: string[] = [];
+  let start = sorted[0]!;
+  let prev = start;
+  for (const id of sorted.slice(1)) {
+    if (id === prev + 1) {
+      prev = id;
+      continue;
+    }
+    parts.push(start === prev ? `${start}` : `${start}-${prev}`);
+    start = id;
+    prev = id;
+  }
+  parts.push(start === prev ? `${start}` : `${start}-${prev}`);
+  return parts.join(separator);
+}
+
 export function parseIdRange(value: string | number | undefined): number[] {
   if (value === undefined || value === "") return [];
 
