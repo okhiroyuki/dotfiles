@@ -46,12 +46,12 @@ echo "本文…" | llm-wiki add --category decision \
   --summary "コスト・日本語性能で採用" --stdin
 
 # 概念ページ。本文はファイルから
-llm-wiki add --category concept --title "HPKI" --slug hpki \
-  --summary "医療従事者の電子署名基盤" --body-file /tmp/hpki.md
+llm-wiki add --category concept --title "OAuth 2.0" --slug oauth2 \
+  --summary "認可の標準プロトコル" --body-file /tmp/oauth2.md
 
 # セッション。ファイル名は YYYY-MM-DD-<slug>.md になる
-llm-wiki add --category session --title "○○薬局 訪問レポート" --slug foo-visit \
-  --summary "要望ヒアリング" --stdin < notes.md
+llm-wiki add --category session --title "設計レビュー 議事メモ" --slug design-review \
+  --summary "論点整理" --stdin < notes.md
 ```
 
 | オプション                | 説明                                                                    |

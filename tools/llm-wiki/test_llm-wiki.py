@@ -266,7 +266,7 @@ class LwikiTest(unittest.TestCase):
     def test_list_groups_and_shows_titles(self):
         self.run_cli("add", "--category", "concept", "--title", "RAG", "--slug", "rag",
                      "--summary", "s", "--no-reindex")
-        self.run_cli("add", "--category", "concept", "--title", "HPKI", "--slug", "hpki",
+        self.run_cli("add", "--category", "concept", "--title", "gRPC", "--slug", "grpc",
                      "--summary", "s", "--no-reindex")
         self.run_cli("add", "--category", "prd", "--title", "One Pager", "--slug", "one",
                      "--summary", "s", "--no-reindex")
@@ -274,7 +274,7 @@ class LwikiTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("## Concepts", r.stdout)
         self.assertIn("- Concepts/rag.md — RAG", r.stdout)
-        self.assertIn("- Concepts/hpki.md — HPKI", r.stdout)
+        self.assertIn("- Concepts/grpc.md — gRPC", r.stdout)
         self.assertIn("## PRDs", r.stdout)
         self.assertIn("- PRDs/one.md — One Pager", r.stdout)
 

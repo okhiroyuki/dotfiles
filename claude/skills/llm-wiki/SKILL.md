@@ -28,7 +28,7 @@ wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`, 
 2. `wiki/` は更新可能。raw/ や会話からLLMが更新・補完する
 3. 作成前に必ず `llm-wiki search` で既存資料を検索し、重複がないか確認する
 4. 情報は失わない。更新時は既存内容を保持して追記する
-5. 相互参照は標準Markdownの相対リンク `[表示テキスト](相対パス.md)` を使う（例: `[HPKI](../Concepts/hpki.md)`）。`[[]]` 形式は使わない
+5. 相互参照は標準Markdownの相対リンク `[表示テキスト](相対パス.md)` を使う（例: `[OAuth 2.0](../Concepts/oauth2.md)`）。`[[]]` 形式は使わない
 6. 既存資料を探すときは grep・Read の前にまず `llm-wiki search` で意味検索し、対象を特定してから読む
 
 ## 1. 作業開始時のコンテキスト補強（Pull）
