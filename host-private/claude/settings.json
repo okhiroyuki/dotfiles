@@ -22,7 +22,6 @@
       "Bash(gh gist list *)",
       "Bash(gh gist view *)",
       "Bash(gh label list *)",
-      "Bash(gh api *)",
       "Bash(gh search *)",
       "Bash(gh browse *)",
       "Bash(gh status *)",
@@ -103,12 +102,18 @@
       "WebFetch(domain:git-scm.com)"
     ],
     "ask": [
+      "Bash(gh api *)",
       "Bash(git push origin main*)",
       "Bash(git push origin master*)",
       "Bash(git push * origin main*)",
       "Bash(git push * origin master*)"
     ],
     "deny": [
+      "Bash(gh api -X *)",
+      "Bash(gh api --method *)",
+      "Bash(gh api * -X *)",
+      "Bash(gh api * --method *)",
+      "Bash(gh api graphql *)",
       "Bash(git checkout *)",
       "Bash(git -C *)",
       "Bash(git branch -D *)",
