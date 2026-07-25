@@ -9,7 +9,6 @@
 ## Git運用
 
 @rules/git.md
-@rules/commit-message.md
 
 ## ツール利用
 
