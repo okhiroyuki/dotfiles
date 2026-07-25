@@ -1,6 +1,6 @@
 ---
 name: skill-management
-description: スキルの新規作成・既存スキル編集時の設計規範を定める。作るべきかの判断基準、frontmatter必須項目(name/description/model)の書き方、model選定基準、SKILL.md行数上限(100行以下)、evals(evaluation-driven development)の実施手順、subagent委譲の設計基準を扱う。新しいスキルを作る前の要否判断や、既存SKILL.mdのfrontmatter・本文を編集するときに使う。スキルを通常のタスク実行のために呼び出すだけの場面には使わない。
+description: スキルの新規作成・既存スキル編集時の設計規範を定める。作るべきかの判断基準、frontmatter必須項目(name/description/model)の書き方、model選定基準、SKILL.md行数上限(100行以下)、evals(evaluation-driven development)の実施手順、subagent委譲の設計基準を扱う。新しいスキルを作る前の要否判断や、既存SKILL.mdのfrontmatter・本文を編集するときは、作業に入る前に必ず起動する。スキルを通常のタスク実行のために呼び出すだけの場面には使わない。
 model: opus
 ---
 

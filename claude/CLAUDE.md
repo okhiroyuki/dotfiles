@@ -11,11 +11,6 @@
 @rules/git.md
 @rules/commit-message.md
 
-## スキル運用
-
-@rules/skill-management.md
-@rules/japanese-tech-writing.md
-
 ## ツール利用
 
 @rules/semble.md
