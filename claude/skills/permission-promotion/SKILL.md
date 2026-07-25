@@ -1,7 +1,8 @@
 ---
 name: permission-promotion
-description: 確認プロンプトの蓄積履歴からpermissions.allow/ask/denyへの昇格をユーザーに提案する基準と手順を定める。設定スコープ(Managed/User/Project/Local)の優先順位判定、allow/ask/deny各昇格基準(3回以上確認・拒否なし・副作用なし等)の充足確認に使う。同じ確認プロンプトが3回以上出た、または事故りかけた記録がAuto Memoryに蓄積されたと気づいたときに起動する。単発のツール呼び出し許可判断や通常のコマンド実行には使わない。
+description: 確認プロンプトの蓄積履歴からpermissions.allow/ask/denyへの昇格をユーザーに提案する基準と手順を定める。設定スコープ(Managed/User/Project/Local)の優先順位判定、allow/ask/deny各昇格基準(3回以上確認・拒否なし・副作用なし等)の充足確認に使う。確認プロンプトの蓄積履歴を棚卸ししたいときに `/permission-promotion` で起動する。自動起動はせず、ユーザーの明示的な起動のみで動く。
 model: opus
+disable-model-invocation: true
 ---
 
 # パーミッション昇格ルール

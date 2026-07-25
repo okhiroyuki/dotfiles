@@ -21,14 +21,9 @@
 @rules/semble.md
 @rules/web-access.md
 
-## セキュリティ・権限
+## セキュリティ
 
 @rules/security.md
-@rules/permissions-management.md
-
-## Auto Memory運用
-
-@rules/auto-memory-promotion.md
 
 ## ローカル・業務ドメイン固有（マシン固有）
 

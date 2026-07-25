@@ -1,7 +1,8 @@
 ---
 name: memory-promotion
-description: Auto Memoryに蓄積された記録をCLAUDE.md/rulesまたはスキルへ昇格すべきか判定し、ユーザーに提案する基準と手順を定める。同一パターンが3回以上Auto Memoryに出現したと気づいたとき、昇格の要否・昇格先（CLAUDE.md/rules/skill）を判断するために起動する。昇格の処理フロー(提示→承認待ち→編集→Auto Memoryからの削除→commit提案)も扱う。Auto Memoryを通常に参照・追記するだけの場面には使わない。
+description: Auto Memoryに蓄積された記録をCLAUDE.md/rulesまたはスキルへ昇格すべきか判定し、ユーザーに提案する基準と手順を定める。Auto Memoryを棚卸しして昇格候補を洗い出したいときに `/memory-promotion` で起動する。自動起動はせず、ユーザーの明示的な起動のみで動く。昇格の処理フロー(提示→承認待ち→編集→Auto Memoryからの削除→commit提案)も扱う。
 model: opus
+disable-model-invocation: true
 ---
 
 # Auto Memory 昇格ルール
