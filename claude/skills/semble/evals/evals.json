@@ -1,0 +1,24 @@
+{
+  "skill_name": "semble",
+  "note": "skill-management の4節 手順1の状態。実際のユーザー発話に近いプロンプトと expected_output のみを置き、expectations は「スキルあり/なし」の並行実行で差分を確認したあとに追記する。評価対象は semble コマンドの実行成否ではなく、検索手段としてsembleを選ぶか（3はgrepを選ぶか）の判断。",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "このプロジェクトの認証まわりの処理がどこにあるか調べて",
+      "expected_output": "grepやReadでファイルを総当たりする前に `semble search \"authentication flow\"` 相当の意味検索を実行する。返ってきた file:line に直接ジャンプし、同じ内容を再検索・再grepしない。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "src/auth.py の42行目と似たような実装が他にないか探して",
+      "expected_output": "`semble find-related src/auth.py 42` を使う。grepでシンボル名を検索する方向には進まない。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "fetchUser をリネームしたので、呼び出し元を漏れなく全部洗い出して",
+      "expected_output": "網羅性が要件なのでsembleではなくgrepを選ぶ。意味検索は再現率を保証しないため全件列挙には使わない、という境界を明示する。",
+      "files": []
+    }
+  ]
+}

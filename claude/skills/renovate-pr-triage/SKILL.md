@@ -1,7 +1,8 @@
 ---
 name: renovate-pr-triage
-description: 自分のGitHubアカウントの全アクティブリポジトリを巡回し、Renovateが作成したオープンPRのマージ可否をCI状態から判定してマージ、CI失敗しているものは原因を分析して解消し、Dependency Dashboardの承認待ち（メジャー更新など）を確認する。「RenovateのPRを見て」「依存更新PRをマージして」「renovate巡回して」と言われたときに使う。単一PRのコードレビューや、Renovate以外のPR処理には使わない。
+description: 自分のGitHubアカウントの全アクティブリポジトリを巡回し、Renovateが作成したオープンPRのマージ可否をCI状態から判定してマージ、CI失敗しているものは原因を分析して解消し、Dependency Dashboardの承認待ち（メジャー更新など）を確認する。依存更新PRをまとめて処理したいときに `/renovate-pr-triage` で起動する。自動起動はせず、ユーザーの明示的な起動のみで動く。単一PRのコードレビューや、Renovate以外のPR処理には使わない。
 model: opus
+disable-model-invocation: true
 argument-hint: [
   対象リポジトリ名（省略時は非アーカイブ全リポジトリ）,
 ]

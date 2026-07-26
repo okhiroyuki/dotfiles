@@ -19,4 +19,4 @@ description: rcmのルール
 | `lsrc`   | 管理対象のdotfileと、それぞれのリンク先を一覧表示する（ドライラン確認用）                                                           |
 | `rcrc`   | 上記コマンドの設定ファイル（本リポジトリでは [rcrc](../../rcrc)）                                                                   |
 
-- host-private / host-work は rcm の `host-<HOSTNAME>` 規約を利用しており、`rcup -B private` / `-B work` でタグ名をホスト名として扱わせている
+- `host-<name>/` は rcm の `host-<HOSTNAME>` 規約を利用しており、`rcup -B private` でタグ名をホスト名として扱わせている。現時点で存在するのは `host-private/` のみ
