@@ -119,8 +119,14 @@
       "Bash(git tag -d *)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
+      "Bash(git push *--force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * --delete*)",
+      "Bash(git push * -d *)",
+      "Bash(git push * -d)",
       "Bash(git reset --hard *)",
       "Bash(git clean -f *)",
+      "Bash(git clean *-f*)",
       "Bash(curl *)",
       "Bash(wget *)"
     ]
@@ -128,7 +134,9 @@
   "enabledPlugins": {
     "crit@crit": true,
     "product-skills@claude-code-skills": true,
-    "skill-scanner@skillplugs": true
+    "skill-scanner@skillplugs": true,
+    "dig@kuu-marketplace": true,
+    "fix-ci@kuu-marketplace": true
   },
   "extraKnownMarketplaces": {
     "crit": {
@@ -147,6 +155,12 @@
       "source": {
         "source": "github",
         "repo": "skillplugs/plugins"
+      }
+    },
+    "kuu-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "fumiya-kume/claude-code"
       }
     }
   },
