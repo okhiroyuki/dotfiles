@@ -135,7 +135,8 @@
     "crit@crit": true,
     "product-skills@claude-code-skills": true,
     "skill-scanner@skillplugs": true,
-    "dig@kuu-marketplace": true
+    "dig@kuu-marketplace": true,
+    "fix-ci@kuu-marketplace": true
   },
   "extraKnownMarketplaces": {
     "crit": {
