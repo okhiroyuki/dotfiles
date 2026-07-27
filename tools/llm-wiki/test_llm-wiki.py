@@ -2,7 +2,7 @@
 """llm-wiki のブラックボックステスト（標準ライブラリのみ）。
 
 CLI を一時 root に対して実行し、ファイル配置・_index.md/_log.md 更新・
-命名規則・エラー処理を検証する。qmd には依存しない（--no-reindex を使う）。
+命名規則・エラー処理を検証する。semble には依存しない（検索系コマンドは呼ばない）。
 
 実行: python3 tools/llm-wiki/test_llm-wiki.py
 """
@@ -95,7 +95,7 @@ class LwikiTest(unittest.TestCase):
     def test_add_decision_autonumber_and_frontmatter(self):
         r = self.run_cli(
             "add", "--category", "decision", "--title", "Test Decision",
-            "--slug", "test-decision", "--summary", "テスト用", "--no-reindex",
+            "--slug", "test-decision", "--summary", "テスト用",
             "--stdin", stdin="本文サンプル",
         )
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -125,7 +125,7 @@ class LwikiTest(unittest.TestCase):
     def test_add_decision_status_option(self):
         r = self.run_cli(
             "add", "--category", "decision", "--title", "Accepted One",
-            "--slug", "acc", "--status", "accepted", "--no-reindex",
+            "--slug", "acc", "--status", "accepted",
         )
         self.assertEqual(r.returncode, 0, r.stderr)
         adr = self.root / "wiki" / "Decisions" / "ADR-004-acc.md"
@@ -135,7 +135,7 @@ class LwikiTest(unittest.TestCase):
     def test_add_status_ignored_for_non_decision(self):
         r = self.run_cli(
             "add", "--category", "concept", "--title", "C", "--slug", "c",
-            "--status", "accepted", "--no-reindex",
+            "--status", "accepted",
         )
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("無視", r.stderr)
@@ -146,7 +146,7 @@ class LwikiTest(unittest.TestCase):
         before_index, before_log = self.index_text(), self.log_text()
         r = self.run_cli(
             "add", "--category", "concept", "--title", "Preview", "--slug", "preview",
-            "--summary", "s", "--no-reindex", "--dry-run",
+            "--summary", "s", "--dry-run",
         )
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("[dry-run]", r.stdout)
@@ -154,25 +154,11 @@ class LwikiTest(unittest.TestCase):
         self.assertEqual(self.index_text(), before_index)
         self.assertEqual(self.log_text(), before_log)
 
-    # ---- add: qmd 不在時は作成後に再インデックス案内を出す ----
-    def test_add_reindex_hint_when_qmd_missing(self):
-        env = dict(os.environ, XDG_CONFIG_HOME=str(self.xdg), PATH="/nonexistent-xyz")
-        r = subprocess.run(
-            [sys.executable, str(SCRIPT), "add", "--category", "concept",
-             "--title", "NoQmd", "--slug", "noqmd", "--summary", "s"],
-            capture_output=True, text=True, env=env,
-        )
-        self.assertEqual(r.returncode, 0, r.stderr)
-        # ページは作成される
-        self.assertTrue((self.root / "wiki" / "Concepts" / "noqmd.md").exists())
-        # 未インデックスの案内が出る
-        self.assertIn("検索インデックスは未更新", r.stdout)
-
     # ---- add: concept (空セクションへの初挿入で空行が入る) ----
     def test_add_concept_blank_line_after_description(self):
         r = self.run_cli(
             "add", "--category", "concept", "--title", "RAG", "--slug", "rag",
-            "--summary", "検索拡張生成", "--no-reindex",
+            "--summary", "検索拡張生成",
         )
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertTrue((self.root / "wiki" / "Concepts" / "rag.md").exists())
@@ -182,7 +168,7 @@ class LwikiTest(unittest.TestCase):
     def test_add_session_dated_filename(self):
         r = self.run_cli(
             "add", "--category", "session", "--title", "Visit", "--slug", "visit-note",
-            "--summary", "要約", "--no-reindex",
+            "--summary", "要約",
         )
         self.assertEqual(r.returncode, 0, r.stderr)
         files = list((self.root / "wiki" / "sessions").glob("*-visit-note.md"))
@@ -193,7 +179,7 @@ class LwikiTest(unittest.TestCase):
     def test_add_nonascii_without_slug_errors(self):
         r = self.run_cli(
             "add", "--category", "concept", "--title", "日本語タイトル",
-            "--summary", "x", "--no-reindex",
+            "--summary", "x",
         )
         self.assertEqual(r.returncode, 2)
         self.assertIn("slug", r.stderr)
@@ -201,7 +187,7 @@ class LwikiTest(unittest.TestCase):
     # ---- add: 重複は上書きしない ----
     def test_add_duplicate_refused(self):
         args = ("add", "--category", "concept", "--title", "Dup", "--slug", "dup",
-                "--summary", "s", "--no-reindex")
+                "--summary", "s")
         self.assertEqual(self.run_cli(*args).returncode, 0)
         dup = self.run_cli(*args)
         self.assertEqual(dup.returncode, 2)
@@ -212,7 +198,6 @@ class LwikiTest(unittest.TestCase):
         r = self.run_cli(
             "add", "--category", "concept", "--title", "NoBody", "--slug", "nobody",
             "--summary", "s", "--body-file", str(self.base / "does-not-exist.md"),
-            "--no-reindex",
         )
         self.assertEqual(r.returncode, 2)
         self.assertNotIn("Traceback", r.stderr)
@@ -224,7 +209,7 @@ class LwikiTest(unittest.TestCase):
     def test_add_body_file_and_stdin_mutually_exclusive(self):
         r = self.run_cli(
             "add", "--category", "concept", "--title", "Both", "--slug", "both",
-            "--summary", "s", "--body-file", "/tmp/x.md", "--stdin", "--no-reindex",
+            "--summary", "s", "--body-file", "/tmp/x.md", "--stdin",
             stdin="本文",
         )
         self.assertEqual(r.returncode, 2)
@@ -240,7 +225,7 @@ class LwikiTest(unittest.TestCase):
         before_log = self.log_text()
         r = self.run_cli(
             "add", "--category", "prd", "--title", "Orphan", "--slug", "orphan",
-            "--summary", "s", "--no-reindex",
+            "--summary", "s",
         )
         self.assertEqual(r.returncode, 2)
         self.assertIn("セクション", r.stderr)
@@ -256,7 +241,7 @@ class LwikiTest(unittest.TestCase):
         bf.write_text("ファイル本文\n", encoding="utf-8")
         r = self.run_cli(
             "add", "--category", "concept", "--title", "FromFile", "--slug", "fromfile",
-            "--summary", "s", "--body-file", str(bf), "--no-reindex",
+            "--summary", "s", "--body-file", str(bf),
         )
         self.assertEqual(r.returncode, 0, r.stderr)
         content = (self.root / "wiki" / "Concepts" / "fromfile.md").read_text(encoding="utf-8")
@@ -265,11 +250,11 @@ class LwikiTest(unittest.TestCase):
     # ---- list: カテゴリ別に一覧し、タイトルも表示する ----
     def test_list_groups_and_shows_titles(self):
         self.run_cli("add", "--category", "concept", "--title", "RAG", "--slug", "rag",
-                     "--summary", "s", "--no-reindex")
+                     "--summary", "s")
         self.run_cli("add", "--category", "concept", "--title", "gRPC", "--slug", "grpc",
-                     "--summary", "s", "--no-reindex")
+                     "--summary", "s")
         self.run_cli("add", "--category", "prd", "--title", "One Pager", "--slug", "one",
-                     "--summary", "s", "--no-reindex")
+                     "--summary", "s")
         r = self.run_cli("list")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("## Concepts", r.stdout)
@@ -281,9 +266,9 @@ class LwikiTest(unittest.TestCase):
     # ---- list --category: 指定カテゴリのみ ----
     def test_list_filtered_by_category(self):
         self.run_cli("add", "--category", "concept", "--title", "RAG", "--slug", "rag",
-                     "--summary", "s", "--no-reindex")
+                     "--summary", "s")
         self.run_cli("add", "--category", "prd", "--title", "One Pager", "--slug", "one",
-                     "--summary", "s", "--no-reindex")
+                     "--summary", "s")
         r = self.run_cli("list", "--category", "concept")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("Concepts/rag.md", r.stdout)
@@ -318,7 +303,7 @@ class LwikiTest(unittest.TestCase):
         env = dict(os.environ, XDG_CONFIG_HOME=str(self.base / "empty-xdg"))
         r = subprocess.run(
             [sys.executable, str(SCRIPT), "add", "--category", "concept",
-             "--title", "X", "--slug", "x", "--summary", "s", "--no-reindex"],
+             "--title", "X", "--slug", "x", "--summary", "s"],
             capture_output=True, text=True, env=env,
         )
         self.assertEqual(r.returncode, 2)

@@ -2,13 +2,15 @@
 """llm-wiki — LLM-wiki の配管CLI。
 
 保存先(root)をXDG設定に一度決めておけば、任意のcwdから記憶の蓄積(add/log)・
-読み込み(search/read)・再インデックス(reindex)ができる。
+読み込み(search/read)ができる。
 
 中身の執筆・分類・相互リンクの判断は行わない（それはllm-wikiスキル=LLMの担当）。
-このCLIは「ファイル配置・_index.md/_log.md更新・qmd再インデックス・検索呼び出し」
+このCLIは「ファイル配置・_index.md/_log.md更新・検索呼び出し」
 という機械的な配管だけを担う。
 
-依存はPython標準ライブラリのみ（3.8+）。qmd検索はサブプロセスに委譲する。
+依存はPython標準ライブラリのみ（3.8+）。semble検索はサブプロセスに委譲する。
+semble はファイル変更を自動検知してインデックスを無効化するため、明示的な
+再インデックス操作は不要。
 """
 
 import argparse
@@ -117,15 +119,15 @@ def get_wiki_root() -> Path:
     return wiki
 
 
-# ---- qmd 呼び出し -----------------------------------------------------------
-def run_qmd(args, root: Path) -> int:
-    if shutil.which("qmd") is None:
-        eprint("警告: qmd が見つかりません。検索/再インデックスをスキップしました。")
+# ---- semble 呼び出し ---------------------------------------------------------
+def run_semble(args) -> int:
+    if shutil.which("semble") is None:
+        eprint("警告: semble が見つかりません。検索をスキップしました。")
         return 127
     try:
-        return subprocess.run(["qmd", *args], cwd=str(root)).returncode
+        return subprocess.run(["semble", *args]).returncode
     except OSError as e:
-        eprint("警告: qmd の実行に失敗しました: %s" % e)
+        eprint("警告: semble の実行に失敗しました: %s" % e)
         return 1
 
 
@@ -216,7 +218,7 @@ def cmd_config(args) -> int:
 
 def cmd_search(args) -> int:
     root = get_root()
-    return run_qmd(["query", args.query, *args.qmd_args], root)
+    return run_semble(["search", args.query, str(root), "--content", "docs", *args.extra_args])
 
 
 def cmd_read(args) -> int:
@@ -299,7 +301,6 @@ def cmd_add(args) -> int:
         print("  作成: wiki/%s" % link_path)
         print("  _index.md: '## %s' セクションにエントリを追加、Last updated を更新" % section)
         print("  _log.md: add ログを追記")
-        print("  再インデックス: %s" % ("スキップ(--no-reindex)" if args.no_reindex else "qmd update && embed を実行"))
         return 0
 
     target.write_text(content, encoding="utf-8")
@@ -313,14 +314,6 @@ def cmd_add(args) -> int:
 
     print("作成しました: wiki/%s" % link_path)
     print("_index.md / _log.md を更新しました。")
-
-    if not args.no_reindex:
-        root = get_root()
-        rc = run_qmd(["update"], root)
-        if rc == 0:
-            rc = run_qmd(["embed"], root)
-        if rc != 0:
-            print("注意: 検索インデックスは未更新です。qmd が使えるようになったら `llm-wiki reindex` を実行してください。")
     return 0
 
 
@@ -331,16 +324,6 @@ def cmd_log(args) -> int:
     append_log(log_file, block)
     print("_log.md に追記しました。")
     return 0
-
-
-def cmd_reindex(args) -> int:
-    root = get_root()
-    rc = run_qmd(["update"], root)
-    if rc == 0:
-        rc = run_qmd(["embed"], root)
-    if rc == 0:
-        print("再インデックスが完了しました。")
-    return rc
 
 
 def first_heading(path: Path) -> str:
@@ -390,9 +373,9 @@ def build_parser() -> argparse.ArgumentParser:
     pc.add_argument("path", nargs="?", help="set-root のときの保存先パス")
     pc.set_defaults(func=cmd_config)
 
-    ps = sub.add_parser("search", help="qmd で意味検索する（root配下・任意のcwdから）")
+    ps = sub.add_parser("search", help="semble で意味検索する（root配下・任意のcwdから）")
     ps.add_argument("query")
-    ps.add_argument("qmd_args", nargs=argparse.REMAINDER, help="qmd query に渡す追加引数")
+    ps.add_argument("extra_args", nargs=argparse.REMAINDER, help="semble search に渡す追加引数")
     ps.set_defaults(func=cmd_search)
 
     pr = sub.add_parser("read", help="root配下のページを表示する")
@@ -412,16 +395,12 @@ def build_parser() -> argparse.ArgumentParser:
     body_src = pa.add_mutually_exclusive_group()
     body_src.add_argument("--body-file", help="本文を読み込むファイル")
     body_src.add_argument("--stdin", action="store_true", help="本文を標準入力から読む")
-    pa.add_argument("--no-reindex", action="store_true", help="qmd 再インデックスをスキップ")
     pa.add_argument("--dry-run", action="store_true", help="書き込まず、実行内容だけ表示する")
     pa.set_defaults(func=cmd_add)
 
     pl = sub.add_parser("log", help="_log.md に1行追記する")
     pl.add_argument("message", help='例: "add | ○○を記録"')
     pl.set_defaults(func=cmd_log)
-
-    pi = sub.add_parser("reindex", help="qmd update && qmd embed を実行する")
-    pi.set_defaults(func=cmd_reindex)
 
     return p
 
