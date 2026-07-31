@@ -4,9 +4,9 @@ description: LLM-wikiに知見・メモ・決定事項を追加する。「wiki�
 model: opus
 ---
 
-wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`, qmdインデックス`.qmd/`）にある。
+wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`）にある。検索インデックスは`semble`側のグローバルキャッシュ（`~/Library/Caches/semble`）にあり、ファイル変更を自動検知するため明示的な再インデックスは不要。
 
-ファイル配置・`_index.md`/`_log.md`更新・qmd再インデックス・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/llm-wiki`、PATH済み・任意のcwdから動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki`が扱わない`raw/`・画像の取り回しに集中する。`cd`やqmdの直接実行、`_index.md`/`_log.md`の手編集はしない。
+ファイル配置・`_index.md`/`_log.md`更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/llm-wiki`、PATH済み・任意のcwdから動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki`が扱わない`raw/`・画像の取り回しに集中する。`cd`やsembleの直接実行、`_index.md`/`_log.md`の手編集はしない。
 
 `~/Documents/llm-wiki/` はgitリポジトリだが今後コミットは行わない（履歴は残すが更新しない。必要な場合はユーザー自身が行う）。
 
@@ -14,13 +14,12 @@ wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`, 
 
 ## llm-wiki コマンド（詳細: `~/dotfiles/tools/llm-wiki/README.md`）
 
-| コマンド                                                                        | 用途                                              |
-| ------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `llm-wiki search "<query>"`                                                     | 意味検索（qmd委譲）。作業前・記録前の確認に使う   |
-| `llm-wiki read <relpath>`                                                       | ページ表示                                        |
-| `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新＋再インデックスまで一括 |
-| `llm-wiki log "<msg>"`                                                          | `_log.md`に追記（lint等、add以外の操作の記録用）  |
-| `llm-wiki reindex`                                                              | qmd再インデックスのみ                             |
+| コマンド                                                                        | 用途                                                                 |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `llm-wiki search "<query>"`                                                     | 意味検索（semble委譲、`--content docs`）。作業前・記録前の確認に使う |
+| `llm-wiki read <relpath>`                                                       | ページ表示                                                           |
+| `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新まで一括                                    |
+| `llm-wiki log "<msg>"`                                                          | `_log.md`に追記（lint等、add以外の操作の記録用）                     |
 
 `--category`: `decision` / `prd` / `concept` / `research` / `session`。本文は`--stdin`か`--body-file`で渡す。**titleが非ASCII（日本語等）の場合は`--slug`（英小文字）を必ず指定する**。`decision`はADR番号を自動採番しfrontmatterも付与する。**`--slug`に日付を含めない**（`session`等は日付を自動で前置するため、slug側にも日付を入れると`2026-07-24-2026-07-24-...`のように重複する）。
 
@@ -45,13 +44,13 @@ wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`, 
 1. **既存ページを確認**: `llm-wiki search "<キーワード>"` で検索。全体像が要るなら `llm-wiki read wiki/_index.md`
 2. **カテゴリを判断**: `decision`/`prd`/`concept`/`research`/`session` から選ぶ。新しい概念があれば `concept` を作る
 3. **raw/ に資料を保存**（該当時のみ）: `raw/` は`llm-wiki`の対象外。手動で配置する。すでにあれば読むだけ。画像は「画像の扱い」に従う
-4. **本文を用意して `llm-wiki add`**: 相互リンクを本文に含める。既存ページの更新は`llm-wiki`ではなくファイルを直接編集し、内容を保持して追記する（更新後 `llm-wiki reindex`）
-5. 完了後、`llm-wiki add` が index/log/再インデックスまで済ませていることを確認する
+4. **本文を用意して `llm-wiki add`**: 相互リンクを本文に含める。既存ページの更新は`llm-wiki`ではなくファイルを直接編集し、内容を保持して追記する（semble側は次回検索時に自動反映されるため再インデックス操作は不要）
+5. 完了後、`llm-wiki add` が index/log を更新済みであることを確認する
 6. PDF等の外部ファイルをMarkdown化してraw/に保存した場合、変換元の外部ファイルは削除する（raw/内を唯一の正本とする）
 
 ## 3. その他のワークフロー
 
-**Query（質問に答える）**: `llm-wiki search` → 関連ページを`llm-wiki read`で読む → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
+**Query（質問に答える）**: `llm-wiki search` はJSON（`file_path`/`score`/`content`スニペット）を返す。スニペットだけで判断せず、有望な`file_path`を`llm-wiki read`で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
 
 **Spec（仕様・要件を作る）**: `wiki/_index.md`で関連把握 → `llm-wiki add --category decision` でADR作成、または既存ADRを直接編集 → 実装前に MUST ユーザー承認
 
@@ -70,14 +69,14 @@ raw/ にMarkdownを新規作成する際、画像は必ずその場でインラ�
 
 - MUST NOT: `raw/` 内のファイルを変更・削除する（画像パスの相対化のみ例外）
 - MUST NOT: 承認なしに `decided` ステータスのページを大きく書き換える
-- MUST NOT: `cd`やqmdの直接実行、`_index.md`/`_log.md`の手編集（すべて`llm-wiki`経由）
+- MUST NOT: `cd`やsembleの直接実行、`_index.md`/`_log.md`の手編集（すべて`llm-wiki`経由）
 - 追加内容が不明確なときは、先に何を追加するか確認する
 
 ## 成功基準
 
 記録・更新作業を終える前に自己チェックする:
 
-- [ ] `llm-wiki add`（または直接編集＋`llm-wiki reindex`）で index/log/検索インデックスが最新化されている
+- [ ] `llm-wiki add`（または直接編集）で index/log が最新化されている
 - [ ] `raw/` 配下のファイルを変更・削除していない
 - [ ] 既存ページの内容を消さず、保持したまま追記・統合した
 - [ ] 内部リンクが標準Markdownリンク形式（`[[]]` を使っていない）

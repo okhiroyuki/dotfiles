@@ -1,16 +1,17 @@
 # llm-wiki
 
 LLM-wiki の**配管 CLI**。保存先(root)を一度設定しておけば、任意のディレクトリから
-記憶の蓄積・読み込み・再インデックスができる。
+記憶の蓄積・読み込みができる。
 
 `llm-wiki` スキル（LLM）が「何を・どのカテゴリに・どう相互リンクして書くか」を判断し、
-その結果の**ファイル配置・`_index.md`/`_log.md` 更新・`qmd` 再インデックス・検索呼び出し**という
+その結果の**ファイル配置・`_index.md`/`_log.md` 更新・検索呼び出し**という
 機械的な部分だけをこの CLI が肩代わりする。中身の執筆・分類・重複判断は CLI では行わない。
 
 ## 前提
 
 - Python 3.8+（標準ライブラリのみ。サードパーティ依存なし）
-- 検索・再インデックスに [`qmd`](https://github.com/tobi/qmd) を使う（`qmd` が PATH に無い場合、`search`/`reindex` は警告を出してスキップする）
+- 検索に `semble` を使う（`semble` が PATH に無い場合、`search` は警告を出してスキップする）。
+  semble はファイル変更を自動検知してインデックスを無効化するため、明示的な再インデックスは不要
 
 ## セットアップ
 
@@ -25,17 +26,16 @@ llm-wiki config set-root ~/Documents/llm-wiki
 
 ## コマンド
 
-| コマンド                                 | 役割                                                                   |
-| ---------------------------------------- | ---------------------------------------------------------------------- |
-| `llm-wiki config set-root <path>`        | 保存先(root)を設定する                                                 |
-| `llm-wiki config get`                    | 現在の root を表示する                                                 |
-| `llm-wiki config path`                   | 設定ファイルのパスを表示する                                           |
-| `llm-wiki search <query> [-- <qmd引数>]` | `qmd query` で意味検索する（root 配下・任意の cwd から）               |
-| `llm-wiki read <relpath>`                | root（または root/wiki）配下のページを表示する                         |
-| `llm-wiki list [--category <cat>]`       | カテゴリ別にページ（パスとタイトル）を一覧する                         |
-| `llm-wiki add ...`                       | ページを新規作成し、`_index.md`/`_log.md` 更新・再インデックスまで行う |
-| `llm-wiki log "<msg>"`                   | `_log.md` に1行追記する                                                |
-| `llm-wiki reindex`                       | `qmd update && qmd embed` を実行する                                   |
+| コマンド                                    | 役割                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| `llm-wiki config set-root <path>`           | 保存先(root)を設定する                                                      |
+| `llm-wiki config get`                       | 現在の root を表示する                                                      |
+| `llm-wiki config path`                      | 設定ファイルのパスを表示する                                                |
+| `llm-wiki search <query> [-- <semble引数>]` | `semble search --content docs` で意味検索する（root 配下・任意の cwd から） |
+| `llm-wiki read <relpath>`                   | root（または root/wiki）配下のページを表示する                              |
+| `llm-wiki list [--category <cat>]`          | カテゴリ別にページ（パスとタイトル）を一覧する                              |
+| `llm-wiki add ...`                          | ページを新規作成し、`_index.md`/`_log.md` を更新する                        |
+| `llm-wiki log "<msg>"`                      | `_log.md` に1行追記する                                                     |
 
 ### `llm-wiki add`
 
@@ -62,7 +62,6 @@ llm-wiki add --category session --title "設計レビュー 議事メモ" --slug
 | `--slug`                  | ファイル名の slug。省略時は title から自動生成。title が非ASCIIなら必須 |
 | `--status`                | `decision` の frontmatter `status`（既定: `draft`。例: `accepted`）     |
 | `--body-file` / `--stdin` | 本文の入力元（排他）。省略時は見出しだけのスタブ                        |
-| `--no-reindex`            | `qmd` 再インデックスをスキップ                                          |
 | `--dry-run`               | 書き込まず、作成予定のファイル・index/log 更新内容だけ表示する          |
 
 カテゴリと配置・ファイル名・frontmatter の対応:
