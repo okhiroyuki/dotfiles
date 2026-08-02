@@ -34,48 +34,6 @@ function estimateCost(model, usage) {
   );
 }
 
-function expandHome(p) {
-  return p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p;
-}
-
-function matchesWorkspace(dir) {
-  if (!dir) return true;
-  const folders = vscode.workspace.workspaceFolders || [];
-  return folders.some(
-    (f) => dir === f.uri.fsPath || dir.startsWith(f.uri.fsPath + path.sep)
-  );
-}
-
-function formatText(data) {
-  const model = (data.model && data.model.display_name) || '?';
-  const cost = (data.cost && data.cost.total_cost_usd) || 0;
-  const ctx = Math.floor(
-    (data.context_window && data.context_window.used_percentage) || 0
-  );
-  return `$(hubot) ${model} · $${cost.toFixed(2)} · ${ctx}%`;
-}
-
-function formatTooltip(data) {
-  const added = (data.cost && data.cost.total_lines_added) || 0;
-  const removed = (data.cost && data.cost.total_lines_removed) || 0;
-  const durationMs = (data.cost && data.cost.total_duration_ms) || 0;
-  const mins = Math.floor(durationMs / 60000);
-  const cost = (data.cost && data.cost.total_cost_usd) || 0;
-  const ctx = Math.floor(
-    (data.context_window && data.context_window.used_percentage) || 0
-  );
-  return new vscode.MarkdownString(
-    [
-      `**Claude Code session**`,
-      `- Model: ${(data.model && data.model.display_name) || '?'}`,
-      `- Cost: $${cost.toFixed(4)}`,
-      `- Context used: ${ctx}%`,
-      `- Duration: ${mins}m`,
-      `- Diff: +${added} -${removed}`,
-    ].join('\n')
-  );
-}
-
 // Claude Codeのプロジェクトディレクトリ名は workspace の絶対パスの `/` を `-` に
 // 置き換えたもの（例: /Users/foo/bar -> -Users-foo-bar）。
 function encodeProjectDir(workspacePath) {
@@ -163,30 +121,7 @@ function activate(context) {
   item.name = 'Claude Status';
   context.subscriptions.push(item);
 
-  let cacheWatcher;
   let transcriptWatcher;
-
-  const readCacheSource = () => {
-    const config = vscode.workspace.getConfiguration('claudeStatus');
-    const cacheFile = expandHome(
-      config.get('cacheFile', '~/.cache/claude-status/latest.json')
-    );
-    try {
-      const stat = fs.statSync(cacheFile);
-      const data = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-      const dir = data && data.workspace && data.workspace.current_dir;
-      const config2 = vscode.workspace.getConfiguration('claudeStatus');
-      const matchOnly = config2.get('matchWorkspaceOnly', true);
-      if (matchOnly && !matchesWorkspace(dir)) return null;
-      return {
-        mtimeMs: stat.mtimeMs,
-        text: formatText(data),
-        tooltip: formatTooltip(data),
-      };
-    } catch {
-      return null;
-    }
-  };
 
   const readTranscriptSource = () => {
     const folders = vscode.workspace.workspaceFolders || [];
@@ -209,39 +144,22 @@ function activate(context) {
   };
 
   const render = () => {
-    const cache = readCacheSource();
     const transcript = readTranscriptSource();
 
-    const best = [cache, transcript]
-      .filter(Boolean)
-      .sort((a, b) => b.mtimeMs - a.mtimeMs)[0];
-
-    if (!best) {
+    if (!transcript) {
       item.hide();
       return;
     }
-    item.text = best.text;
-    item.tooltip = best.tooltip;
+    item.text = transcript.text;
+    item.tooltip = transcript.tooltip;
     item.show();
   };
 
   const setupWatchers = () => {
-    if (cacheWatcher) {
-      cacheWatcher.close();
-      cacheWatcher = undefined;
-    }
     if (transcriptWatcher) {
       transcriptWatcher.close();
       transcriptWatcher = undefined;
     }
-
-    const config = vscode.workspace.getConfiguration('claudeStatus');
-    const cacheFile = expandHome(
-      config.get('cacheFile', '~/.cache/claude-status/latest.json')
-    );
-    const cacheDir = path.dirname(cacheFile);
-    const cacheBase = path.basename(cacheFile);
-    fs.mkdirSync(cacheDir, { recursive: true });
 
     render();
 
@@ -250,14 +168,6 @@ function activate(context) {
       clearTimeout(timer);
       timer = setTimeout(render, 100);
     };
-
-    cacheWatcher = fs.watch(cacheDir, (_event, filename) => {
-      if (filename !== cacheBase) return;
-      scheduleRender();
-    });
-    context.subscriptions.push({
-      dispose: () => cacheWatcher && cacheWatcher.close(),
-    });
 
     const folders = vscode.workspace.workspaceFolders || [];
     if (folders.length) {
@@ -282,14 +192,6 @@ function activate(context) {
   setupWatchers();
 
   context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration((e) => {
-      if (
-        e.affectsConfiguration('claudeStatus.cacheFile') ||
-        e.affectsConfiguration('claudeStatus.matchWorkspaceOnly')
-      ) {
-        setupWatchers();
-      }
-    }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => setupWatchers())
   );
 }
