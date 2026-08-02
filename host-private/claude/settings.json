@@ -146,7 +146,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "claude-status"
+    "command": "~/dotfiles/scripts/claude-status-relay.sh"
   },
   "enabledPlugins": {
     "crit@crit": true,

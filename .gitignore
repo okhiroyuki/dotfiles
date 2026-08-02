@@ -158,3 +158,6 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# VSCode extension build artifacts
+vscode-extensions/**/*.vsix

@@ -1,0 +1,30 @@
+{
+  "name": "claude-status-vscode",
+  "displayName": "Claude Status",
+  "description": "Show the Claude Code session cost/context usage in the VS Code status bar",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Claude Status",
+      "properties": {
+        "claudeStatus.cacheFile": {
+          "type": "string",
+          "default": "~/.cache/claude-status/latest.json",
+          "description": "claude-status-relay.sh が書き出すキャッシュファイルのパス"
+        },
+        "claudeStatus.matchWorkspaceOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "payload の workspace.current_dir が現在のワークスペースと一致する場合のみ表示する"
+        }
+      }
+    }
+  }
+}
