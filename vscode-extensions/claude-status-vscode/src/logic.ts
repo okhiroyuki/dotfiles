@@ -43,7 +43,7 @@ export const CONTEXT_WINDOW_SIZES: Record<string, number> = {
 // $/MTok。cache writeは5分TTL(1.25倍)を採用。実際の値はモデルにより変動しうるため、あくまで目安。
 export const PRICING: Record<string, Pricing> = {
   'claude-opus-5': { input: 5.0, output: 25.0, cacheWrite: 6.25, cacheRead: 0.5 },
-  'claude-sonnet-5': { input: 3.0, output: 15.0, cacheWrite: 3.75, cacheRead: 0.3 },
+  'claude-sonnet-5': { input: 2.0, output: 10.0, cacheWrite: 2.5, cacheRead: 0.2 },
   'claude-haiku-4-5': { input: 1.0, output: 5.0, cacheWrite: 1.25, cacheRead: 0.1 },
 };
 

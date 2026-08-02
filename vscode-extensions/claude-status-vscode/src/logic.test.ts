@@ -11,6 +11,7 @@ import {
   computeUsageStats,
   formatTranscriptText,
   formatTooltipLines,
+  PRICING,
 } from './logic.ts';
 
 test('estimateCost: 単価未登録のモデルはnull', () => {
@@ -25,7 +26,8 @@ test('estimateCost: input/output/cache write/readを単価表通りに合算す�
     cache_creation_input_tokens: 1_000_000,
     cache_read_input_tokens: 1_000_000,
   });
-  assert.equal(cost, 3.0 + 15.0 + 3.75 + 0.3);
+  const price = PRICING['claude-sonnet-5'];
+  assert.equal(cost, price.input + price.output + price.cacheWrite + price.cacheRead);
 });
 
 test('estimateCost: usageのフィールド欠落は0として扱う', () => {
