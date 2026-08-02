@@ -45,7 +45,7 @@ run = "actionlint"
 description = "全lintを実行する"
 depends = ["lint:dprint", "lint:yaml", "lint:shell", "lint:actions"]
 
-[tasks.test]
+[tasks."test:scapple"]
 description = "scappleのテストと型検査を実行する"
 dir = "tools/scapple"
 run = "pnpm install --frozen-lockfile && pnpm exec tsc --noEmit && pnpm test"
@@ -65,6 +65,15 @@ dir = "vscode-extensions/claude-status-vscode"
 depends = ["build:claude-status-vscode"]
 run = "pnpm dlx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license && code --install-extension claude-status-vscode-*.vsix"
 
+[tasks."test:claude-status-vscode"]
+description = "claude-status-vscode拡張のロジック部分のテストを実行する"
+dir = "vscode-extensions/claude-status-vscode"
+run = "pnpm install && pnpm test"
+
+[tasks.test]
+description = "全テストを実行する"
+depends = ["test:scapple", "test:llm-wiki", "test:claude-status-vscode"]
+
 [tasks.check]
 description = "CI相当の全チェック（lint + test）"
-depends = ["lint", "test", "test:llm-wiki"]
+depends = ["lint", "test"]
