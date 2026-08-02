@@ -10,13 +10,16 @@ transcriptにはAPIから返るコスト情報（USD）が含まれないため�
 
 更新はイベント駆動（メッセージ確定のタイミング）で、ポーリングでの定期更新はしない。
 
+拡張本体はTypeScript（`src/extension.ts`）で記述し、`tsc` で `dist/extension.js` にコンパイルする。
+
 ## セットアップ
 
 ### 動作確認（Extension Development Host）
 
 ```sh
-cd ~/dotfiles/vscode-extensions/claude-status-vscode
-code .
+cd ~/dotfiles
+mise run build:claude-status-vscode
+code vscode-extensions/claude-status-vscode
 ```
 
 VSCodeが開いたら `F5`（Run > Start Debugging）で拡張開発ホストを起動する。新しいVSCodeウィンドウが立ち上がるので、そのウィンドウでフォルダを開いた状態でターミナル（VSCode内蔵でも外部WezTermでも可）から `claude` を起動するか、VSCode拡張パネル（Claude Code for VSCode）で会話する。ステータスバー左側に `$(hubot) <model> · ~yy% · ~$x.xxxx` が表示されれば成功。
@@ -24,9 +27,8 @@ VSCodeが開いたら `F5`（Run > Start Debugging）で拡張開発ホストを
 ### 常用インストール（VSIX化）
 
 ```sh
-cd ~/dotfiles/vscode-extensions/claude-status-vscode
-npx @vscode/vsce package --no-dependencies
-code --install-extension claude-status-vscode-<version>.vsix
+cd ~/dotfiles
+mise run install:claude-status-vscode
 ```
 
 ## 設定

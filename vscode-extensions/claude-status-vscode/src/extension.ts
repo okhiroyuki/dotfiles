@@ -1,10 +1,40 @@
-const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+
+interface Usage {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+interface Pricing {
+  input: number;
+  output: number;
+  cacheWrite: number;
+  cacheRead: number;
+}
+
+interface TranscriptEntry {
+  full: string;
+  mtimeMs: number;
+}
+
+interface ParsedUsage {
+  usage: Usage;
+  model: string | undefined;
+}
+
+interface TranscriptSource {
+  mtimeMs: number;
+  text: string;
+  tooltip: vscode.MarkdownString;
+}
 
 // 表示用の概算値。実際の値はモデルにより変動しうるため、あくまで目安。
-const CONTEXT_WINDOW_SIZES = {
+const CONTEXT_WINDOW_SIZES: Record<string, number> = {
   'claude-opus-5': 1000000,
   'claude-sonnet-5': 1000000,
   'claude-haiku-4-5': 200000,
@@ -12,14 +42,14 @@ const CONTEXT_WINDOW_SIZES = {
 };
 
 // $/MTok。cache writeは5分TTL(1.25倍)を採用。実際の値はモデルにより変動しうるため、あくまで目安。
-const PRICING = {
+const PRICING: Record<string, Pricing> = {
   'claude-opus-5': { input: 5.0, output: 25.0, cacheWrite: 6.25, cacheRead: 0.5 },
   'claude-sonnet-5': { input: 3.0, output: 15.0, cacheWrite: 3.75, cacheRead: 0.3 },
   'claude-haiku-4-5': { input: 1.0, output: 5.0, cacheWrite: 1.25, cacheRead: 0.1 },
 };
 
-function estimateCost(model, usage) {
-  const price = PRICING[model];
+function estimateCost(model: string | undefined, usage: Usage): number | null {
+  const price = model ? PRICING[model] : undefined;
   if (!price) return null;
   const input = usage.input_tokens || 0;
   const output = usage.output_tokens || 0;
@@ -36,11 +66,11 @@ function estimateCost(model, usage) {
 
 // Claude Codeのプロジェクトディレクトリ名は workspace の絶対パスの `/` を `-` に
 // 置き換えたもの（例: /Users/foo/bar -> -Users-foo-bar）。
-function encodeProjectDir(workspacePath) {
+function encodeProjectDir(workspacePath: string): string {
   return workspacePath.replace(/\//g, '-');
 }
 
-function findLatestTranscript(dir) {
+function findLatestTranscript(dir: string): TranscriptEntry | null {
   if (!fs.existsSync(dir)) return null;
   const files = fs
     .readdirSync(dir)
@@ -55,7 +85,7 @@ function findLatestTranscript(dir) {
 
 // jsonlの末尾だけ読み、最後のassistantメッセージのusage/modelを取り出す。
 // ファイルは追記専用なので末尾数十KBで十分カバーできる想定。
-function readLastUsage(file) {
+function readLastUsage(file: string): ParsedUsage | null {
   const stat = fs.statSync(file);
   const readSize = Math.min(stat.size, 64 * 1024);
   const fd = fs.openSync(file, 'r');
@@ -77,24 +107,24 @@ function readLastUsage(file) {
   return null;
 }
 
-function formatTranscriptText(model, usage) {
+function formatTranscriptText(model: string | undefined, usage: Usage): string {
   const total =
     (usage.input_tokens || 0) +
     (usage.cache_read_input_tokens || 0) +
     (usage.cache_creation_input_tokens || 0);
-  const windowSize = CONTEXT_WINDOW_SIZES[model] || CONTEXT_WINDOW_SIZES.default;
+  const windowSize = (model && CONTEXT_WINDOW_SIZES[model]) || CONTEXT_WINDOW_SIZES.default;
   const pct = Math.floor((total / windowSize) * 100);
   const cost = estimateCost(model, usage);
   const costText = cost === null ? '' : ` · ~$${cost.toFixed(4)}`;
   return `$(hubot) ${model || '?'} · ~${pct}%${costText}`;
 }
 
-function formatTranscriptTooltip(model, usage) {
+function formatTranscriptTooltip(model: string | undefined, usage: Usage): vscode.MarkdownString {
   const total =
     (usage.input_tokens || 0) +
     (usage.cache_read_input_tokens || 0) +
     (usage.cache_creation_input_tokens || 0);
-  const windowSize = CONTEXT_WINDOW_SIZES[model] || CONTEXT_WINDOW_SIZES.default;
+  const windowSize = (model && CONTEXT_WINDOW_SIZES[model]) || CONTEXT_WINDOW_SIZES.default;
   const pct = Math.floor((total / windowSize) * 100);
   const cost = estimateCost(model, usage);
   const costLine =
@@ -113,17 +143,14 @@ function formatTranscriptTooltip(model, usage) {
   );
 }
 
-function activate(context) {
-  const item = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left,
-    100
-  );
+export function activate(context: vscode.ExtensionContext): void {
+  const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   item.name = 'Claude Status';
   context.subscriptions.push(item);
 
-  let transcriptWatcher;
+  let transcriptWatcher: fs.FSWatcher | undefined;
 
-  const readTranscriptSource = () => {
+  const readTranscriptSource = (): TranscriptSource | null => {
     const folders = vscode.workspace.workspaceFolders || [];
     if (!folders.length) return null;
     const projectDir = path.join(
@@ -163,7 +190,7 @@ function activate(context) {
 
     render();
 
-    let timer;
+    let timer: ReturnType<typeof setTimeout>;
     const scheduleRender = () => {
       clearTimeout(timer);
       timer = setTimeout(render, 100);
@@ -196,6 +223,4 @@ function activate(context) {
   );
 }
 
-function deactivate() {}
-
-module.exports = { activate, deactivate };
+export function deactivate(): void {}
