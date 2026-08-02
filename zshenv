@@ -24,3 +24,15 @@ fi
 
 [[ -f ~/.zsh/configs/mise-shims.zsh ]] && source ~/.zsh/configs/mise-shims.zsh
 [[ -f ~/.zsh/configs/pnpm.zsh ]] && source ~/.zsh/configs/pnpm.zsh
+
+# claude-status は sheldon (zshrc経由、対話シェルのみ) で PATH に追加されるが、
+# Claude Code の statusLine は非対話シェルでコマンドを起動するため .zshrc は読まれない。
+# sheldon のクローン先を直接 PATH に載せて非対話シェルからも解決できるようにする。
+_claude_status_dir="$HOME/.local/share/sheldon/repos/github.com/claude-contrib/claude-status"
+if [ -d "$_claude_status_dir" ]; then
+  case ":$PATH:" in
+    *":$_claude_status_dir:"*) ;;
+    *) export PATH="$_claude_status_dir:$PATH" ;;
+  esac
+fi
+unset _claude_status_dir

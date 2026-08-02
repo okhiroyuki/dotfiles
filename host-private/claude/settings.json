@@ -99,13 +99,6 @@
       "WebFetch(domain:docs.brew.sh)",
       "WebFetch(domain:git-scm.com)"
     ],
-    "ask": [
-      "Bash(gh api *)",
-      "Bash(git push origin main*)",
-      "Bash(git push origin master*)",
-      "Bash(git push * origin main*)",
-      "Bash(git push * origin master*)"
-    ],
     "deny": [
       "Bash(gh api -X *)",
       "Bash(gh api --method *)",
@@ -129,7 +122,31 @@
       "Bash(git clean *-f*)",
       "Bash(curl *)",
       "Bash(wget *)"
+    ],
+    "ask": [
+      "Bash(gh api *)",
+      "Bash(git push origin main*)",
+      "Bash(git push origin master*)",
+      "Bash(git push * origin main*)",
+      "Bash(git push * origin master*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/validate-commit-message.py"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "claude-status"
   },
   "enabledPlugins": {
     "crit@crit": true,
@@ -164,20 +181,8 @@
       }
     }
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/validate-commit-message.py"
-          }
-        ]
-      }
-    ]
-  },
   "language": "japanese",
   "autoMemoryEnabled": true,
-  "theme": "dark"
+  "theme": "dark",
+  "effortLevel": "medium"
 }
