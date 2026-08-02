@@ -50,6 +50,11 @@ description = "scappleのテストと型検査を実行する"
 dir = "tools/scapple"
 run = "pnpm install --frozen-lockfile && pnpm exec tsc --noEmit && pnpm test"
 
+[tasks."install:scapple"]
+description = "scappleをグローバルコマンドとしてインストールする"
+dir = "tools/scapple"
+run = "pnpm install && pnpm run build && pnpm add -g ."
+
 [tasks."test:llm-wiki"]
 description = "llm-wiki CLIのテストを実行する"
 run = "python3 tools/llm-wiki/test_llm-wiki.py"

@@ -7,10 +7,8 @@ Scappleの`.scap`ファイル（XML）を、座標・色・フォントなどを
 初回のみ、グローバルコマンドとしてインストールする。
 
 ```bash
-cd ~/dotfiles/tools/scapple
-pnpm install
-pnpm run build
-pnpm add -g .
+cd ~/dotfiles
+mise run install:scapple
 ```
 
 ## 使い方
