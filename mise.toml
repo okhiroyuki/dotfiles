@@ -79,6 +79,10 @@ run = "pnpm install && pnpm test"
 description = "全テストを実行する"
 depends = ["test:scapple", "test:llm-wiki", "test:claude-status-vscode"]
 
+[tasks."update:plugins"]
+description = "Claude Codeのプラグインマーケットプレイスと有効化済みプラグインを更新する"
+run = "scripts/update-plugins.sh"
+
 [tasks.check]
 description = "CI相当の全チェック（lint + test）"
 depends = ["lint", "test"]
