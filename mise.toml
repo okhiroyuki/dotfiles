@@ -79,6 +79,10 @@ run = "pnpm install && pnpm test"
 description = "全テストを実行する"
 depends = ["test:scapple", "test:llm-wiki", "test:claude-status-vscode"]
 
+[tasks."install:semble"]
+description = "sembleをグローバルコマンドとしてインストールする"
+run = "scripts/install-semble.sh"
+
 [tasks."update:plugins"]
 description = "Claude Codeのプラグインマーケットプレイスと有効化済みプラグインを更新する"
 run = "scripts/update-plugins.sh"
