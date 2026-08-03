@@ -2,7 +2,7 @@
   "name": "claude-status-vscode",
   "displayName": "Claude Status",
   "description": "Show the Claude Code session cost/context usage in the VS Code status bar",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "engines": {
     "vscode": "1.131.0"

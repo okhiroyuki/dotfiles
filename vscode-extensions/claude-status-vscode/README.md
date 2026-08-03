@@ -4,7 +4,7 @@ Claude Codeのセッション情報（コスト概算・コンテキスト使用
 
 ## 仕組み
 
-Claude Codeの全セッション（VSCode拡張パネルでの会話も、ターミナルからの `claude` 起動も含む）は `~/.claude/projects/<workspaceパスの/を-に置換したもの>/<session-id>.jsonl` に逐次書き込まれる。この拡張は該当ディレクトリ内の最新更新ファイルを `fs.watch` し、末尾から最後のassistantメッセージの `usage`（トークン数）を読み取ってコンテキスト使用率と、モデルごとの単価表（コード内 `PRICING` 定数）を掛け合わせた概算コストを表示する。
+Claude Codeの全セッション（VSCode拡張パネルでの会話も、ターミナルからの `claude` 起動も含む）は `~/.claude/projects/<workspaceパスの/と_を-に置換したもの>/<session-id>.jsonl` に逐次書き込まれる。この拡張は該当ディレクトリ内の最新更新ファイルを `fs.watch` し、末尾から最後のassistantメッセージの `usage`（トークン数）を読み取ってコンテキスト使用率と、モデルごとの単価表（コード内 `PRICING` 定数）を掛け合わせた概算コストを表示する。
 
 transcriptにはAPIから返るコスト情報（USD）が含まれないため、`usage`（input/output/cache read/cache write）を単価表と掛け算して概算している。値はあくまで直近1ターン分の目安であり、セッション累計コストではない。正確な累計コストは `/usage` コマンドで確認する。
 

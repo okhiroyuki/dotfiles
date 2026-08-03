@@ -34,8 +34,18 @@ test('estimateCost: usageのフィールド欠落は0として扱う', () => {
   assert.equal(estimateCost('claude-sonnet-5', {}), 0);
 });
 
+test('estimateCost: バージョン番号付きモデル名は基本形で検索', () => {
+  const costWithVersion = estimateCost('claude-haiku-4-5-20251001', { input_tokens: 1_000_000 });
+  const costWithoutVersion = estimateCost('claude-haiku-4-5', { input_tokens: 1_000_000 });
+  assert.equal(costWithVersion, costWithoutVersion);
+});
+
 test('encodeProjectDir: 絶対パスの/を-に置換する', () => {
   assert.equal(encodeProjectDir('/Users/foo/bar'), '-Users-foo-bar');
+});
+
+test('encodeProjectDir: _も-に置換する', () => {
+  assert.equal(encodeProjectDir('/Users/hiroyuki_okada/dotfiles'), '-Users-hiroyuki-okada-dotfiles');
 });
 
 test('findLatestTranscript: 存在しないディレクトリはnull', () => {

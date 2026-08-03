@@ -68,10 +68,10 @@ export function estimateCost(model: string | undefined, usage: Usage): number | 
   );
 }
 
-// Claude Codeのプロジェクトディレクトリ名は workspace の絶対パスの `/` を `-` に
-// 置き換えたもの（例: /Users/foo/bar -> -Users-foo-bar）。
+// Claude Codeのプロジェクトディレクトリ名は workspace の絶対パスの `/` と `_` を
+// `-` に置き換えたもの（例: /Users/foo_bar/baz -> -Users-foo-bar-baz）。
 export function encodeProjectDir(workspacePath: string): string {
-  return workspacePath.replace(/\//g, '-');
+  return workspacePath.replace(/[/_]/g, '-');
 }
 
 export function findLatestTranscript(dir: string): TranscriptEntry | null {
