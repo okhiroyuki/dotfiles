@@ -48,7 +48,12 @@ export const PRICING: Record<string, Pricing> = {
 };
 
 export function estimateCost(model: string | undefined, usage: Usage): number | null {
-  const price = model ? PRICING[model] : undefined;
+  let price = model ? PRICING[model] : undefined;
+  // モデル名がバージョン番号を含む場合、バージョンを除いたキーで再検索
+  if (!price && model) {
+    const baseModel = model.replace(/-\d{8}$/, '');
+    price = PRICING[baseModel];
+  }
   if (!price) return null;
   const input = usage.input_tokens || 0;
   const output = usage.output_tokens || 0;
