@@ -138,6 +138,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "rtk hook claude"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "python3 ~/.claude/hooks/validate-commit-message.py"
           }
         ]
@@ -183,6 +192,6 @@
   },
   "language": "japanese",
   "autoMemoryEnabled": true,
-  "theme": "dark",
+  "theme": "auto",
   "effortLevel": "medium"
 }
