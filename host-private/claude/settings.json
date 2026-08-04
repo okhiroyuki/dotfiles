@@ -128,7 +128,8 @@
       "Bash(git push origin main*)",
       "Bash(git push origin master*)",
       "Bash(git push * origin main*)",
-      "Bash(git push * origin master*)"
+      "Bash(git push * origin master*)",
+      "Bash(gh pr create *)"
     ]
   },
   "hooks": {
