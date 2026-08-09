@@ -10,7 +10,7 @@ model: opus
 
 ## 前提条件
 
-`scapple`コマンドがセットアップ済みであること（セットアップ手順は`tools/scapple/README.md`を参照）。
+`scapple`コマンドがセットアップ済みであること（セットアップ手順は`tools/cli/scapple/README.md`を参照）。
 
 ## 手順
 

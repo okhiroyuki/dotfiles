@@ -32,9 +32,9 @@ install_pytool "yamllint" yamllint
 install_pytool "shellcheck-py" shellcheck
 
 # scapple の依存（npm レジストリ経由）
-if [ -d "$project_dir/tools/scapple" ]; then
+if [ -d "$project_dir/tools/cli/scapple" ]; then
   corepack enable >/dev/null 2>&1 || true
-  (cd "$project_dir/tools/scapple" && pnpm install --frozen-lockfile)
+  (cd "$project_dir/tools/cli/scapple" && pnpm install --frozen-lockfile)
 fi
 
 # 後続ターンでも ~/.local/bin を PATH に残す。
