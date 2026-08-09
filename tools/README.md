@@ -6,7 +6,7 @@ dotfiles 管理下に置く、グローバルインストールする CLI ツー
 ここに置いたツールはシンボリックリンクではなく、各ディレクトリ内で
 個別にビルド・グローバルインストールして使います。
 
-VSCode拡張機能は配布形式・インストール先が異なるため、[`vscode-extensions/`](../vscode-extensions/README.md) に分けています。
+VSCode拡張・Chrome拡張はホストアプリ独自の配布形式・インストール先を使うため、[`extensions/`](../extensions/README.md) に分けています。
 
 ## ツール一覧
 

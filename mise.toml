@@ -61,23 +61,23 @@ run = "python3 tools/llm-wiki/test_llm-wiki.py"
 
 [tasks."build:claude-status-vscode"]
 description = "claude-status-vscode拡張をコンパイルする"
-dir = "vscode-extensions/claude-status-vscode"
+dir = "extensions/vscode/claude-status-vscode"
 run = "pnpm install && pnpm run compile"
 
 [tasks."install:claude-status-vscode"]
 description = "claude-status-vscode拡張をVSIX化してインストールする"
-dir = "vscode-extensions/claude-status-vscode"
+dir = "extensions/vscode/claude-status-vscode"
 depends = ["build:claude-status-vscode"]
 run = "pnpm dlx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license && code --install-extension claude-status-vscode-*.vsix"
 
 [tasks."test:claude-status-vscode"]
 description = "claude-status-vscode拡張のロジック部分のテストを実行する"
-dir = "vscode-extensions/claude-status-vscode"
+dir = "extensions/vscode/claude-status-vscode"
 run = "pnpm install && pnpm test"
 
 [tasks."test:github-html-viewer"]
 description = "github-html-viewer Chrome拡張のロジック部分のテストを実行する"
-dir = "chrome-extensions/github-html-viewer"
+dir = "extensions/chrome/github-html-viewer"
 run = "node --test lib/*.test.js"
 
 [tasks.test]

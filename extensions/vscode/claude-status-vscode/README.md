@@ -19,7 +19,7 @@ transcriptにはAPIから返るコスト情報（USD）が含まれないため�
 ```sh
 cd ~/dotfiles
 mise run build:claude-status-vscode
-code vscode-extensions/claude-status-vscode
+code extensions/vscode/claude-status-vscode
 ```
 
 VSCodeが開いたら `F5`（Run > Start Debugging）で拡張開発ホストを起動する。新しいVSCodeウィンドウが立ち上がるので、そのウィンドウでフォルダを開いた状態でターミナル（VSCode内蔵でも外部WezTermでも可）から `claude` を起動するか、VSCode拡張パネル（Claude Code for VSCode）で会話する。ステータスバー左側に `$(hubot) <model> · ~yy% · ~$x.xxxx` が表示されれば成功。

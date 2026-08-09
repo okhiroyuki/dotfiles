@@ -17,7 +17,7 @@ GitHubのソースコード表示ではなく、実際にレンダリングさ�
 
 1. `chrome://extensions` を開く
 2. 右上の「デベロッパーモード」を有効にする
-3. 「パッケージ化されていない拡張機能を読み込む」から `chrome-extensions/github-html-viewer/` を選択する
+3. 「パッケージ化されていない拡張機能を読み込む」から `extensions/chrome/github-html-viewer/` を選択する
 
 コードを変更した場合は、`chrome://extensions` の当該拡張の再読み込みボタンを押してください。
 

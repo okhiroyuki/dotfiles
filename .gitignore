@@ -160,4 +160,4 @@ __pycache__/
 .ruff_cache/
 
 # VSCode extension build artifacts
-vscode-extensions/**/*.vsix
+extensions/vscode/**/*.vsix
