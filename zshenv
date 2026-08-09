@@ -13,12 +13,12 @@ if [ -d /opt/homebrew/bin ]; then
   esac
 fi
 
-# ~/dotfiles/tools/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
+# ~/dotfiles/tools/cli/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
 # tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。
-if [ -d "$HOME/dotfiles/tools/llm-wiki" ]; then
+if [ -d "$HOME/dotfiles/tools/cli/llm-wiki" ]; then
   case ":$PATH:" in
-    *":$HOME/dotfiles/tools/llm-wiki:"*) ;;
-    *) export PATH="$HOME/dotfiles/tools/llm-wiki:$PATH" ;;
+    *":$HOME/dotfiles/tools/cli/llm-wiki:"*) ;;
+    *) export PATH="$HOME/dotfiles/tools/cli/llm-wiki:$PATH" ;;
   esac
 fi
 

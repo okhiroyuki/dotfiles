@@ -6,13 +6,13 @@ model: opus
 
 wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`）にある。検索インデックスは`semble`側のグローバルキャッシュ（`~/Library/Caches/semble`）にあり、ファイル変更を自動検知するため明示的な再インデックスは不要。
 
-ファイル配置・`_index.md`/`_log.md`更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/llm-wiki`、PATH済み・任意のcwdから動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki`が扱わない`raw/`・画像の取り回しに集中する。`cd`やsembleの直接実行、`_index.md`/`_log.md`の手編集はしない。
+ファイル配置・`_index.md`/`_log.md`更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/cli/llm-wiki`、PATH済み・任意のcwdから動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki`が扱わない`raw/`・画像の取り回しに集中する。`cd`やsembleの直接実行、`_index.md`/`_log.md`の手編集はしない。
 
 `~/Documents/llm-wiki/` はgitリポジトリだが今後コミットは行わない（履歴は残すが更新しない。必要な場合はユーザー自身が行う）。
 
 このスキルが扱うのは記録側（Push / Ingest）である。作業開始前に既存の知見を検索する義務は `rules/llm-wiki.md` が担当する。
 
-## llm-wiki コマンド（詳細: `~/dotfiles/tools/llm-wiki/README.md`）
+## llm-wiki コマンド（詳細: `~/dotfiles/tools/cli/llm-wiki/README.md`）
 
 | コマンド                                                                        | 用途                                                                 |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |

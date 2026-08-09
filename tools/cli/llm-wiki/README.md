@@ -15,7 +15,7 @@ LLM-wiki の**配管 CLI**。保存先(root)を一度設定しておけば、任
 
 ## セットアップ
 
-`~/dotfiles/tools/llm-wiki` は `zshenv` で PATH に追加済みなので、シェルを開き直せば
+`~/dotfiles/tools/cli/llm-wiki` は `zshenv` で PATH に追加済みなので、シェルを開き直せば
 `llm-wiki` コマンドがどこからでも使える。初回に保存先を設定する。
 
 ```sh

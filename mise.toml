@@ -47,37 +47,37 @@ depends = ["lint:dprint", "lint:yaml", "lint:shell", "lint:actions"]
 
 [tasks."test:scapple"]
 description = "scappleのテストと型検査を実行する"
-dir = "tools/scapple"
+dir = "tools/cli/scapple"
 run = "pnpm install --frozen-lockfile && pnpm exec tsc --noEmit && pnpm test"
 
 [tasks."install:scapple"]
 description = "scappleをグローバルコマンドとしてインストールする"
-dir = "tools/scapple"
+dir = "tools/cli/scapple"
 run = "pnpm install && pnpm run build && pnpm add -g ."
 
 [tasks."test:llm-wiki"]
 description = "llm-wiki CLIのテストを実行する"
-run = "python3 tools/llm-wiki/test_llm-wiki.py"
+run = "python3 tools/cli/llm-wiki/test_llm-wiki.py"
 
 [tasks."build:claude-status-vscode"]
 description = "claude-status-vscode拡張をコンパイルする"
-dir = "extensions/vscode/claude-status-vscode"
+dir = "tools/extensions/vscode/claude-status-vscode"
 run = "pnpm install && pnpm run compile"
 
 [tasks."install:claude-status-vscode"]
 description = "claude-status-vscode拡張をVSIX化してインストールする"
-dir = "extensions/vscode/claude-status-vscode"
+dir = "tools/extensions/vscode/claude-status-vscode"
 depends = ["build:claude-status-vscode"]
 run = "pnpm dlx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license && code --install-extension claude-status-vscode-*.vsix"
 
 [tasks."test:claude-status-vscode"]
 description = "claude-status-vscode拡張のロジック部分のテストを実行する"
-dir = "extensions/vscode/claude-status-vscode"
+dir = "tools/extensions/vscode/claude-status-vscode"
 run = "pnpm install && pnpm test"
 
 [tasks."test:github-html-viewer"]
 description = "github-html-viewer Chrome拡張のロジック部分のテストを実行する"
-dir = "extensions/chrome/github-html-viewer"
+dir = "tools/extensions/chrome/github-html-viewer"
 run = "node --test lib/*.test.js"
 
 [tasks.test]

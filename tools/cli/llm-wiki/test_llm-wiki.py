@@ -4,7 +4,7 @@
 CLI を一時 root に対して実行し、ファイル配置・_index.md/_log.md 更新・
 命名規則・エラー処理を検証する。semble には依存しない（検索系コマンドは呼ばない）。
 
-実行: python3 tools/llm-wiki/test_llm-wiki.py
+実行: python3 tools/cli/llm-wiki/test_llm-wiki.py
 """
 
 import os

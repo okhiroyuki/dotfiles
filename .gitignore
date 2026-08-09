@@ -152,7 +152,7 @@ dist
 local/*
 !local/README.md
 
-## Python (tools/llm-wiki 等)
+## Python (tools/cli/llm-wiki 等)
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -160,4 +160,4 @@ __pycache__/
 .ruff_cache/
 
 # VSCode extension build artifacts
-extensions/vscode/**/*.vsix
+tools/extensions/vscode/**/*.vsix
