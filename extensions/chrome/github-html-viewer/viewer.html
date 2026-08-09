@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>GitHub HTML Viewer</title>
+    <link rel="stylesheet" href="viewer.css" />
+  </head>
+  <body>
+    <header class="ghv-header">
+      <span id="ghv-filename" class="ghv-filename">読み込み中…</span>
+      <div class="ghv-actions">
+        <button id="ghv-toggle-source" type="button">ソースを表示</button>
+        <a id="ghv-source-link" href="#" target="_blank" rel="noopener">GitHubで開く</a>
+      </div>
+    </header>
+    <main class="ghv-main">
+      <iframe
+        id="ghv-frame"
+        sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+      ></iframe>
+      <pre id="ghv-source" hidden></pre>
+    </main>
+    <script src="viewer.js"></script>
+  </body>
+</html>
