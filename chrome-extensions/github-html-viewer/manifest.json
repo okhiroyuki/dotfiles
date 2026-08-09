@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub HTML Viewer",
+  "version": "0.1.0",
+  "description": "GitHub上のHTMLファイルをブラウザでレンダリング表示するボタンを追加します",
+  "permissions": ["storage"],
+  "host_permissions": ["https://github.com/*", "https://raw.githubusercontent.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["lib/logic.js", "content-script.js"],
+      "css": ["content-script.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

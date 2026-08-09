@@ -75,9 +75,14 @@ description = "claude-status-vscode拡張のロジック部分のテストを実
 dir = "vscode-extensions/claude-status-vscode"
 run = "pnpm install && pnpm test"
 
+[tasks."test:github-html-viewer"]
+description = "github-html-viewer Chrome拡張のロジック部分のテストを実行する"
+dir = "chrome-extensions/github-html-viewer"
+run = "node --test lib/*.test.js"
+
 [tasks.test]
 description = "全テストを実行する"
-depends = ["test:scapple", "test:llm-wiki", "test:claude-status-vscode"]
+depends = ["test:scapple", "test:llm-wiki", "test:claude-status-vscode", "test:github-html-viewer"]
 
 [tasks."install:semble"]
 description = "sembleをグローバルコマンドとしてインストールする"

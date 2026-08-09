@@ -1,0 +1,9 @@
+{
+  "name": "github-html-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub上のHTMLファイルをレンダリング表示するChrome拡張",
+  "scripts": {
+    "test": "node --test lib/*.test.js"
+  }
+}
