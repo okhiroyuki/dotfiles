@@ -15,8 +15,8 @@ importers:
         specifier: 1.125.0
         version: 1.125.0
       tsx:
-        specifier: 4.23.10
-        version: 4.23.10
+        specifier: 4.23.11
+        version: 4.23.11
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -315,8 +315,8 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  tsx@4.23.10:
-    resolution: {integrity: sha512-0Vb9eKU47njkxv/6B8CRZRDsxNDT/Pz+BIU+M5jw7xL3TdzAjSxlZUxu0xFL/kLpaG3sHZ0LH2wbK1T1yo7CUQ==}
+  tsx@4.23.11:
+    resolution: {integrity: sha512-Ry2oTEUnhBdeEdWIztY8kf3/nBGnPnjMLVGL0YfdRXMORuPER5NlKmayqxtxRxwB1xBN+RivRaJfe7PM1rtiyw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -506,7 +506,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  tsx@4.23.10:
+  tsx@4.23.11:
     dependencies:
       esbuild: 0.28.1
     optionalDependencies:
