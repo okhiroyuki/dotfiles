@@ -2,16 +2,10 @@
 # (scripts, tool subprocesses) where zshrc's mise activation never
 # runs. Keep this file limited to lightweight PATH setup only.
 
-# Apple Silicon Homebrew isn't part of macOS's default PATH (only
-# /usr/local/bin, the Intel prefix, ships in /etc/paths), so brew itself
-# and everything installed through it (mise, sheldon, starship, rcm, ...)
-# would otherwise be unresolvable in a fresh shell.
-if [ -d /opt/homebrew/bin ]; then
-  case ":$PATH:" in
-    *":/opt/homebrew/bin:"*) ;;
-    *) export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" ;;
-  esac
-fi
+# Shared with zprofile: macOS's /etc/zprofile path_helper runs *after*
+# zshenv for login shells and can push /opt/homebrew/bin behind /usr/bin,
+# so this has to be re-applied there too (see homebrew.zsh).
+[[ -f ~/.zsh/configs/homebrew.zsh ]] && source ~/.zsh/configs/homebrew.zsh
 
 # ~/dotfiles/tools/cli/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
 # tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。
