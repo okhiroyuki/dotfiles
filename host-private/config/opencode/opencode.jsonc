@@ -8,6 +8,7 @@
     "~/.claude/rules/llm-wiki.md",
     "~/.claude/rules/security.md",
     "~/.claude/rules/local.md",
-    "~/.claude/rules/subagent-delegation.md"
+    "~/.claude/rules/subagent-delegation.md",
+    "~/.cluade/rules/zat.md"
   ]
 }
