@@ -13,6 +13,7 @@
 ## ツール利用
 
 @rules/semble.md
+@rules/zat.md
 @rules/web-access.md
 @rules/llm-wiki.md
 @rules/subagent-delegation.md
