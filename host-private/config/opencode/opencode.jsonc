@@ -3,12 +3,24 @@
   "instructions": [
     "~/.claude/rules/thinking.md",
     "~/.claude/rules/git.md",
-    "~/.claude/rules/semble.md",
-    "~/.claude/rules/web-access.md",
     "~/.claude/rules/llm-wiki.md",
     "~/.claude/rules/security.md",
     "~/.claude/rules/local.md",
     "~/.claude/rules/subagent-delegation.md",
-    "~/.cluade/rules/zat.md"
-  ]
+    "~/.claude/rules/zat.md"
+  ],
+  "permission": {
+    "read": "allow",
+    "skill": "allow",
+    "todowrite": "allow",
+    "question": "allow",
+    "ax": "allow",
+    "semble_search": "allow",
+    "semble_find_related": "allow",
+    "webfetch": "deny",
+    "bash": {
+      "curl *": "deny",
+      "curl": "deny"
+    }
+  }
 }
