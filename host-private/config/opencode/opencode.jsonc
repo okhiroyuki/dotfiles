@@ -20,7 +20,9 @@
     "webfetch": "deny",
     "bash": {
       "curl *": "deny",
-      "curl": "deny"
+      "curl": "deny",
+      "grep *": "deny",
+      "grep": "deny"
     }
   }
 }
