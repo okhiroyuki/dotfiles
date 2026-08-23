@@ -4,7 +4,7 @@ Personal dotfiles for macOS, based on [thoughtbot/dotfiles](https://github.com/t
 and managed with [rcm](https://github.com/thoughtbot/rcm).
 
 - Manages settings (zsh, git, starship, and more) in this repository and symlinks them into your home directory with `rcup`.
-- Switches packages and some settings between **private** and **work** machines.
+- Switches packages and some settings for **private** machines.
 - Keeps machine-local / domain-specific personal settings out of version control in `local/` (gitignored).
 
 ## Requirements
@@ -22,31 +22,21 @@ git clone git@github.com:okhiroyuki/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-Then run **either** the private or the work setup, depending on the machine.
-Keep the `brew bundle` file and the `rcup -B` tag in sync.
-
-Private machine:
+Then run the private setup:
 
 ```zsh
 brew bundle --file=host-private/Brewfile
 env RCRC=$HOME/dotfiles/rcrc rcup -B private
 ```
 
-Work machine:
-
-```zsh
-brew bundle --file=host-work/Brewfile
-env RCRC=$HOME/dotfiles/rcrc rcup -B work
-```
-
 `env RCRC=...` tells `rcup` where the config file is on the first run.
-It then symlinks that `rcrc` to `~/.rcrc`, so later runs need only `rcup -B private` (or `-B work`).
+It then symlinks that `rcrc` to `~/.rcrc`, so later runs need only `rcup -B private`.
 
 ## Update
 
 ```zsh
 git pull
-rcup -B private   # or -B work
+rcup -B private
 ```
 
 ## Make your own customizations
