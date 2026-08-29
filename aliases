@@ -2,6 +2,16 @@
 alias ..="cd .."
 alias mkdir="mkdir -p"
 
+# rtk: LLM token-optimized proxies
+# https://github.com/rtk-ai/rtk
+if builtin command -v rtk > /dev/null; then
+  alias ls="rtk ls"
+  alias ll="rtk ls -l"
+  alias la="rtk ls -la"
+  alias cat="rtk read"
+  alias grep="rtk grep"
+fi
+
 # tig status
 # brew install tig
 if builtin command -v tig > /dev/null; then
