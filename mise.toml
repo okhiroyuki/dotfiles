@@ -9,7 +9,7 @@ dprint = "0.56.1"
 shellcheck = "0.11.0"
 actionlint = "1"
 yamllint = "1"
-lefthook = "2.1.11"
+lefthook = "2.1.12"
 # yamllintはpipxバックエンドでインストールされるが、システムにpipxが無い環境では
 # mise管理下のuv(uvx)がpipxの代替実行手段として使われるため、依存として明示する。
 uv = "0"
@@ -59,22 +59,6 @@ run = "pnpm install && pnpm run build && pnpm add -g ."
 description = "llm-wiki CLIのテストを実行する"
 run = "python3 tools/cli/llm-wiki/test_llm-wiki.py"
 
-[tasks."build:claude-status-vscode"]
-description = "claude-status-vscode拡張をコンパイルする"
-dir = "tools/extensions/vscode/claude-status-vscode"
-run = "pnpm install && pnpm run compile"
-
-[tasks."install:claude-status-vscode"]
-description = "claude-status-vscode拡張をVSIX化してインストールする"
-dir = "tools/extensions/vscode/claude-status-vscode"
-depends = ["build:claude-status-vscode"]
-run = "pnpm dlx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license && code --install-extension claude-status-vscode-*.vsix"
-
-[tasks."test:claude-status-vscode"]
-description = "claude-status-vscode拡張のロジック部分のテストを実行する"
-dir = "tools/extensions/vscode/claude-status-vscode"
-run = "pnpm install && pnpm test"
-
 [tasks."test:github-html-viewer"]
 description = "github-html-viewer Chrome拡張のロジック部分のテストを実行する"
 dir = "tools/extensions/chrome/github-html-viewer"
@@ -82,7 +66,7 @@ run = "node --test lib/*.test.js"
 
 [tasks.test]
 description = "全テストを実行する"
-depends = ["test:scapple", "test:llm-wiki", "test:claude-status-vscode", "test:github-html-viewer"]
+depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer"]
 
 [tasks."install:semble"]
 description = "sembleをグローバルコマンドとしてインストールする"
