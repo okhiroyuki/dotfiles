@@ -4,3 +4,7 @@
 [[ -f ~/.zsh/configs/homebrew.zsh ]] && source ~/.zsh/configs/homebrew.zsh
 [[ -f ~/.zsh/configs/mise-shims.zsh ]] && source ~/.zsh/configs/mise-shims.zsh
 [[ -f ~/.zsh/configs/pnpm.zsh ]] && source ~/.zsh/configs/pnpm.zsh
+
+# Added by OrbStack: command-line tools and integration
+# This won't be added again if you remove it.
+source ~/.orbstack/shell/init.zsh 2>/dev/null || :
