@@ -22,6 +22,7 @@ model: opus
 
 - [ ] 整形（改行・太字の使い分け・ダッシュ/中黒の不使用）が formatting-and-headings.md に従っている
 - [ ] 各段落が一つのトピックに絞られ、論証が一方向に進んでいる（argumentation.md）
-- [ ] 断定・推量の使い分けが本文の根拠と整合し、ツッコミどころが残っていない（argumentation.md）
+- [ ] 主張を立てている箇所に限り、断定・推量の使い分けが本文の根拠と整合している（argumentation.md）
+- [ ] 事実の記述に不要な根拠・弁明を足していない（argumentation.md）
 - [ ] LLM っぽい空句（予告と総括、正面から系、空虚な形容・動詞など）が残っていない（voice-and-restraint.md）
 - [ ] 同じ主張の言い換え重複や、自力で補える説明の書き過ぎがない（reader-and-integrity.md）
