@@ -5,6 +5,12 @@
         "allows": ["断定"]
       },
       "no-short-topic-comma": false
+    },
+    "@textlint-ja/preset-ai-writing": {
+      "no-ai-list-formatting": {
+        "disableBoldListItems": true
+      },
+      "ai-tech-writing-guideline": false
     }
   }
 }
