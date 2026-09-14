@@ -1,4 +1,5 @@
 import { type Plugin, tool } from "@opencode-ai/plugin"
+import { spawnText } from "./lib/spawn.ts"
 
 export const AxFetchPlugin: Plugin = async () => {
   return {
@@ -25,13 +26,8 @@ export const AxFetchPlugin: Plugin = async () => {
           const argv = ["ax", args.url]
           if (args.selector) argv.push(args.selector)
           if (args.flags?.length) argv.push(...args.flags)
-          const proc = Bun.spawn(argv, { stdout: "pipe", stderr: "pipe" })
-          const [stdout, stderr] = await Promise.all([
-            new Response(proc.stdout).text(),
-            new Response(proc.stderr).text(),
-          ])
-          await proc.exited
-          return stderr ? `${stdout}\n# stderr\n${stderr}` : stdout
+          const res = await spawnText(argv)
+          return res.stderr ? `${res.stdout}\n# stderr\n${res.stderr}` : res.stdout
         },
       }),
     },

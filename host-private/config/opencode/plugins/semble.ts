@@ -1,4 +1,5 @@
 import { type Plugin, tool } from "@opencode-ai/plugin"
+import { spawnText } from "./lib/spawn.ts"
 
 const CONTENT_TYPES = ["code", "docs", "config", "all"] as const
 
@@ -9,24 +10,10 @@ type SearchArgs = {
   content?: string[]
 }
 
-async function spawnText(argv: string[], cwd: string) {
-  try {
-    const proc = Bun.spawn(argv, { stdout: "pipe", stderr: "pipe", cwd })
-    const [stdout, stderr] = await Promise.all([
-      new Response(proc.stdout).text(),
-      new Response(proc.stderr).text(),
-    ])
-    const code = await proc.exited
-    return { code, stdout, stderr }
-  } catch (error) {
-    return { code: 127, stdout: "", stderr: String(error) }
-  }
-}
-
 async function runSemble(args: string[], cwd: string) {
-  let res = await spawnText(["semble", ...args], cwd)
+  let res = await spawnText(["semble", ...args], { cwd })
   if (res.code === 127) {
-    res = await spawnText(["uvx", "--from", "semble[mcp]", "semble", ...args], cwd)
+    res = await spawnText(["uvx", "--from", "semble[mcp]", "semble", ...args], { cwd })
   }
   const out = res.stderr ? `${res.stdout}\n# stderr\n${res.stderr}` : res.stdout
   return res.code === 0 ? out : `${out}\n# exit code: ${res.code}`

@@ -1,11 +1,12 @@
 import type { Plugin } from "@opencode-ai/plugin"
+import { which } from "./lib/spawn.ts"
 
 const TARGETS = [/^(?:ls|rg)\b/, /^git (?:diff|log|status|show|blame)\b/]
 const UNSAFE = /[;&|<>`$()\n]/
 
 export const RtkPlugin: Plugin = async () => {
   if (process.env.RTK_PLUGIN_DISABLE) return {}
-  const bin = Bun.which("rtk")
+  const bin = which("rtk")
   if (!bin) return {}
   return {
     "tool.execute.before": async (input, output) => {
