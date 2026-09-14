@@ -18,7 +18,8 @@ uv = "0"
 # CI（.github/workflows/check.yml）も lefthook も同じ `mise run` を呼ぶ。
 
 [tasks.setup]
-description = "gitフックを有効化する（初回のみ）"
+description = "gitフックを有効化し、Claude Codeのhookが使うツールを用意する（初回のみ）"
+depends = ["install:textlint"]
 run = "lefthook install"
 
 [tasks.fmt]
@@ -35,7 +36,7 @@ run = "yamllint --strict -c .yamllint ."
 
 [tasks."lint:shell"]
 description = "shellcheckでbashスクリプトをチェックする"
-run = "shellcheck scripts/*.sh"
+run = "shellcheck scripts/*.sh claude/hooks/*.sh"
 
 [tasks."lint:actions"]
 description = "actionlintでGitHub Actionsをチェックする"
@@ -67,6 +68,16 @@ run = "node --test lib/*.test.js"
 [tasks.test]
 description = "全テストを実行する"
 depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer"]
+
+[tasks."install:textlint"]
+description = "AIっぽい日本語を検出するtextlint環境を用意する（Claude Codeのhookが使う）"
+dir = "tools/textlint"
+run = "pnpm install --frozen-lockfile"
+
+[tasks."lint:text"]
+description = "textlintでAIっぽい日本語をチェックする"
+dir = "tools/textlint"
+run = "./node_modules/.bin/textlint --config .textlintrc.json '../../claude/**/*.md' '../../agents/**/*.md' '../../.claude/**/*.md' README.md"
 
 [tasks."install:semble"]
 description = "sembleをグローバルコマンドとしてインストールする"
