@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "preset-ai-words-ja": {
+      "no-ai-words": {
+        "allows": ["断定"]
+      },
+      "no-short-topic-comma": false
+    }
+  }
+}

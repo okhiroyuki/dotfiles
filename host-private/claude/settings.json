@@ -155,6 +155,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh ~/.claude/hooks/textlint-ai-words.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

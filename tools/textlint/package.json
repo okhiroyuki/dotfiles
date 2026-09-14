@@ -1,0 +1,10 @@
+{
+  "name": "dotfiles-textlint",
+  "private": true,
+  "description": "AIっぽい日本語を検出するtextlint環境。Claude CodeのPostToolUse hookから呼ぶ",
+  "license": "ISC",
+  "dependencies": {
+    "textlint": "15.8.0",
+    "textlint-rule-preset-ai-words-ja": "1.1.0"
+  }
+}
