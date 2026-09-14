@@ -7,6 +7,7 @@
       "Bash(gh pr diff *)",
       "Bash(gh pr checks *)",
       "Bash(gh pr status *)",
+      "Bash(gh pr create *)",
       "Bash(gh issue list *)",
       "Bash(gh issue view *)",
       "Bash(gh issue status *)",
@@ -131,8 +132,7 @@
       "Bash(git push origin main*)",
       "Bash(git push origin master*)",
       "Bash(git push * origin main*)",
-      "Bash(git push * origin master*)",
-      "Bash(gh pr create *)"
+      "Bash(git push * origin master*)"
     ]
   },
   "hooks": {
