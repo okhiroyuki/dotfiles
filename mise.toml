@@ -70,12 +70,12 @@ description = "全テストを実行する"
 depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer"]
 
 [tasks."install:textlint"]
-description = "AIっぽい日本語を検出するtextlint環境を用意する（Claude Codeのhookが使う）"
+description = "日本語Markdownを検出するtextlint環境を用意する（Claude Codeのhookが使う）"
 dir = "tools/textlint"
 run = "pnpm install --frozen-lockfile"
 
 [tasks."lint:text"]
-description = "textlintでAIっぽい日本語をチェックする"
+description = "textlintで日本語Markdownをチェックする"
 dir = "tools/textlint"
 run = "./node_modules/.bin/textlint --config .textlintrc.json '../../claude/**/*.md' '../../agents/**/*.md' '../../.claude/**/*.md' README.md"
 

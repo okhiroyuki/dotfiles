@@ -2,15 +2,31 @@
   "rules": {
     "preset-ai-words-ja": {
       "no-ai-words": {
-        "allows": ["断定"]
+        "allows": ["経路", "漏れ"]
       },
       "no-short-topic-comma": false
     },
     "@textlint-ja/preset-ai-writing": {
       "no-ai-list-formatting": {
-        "disableBoldListItems": true
+        "disableBoldListItems": false
       },
       "ai-tech-writing-guideline": false
+    },
+    "preset-ja-technical-writing": {
+      "max-kanji-continuous-len": false,
+      "arabic-kanji-numbers": false,
+      "no-mix-dearu-desumasu": {
+        "preferInHeader": "",
+        "preferInBody": "",
+        "preferInList": "",
+        "strict": false
+      },
+      "no-doubled-joshi": false,
+      "no-exclamation-question-mark": false,
+      "ja-no-weak-phrase": false
     }
+  },
+  "filters": {
+    "comments": true
   }
 }

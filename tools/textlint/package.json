@@ -1,11 +1,13 @@
 {
   "name": "dotfiles-textlint",
   "private": true,
-  "description": "AIっぽい日本語を検出するtextlint環境。Claude CodeのPostToolUse hookから呼ぶ",
+  "description": "日本語Markdownのtextlint環境。Claude CodeのPostToolUse hookから呼ぶ",
   "license": "ISC",
   "dependencies": {
     "@textlint-ja/textlint-rule-preset-ai-writing": "1.7.0",
     "textlint": "15.8.0",
-    "textlint-rule-preset-ai-words-ja": "1.1.0"
+    "textlint-filter-rule-comments": "^1.3.0",
+    "textlint-rule-preset-ai-words-ja": "1.1.0",
+    "textlint-rule-preset-ja-technical-writing": "12.0.2"
   }
 }
