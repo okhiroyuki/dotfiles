@@ -42,3 +42,4 @@ model: opus
 - [ ] 事実の記述に不要な根拠・弁明を足していない（argumentation.md）
 - [ ] LLM っぽい空句（予告と総括、正面から系、空虚な形容・動詞など）が残っていない（voice-and-restraint.md）
 - [ ] 同じ主張の言い換え重複や、自力で補える説明の書き過ぎがない（reader-and-integrity.md）
+- [ ] 読み手と共有されていない造語がなく、指示語・修飾語の指す先が書かれている（reader-and-integrity.md）
