@@ -30,20 +30,23 @@ model: opus
 - **[formatting-and-headings.md](references/formatting-and-headings.md)** — 整形（改行・脚注・太字・ダッシュ・中黒）、見出しの付け方
 - **[argumentation.md](references/argumentation.md)** — 段落と論証の構成（パラグラフライティング）、論証の厳密さ（ツッコミどころの除去）
 - **[voice-and-restraint.md](references/voice-and-restraint.md)** — 視点と語り、演出の抑制、LLM っぽい表現の禁止
-- **[reader-and-integrity.md](references/reader-and-integrity.md)** — 読み手の負荷の管理、冗長の排除、読者への誠実さ、既存文書のリライト
+- **[reader-and-integrity.md](references/reader-and-integrity.md)** — 読み手の負荷の管理、そのページに属さない内容の排除、冗長の排除、読者への誠実さ、既存文書のリライト
 
 ## 成功基準
 
 書き上げた・推敲した原稿を提示する前に、4ファイルの規範に照らして自己点検する。
 
 - [ ] 整形（改行・太字の使い分け・ダッシュ/中黒の不使用）が formatting-and-headings.md に従っている
-- [ ] 本文で個数を宣言した列挙を箇条書きに起こしている（番号で参照するなら番号付き。formatting-and-headings.md）
+- [ ] 一文が100文字以内で、AI語リストの語（`帰結` など）を使っていない（formatting-and-headings.md / voice-and-restraint.md）
+- [ ] 本文で個数を宣言した列挙を箇条書きに起こし、各項目を1論点・太字の主張・その根拠の形にしている（番号で参照するなら番号付き。formatting-and-headings.md）
+- [ ] 見出しが名詞1語や造語でなく、何についての話かを書いている（formatting-and-headings.md）
 - [ ] 各段落が一つのトピックに絞られ、論証が一方向に進んでいる（argumentation.md）
 - [ ] 主張を立てている箇所に限り、断定・推量の使い分けが本文の根拠と整合している（argumentation.md）
 - [ ] 事実の記述に不要な根拠・弁明を足していない（argumentation.md）
 - [ ] LLM っぽい空句（予告と総括、正面から系、空虚な形容・動詞など）が残っていない（voice-and-restraint.md）
 - [ ] 同じ主張の言い換え重複や、自力で補える説明の書き過ぎがない（reader-and-integrity.md）
 - [ ] 読み手と共有されていない造語がなく、指示語・修飾語の指す先が書かれている（reader-and-integrity.md）
-- [ ] 他文書の節・設問を番号だけで参照しておらず、そのページで扱わない論点はそう明示している（reader-and-integrity.md）
+- [ ] 他文書の節・設問や同一ページの前提を、番号や位置だけで参照していない（reader-and-integrity.md）
+- [ ] そのページで扱わない論点はそう明示し、検討の経緯や自分向けの作業メモは本文に置いていない（reader-and-integrity.md）
 - [ ] 読み手が前提を知らないと復元できない因果に、途中の段を補っている（argumentation.md）
 - [ ] 既存文書のリライトでは、もとにする版が最新かを確かめ、引き継ぐ事実の主張を出典に当てている（reader-and-integrity.md）
