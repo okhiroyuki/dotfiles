@@ -28,9 +28,9 @@ model: opus
 規範は4つの参照ファイルに分かれている。書く・推敲するときは該当するものを読む。迷ったら全部読む。
 
 - **[formatting-and-headings.md](references/formatting-and-headings.md)** — 整形（改行・脚注・太字・ダッシュ・中黒）、見出しの付け方
-- **[argumentation.md](references/argumentation.md)** — 段落と論証の構成（パラグラフライティング）、論証の厳密さ（ツッコミどころの除去）
-- **[voice-and-restraint.md](references/voice-and-restraint.md)** — 視点と語り、演出の抑制、LLM っぽい表現の禁止
-- **[reader-and-integrity.md](references/reader-and-integrity.md)** — 読み手の負荷の管理、そのページに属さない内容の排除、冗長の排除、読者への誠実さ、既存文書のリライト
+- **[argumentation.md](references/argumentation.md)** — 段落と論証の構成（パラグラフライティング）、理由の記述の長さ、論証の厳密さ（ツッコミどころの除去）
+- **[voice-and-restraint.md](references/voice-and-restraint.md)** — 視点と語り、評価だけ述べる語の禁止、演出の抑制、LLM っぽい表現の禁止
+- **[reader-and-integrity.md](references/reader-and-integrity.md)** — 読み手の負荷の管理、語の一貫性、そのページに属さない内容の排除、冗長の排除、読者への誠実さ、既存文書のリライト
 
 ## 成功基準
 
@@ -48,5 +48,9 @@ model: opus
 - [ ] 読み手と共有されていない造語がなく、指示語・修飾語の指す先が書かれている（reader-and-integrity.md）
 - [ ] 他文書の節・設問や同一ページの前提を、番号や位置だけで参照していない（reader-and-integrity.md）
 - [ ] そのページで扱わない論点はそう明示し、検討の経緯や自分向けの作業メモは本文に置いていない（reader-and-integrity.md）
+- [ ] 同じ語を1つの文書の中で2つの意味に使わず、意味ごとに別の語を立てている（reader-and-integrity.md）
+- [ ] `用語` の表の項目に何のためにあるかを書き、構造の部分を指す語が並ぶなら表の前に全体像の1文を置いている（reader-and-integrity.md）
+- [ ] 理由・根拠の記述が3〜4文に収まっている（argumentation.md）
+- [ ] 何が起きるかを書かずに評価だけ述べる語（「切れる」「害が大きい」「実害」など）を使っていない（voice-and-restraint.md）
 - [ ] 読み手が前提を知らないと復元できない因果に、途中の段を補っている（argumentation.md）
 - [ ] 既存文書のリライトでは、もとにする版が最新かを確かめ、引き継ぐ事実の主張を出典に当てている（reader-and-integrity.md）
