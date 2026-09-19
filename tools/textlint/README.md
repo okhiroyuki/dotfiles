@@ -45,9 +45,9 @@ mise run lint:text
 
 検出設定の単一の真実の源は [.textlintrc.json](.textlintrc.json)。
 
-- `no-ai-words.allows` に `断定` を入れている。
-  [japanese-tech-writing](../../claude/skills/japanese-tech-writing/SKILL.md) スキルが
-  「断定と推量の使い分け」を規範の用語として使っており、言い換えると規範自体が読めなくなる
+- `no-ai-words.allows` に `断定`、`経路`、`漏れ` を入れている。
+  `japanese-tech-writing` はAI語の指摘を補助検査として扱い、文脈上正確な語の使用を許容する。
+  「断定と推量の使い分け」のように規範上必要な語は、機械的な指摘から除外する
 - `no-short-topic-comma` は無効にしている。「〜は、」で主題を示す書き方は日本語として自然な場面も多く、
   指摘が多すぎてhookのフィードバックが埋もれる
 - `no-ai-list-formatting.disableBoldListItems` を `true` にしている。

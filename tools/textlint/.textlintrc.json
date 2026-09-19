@@ -2,7 +2,7 @@
   "rules": {
     "preset-ai-words-ja": {
       "no-ai-words": {
-        "allows": ["経路", "漏れ"]
+        "allows": ["断定", "経路", "漏れ"]
       },
       "no-short-topic-comma": false
     },
