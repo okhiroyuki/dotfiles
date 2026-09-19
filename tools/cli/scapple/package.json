@@ -1,8 +1,10 @@
 {
   "name": "scapple",
   "version": "1.0.0",
-  "description": "ScappleのXMLをノードと接続関係の構造化JSONに変換するCLI",
   "private": true,
+  "description": "ScappleのXMLをノードと接続関係の構造化JSONに変換するCLI",
+  "license": "ISC",
+  "type": "module",
   "bin": {
     "scapple": "./dist/bin/scapple.js"
   },
@@ -11,8 +13,6 @@
     "start": "tsx bin/scapple.ts",
     "test": "node --import tsx --test src/**/*.test.ts"
   },
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
     "fast-xml-parser": "5.11.1"
   },
