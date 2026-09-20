@@ -45,6 +45,7 @@ model: opus
 - [integrity.md](references/integrity.md)：事実、未確認事項、用語、略語、参照、固有名
 - [reasoning.md](references/reasoning.md)：主張、根拠、因果、重複、削除基準
 - [expression.md](references/expression.md)：文体、抽象語、評価語、能動態、見出し、Markdown整形
+- [human-signs.md](references/human-signs.md)：削らないもの、誤検知の判定、整形による情報損失の回避
 
 ## 完了前の確認
 
