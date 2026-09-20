@@ -74,6 +74,23 @@ llm-wiki add --category session --title "設計レビュー 議事メモ" --slug
 | `research` | `wiki/research/`  | `<slug>.md`                     | なし                                     |
 | `session`  | `wiki/sessions/`  | `YYYY-MM-DD-<slug>.md`          | なし                                     |
 
+## 検索品質のeval
+
+`search_eval.py` は `search_evals.json`（クエリと正解ページの対）について
+実際の `llm-wiki search` を実行して、top-1 的中率を報告します。
+あわせてノイズケース（どのページも正解でないクエリ）について
+スコアの平たさを報告します。
+プロンプトの言い換えで正解ページに辿り着けるかを確認する回帰テストです。
+
+```sh
+# 文書が20件程度に増えた時点・検索まわりを変更した時 恒例
+python3 tools/cli/llm-wiki/search_eval.py          # 人間可読
+python3 tools/cli/llm-wiki/search_eval.py --json   # 機械可読
+```
+
+クエリ追加は `search_evals.json` に `"query"` と `"expected"`（root 相対パス。
+正解なしのノイズ計測なら `null`）を追記するだけ。
+
 ## 設計メモ
 
 - `raw/` は不変資料のため `add` の対象外（`raw/` への配置は手動で行う）

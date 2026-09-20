@@ -1,0 +1,25 @@
+{
+  "comment": "llm-wiki search の品質eval。expected に正解ページの relpath(root 相対)。expected が null はノイズ計測ケース(どのページも正解でないことを期待)で、top1-top2 スコア差の平たさを報告する。",
+  "queries": [
+    {
+      "query": "opencodeでrtkを使う方式の決め手は何？",
+      "expected": "wiki/Decisions/ADR-001-opencode-rtk-hook-plugin.md"
+    },
+    {
+      "query": "コマンド出力を節約したい",
+      "expected": "wiki/Decisions/ADR-001-opencode-rtk-hook-plugin.md"
+    },
+    {
+      "query": "PRDを書くときに注意すること",
+      "expected": "wiki/Decisions/ADR-002-prd-writer-dependency-skill-before-writing.md"
+    },
+    {
+      "query": "prd-writerのbaseline合わせの工夫",
+      "expected": "wiki/Decisions/ADR-002-prd-writer-dependency-skill-before-writing.md"
+    },
+    {
+      "query": "日本語文章を推敲する方法",
+      "expected": null
+    }
+  ]
+}
