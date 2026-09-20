@@ -32,6 +32,14 @@ crit comments [path]     # explicit review.json or .crit directory
 
 Review-level comments are listed first — easy to miss in raw `review.json`. Uses the same review resolution as `crit comment` (`--output`, `--plan`, daemon session).
 
+## Reconnecting to a stored review
+
+`crit resume [--list | <id>]` reopens a past review saved under
+`~/.crit/reviews`. Without arguments it shows an interactive picker of stored
+reviews, newest first. It restarts the daemon in the review's recorded
+directory. Reviews stored outside that root are not listed in the picker.
+Reconnect a plan review with `crit plan --name <slug>` instead.
+
 ## Multiple active sessions
 
 When more than one review session matches the current directory and branch, headless commands (`crit comment`, `crit comments`, `crit share`, `crit push`, `crit pull`) refuse to guess. Run `crit status` (or `crit status --json`) to list every active session, then target the intended review with `--session <id>`:
@@ -96,9 +104,10 @@ The JSON status output exposes the candidates in `sessions`.
 Field rules:
 
 - `resolved`: `false` or **missing** — both mean unresolved. Only `true` means resolved.
-- `quote` (optional): the specific text the reviewer selected — narrows scope within the line range. Focus changes on the quoted text rather than the entire range.
+- `quote` (optional): the specific text the reviewer selected — narrows scope within the line range.
 - `anchor` (line comments): full text of the commented lines when placed. When edits shift line numbers, locate content by anchor rather than trusting `start_line`/`end_line`.
 - `drifted: true`: original content was removed or heavily rewritten — line numbers are approximate at best.
+- Comment IDs are stable across review rounds, and comments follow file renames. So an ID from a previous round is still valid. For heavily edited regions, quoted text or anchors remain the more reliable locator.
 - Unresolved comments may have `replies` — read them before acting.
 
 ## Authoring comments
@@ -183,12 +192,35 @@ Plan reviews (via `crit plan` or the ExitPlanMode hook) store the review file in
 crit comment --plan my-plan-2026-03-23 --reply-to c_a1b2c3 --author 'OpenCode' 'Updated the plan'
 ```
 
+## Japanese filenames
+
+When a reviewed file has a Japanese (multibyte) or punctuation-heavy
+filename, the browser may fail to resolve it. Symptoms: the file does not
+render, or comments do not anchor to its lines. In that case:
+
+1. Rename the file to a simple **English** name, not merely ASCII-mangled.
+   Example: `git mv '設計概要.md' design-overview.md`
+2. Re-run `crit` so the browser resolves the new path.
+3. Restore the original name with `git mv` after the review round ends.
+
+Do not leave line comments on a file that failed to render. They may attach
+to the wrong lines. If the file cannot be renamed, use a **file-level**
+comment instead.
+
 ## GitHub PR / GitLab MR Integration
 
 ```bash
-crit pull [number|url]                                   # Fetch PR/MR review comments into the review file
-crit push [--dry-run] [--event <type>] [-m <msg>] [n]    # Post review comments to a PR/MR
-crit pull --forge gitlab 42                              # Force GitLab when auto-detect is ambiguous
+crit pull [number|url]                                 # Fetch PR/MR review comments into the review file
+crit push [--dry-run] [--event <type>] [-m <msg>] [number|url]  # Post review comments to a PR/MR
+crit pull --forge gitlab 42                            # Force GitLab when auto-detect is ambiguous
+```
+
+Starting a review of a remote diff also works headlessly:
+
+```bash
+crit --pr <num|url>            # GitHub pull request
+crit --mr <iid|url>            # GitLab merge request
+crit --range <base>..<head>    # Commit range
 ```
 
 Requires `gh` CLI installed and authenticated. PR number is auto-detected from the current branch.
@@ -199,14 +231,17 @@ Requires `gh` CLI installed and authenticated. PR number is auto-detected from t
 
 ```bash
 crit share <file> [file...]                          # Upload and print URL
+crit share --preview <file.html>                     # Share a local HTML render as a preview
 crit share --qr <file>                               # Also print QR code (terminal only)
 crit share --org <slug> <file>                       # Share under an organization
 crit share --org <slug> --visibility unlisted <file> # Org share with explicit visibility
-crit unpublish [file...]                              # Remove shared review
+crit fetch                                           # Fetch comments back from a shared crit-web review
+crit unpublish [file...]                             # Remove shared review
 ```
 
 - **Always relay the output** — copy the URL (and QR if used) into your response. Don't make the user dig through tool output.
 - **`--qr` is terminal-only** — skip in mobile apps, web chat UIs, or anywhere Unicode block characters won't render correctly.
 - **`--org <slug>`** shares under an organization. Visibility defaults to `organization` (members only). Override with `--visibility` (`organization`, `unlisted`, `public`).
+- Multiple share targets can be configured (v0.20.1+). Run `crit auth status` to list configured targets and the selected identity.
 - If a review file exists, comments for the shared files are included automatically.
 - **Unpublish uses the persisted delete token** in the review file — no extra args needed.
