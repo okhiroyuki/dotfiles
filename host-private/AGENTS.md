@@ -19,9 +19,8 @@
   - ルート直下にメタファイル(ドキュメント・CI 設定など)を追加したら EXCLUDES への追加を忘れない
 - `~/.config/<アプリ>` 側に node_modules などの追跡対象外ファイルが必要な場合(opencode など)は、
   `~/.config` 側を実ディレクトリにして、rcm に配下を個別シムリンクさせる
-  - package.json は例外的に管理する(`@opencode/plugin` のバージョン指定がプラグイン API との
-    互換性を決めるため。`^` で 2.x に追従し、opencode 更新時に挙動が変わったら確認する)。
-    lock ファイル・node_modules はコミットしない
+  - package.json・lock ファイル・node_modules はリポジトリにコミットしない
+    (Renovate が npm 依存の更新 PR を出すため。opencode 本体は brew で更新する)
 
 ## opencode
 
@@ -34,8 +33,8 @@
     見に行き `@opencode/plugin` が見つからなくなるため
 - opencode.jsonc の permission キーは、プラグインが登録するツールID(`tool: { <キー>: ... }` のキー)と完全一致させる
 - 設定変更は起動時にロードされるため、反映には opencode 自体の再起動が必要
-- 新マシン構築時は `~/.config/opencode` で `npm install`(または `bun install`)を一度実行する
-  (リンクされた package.json の `@opencode/plugin` が入るまでプラグインはロードされない)
+- 新マシン構築時は `~/.config/opencode` に package.json(依存: `@opencode/plugin`)を作成し
+  `npm install` を実行する。バージョンは brew でインストールした opencode に合わせる
 
 ## 検証
 
