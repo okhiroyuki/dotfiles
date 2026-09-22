@@ -26,6 +26,6 @@
 ## 設計判断の根拠
 
 上記の配置をなぜそうしているか（集約点を共有側に固定する理由、`settings.json` をあえて host 側に置く理由、
-`host-work/` を claude ルールに使わない理由、スタブを最小限に保つ理由）は
+スタブを最小限に保つ理由）は
 [.claude/docs/claude-config-design.md](../docs/claude-config-design.md) にある。
 配置を変えるとき・例外を作りたいときは先にそちらを読む。
