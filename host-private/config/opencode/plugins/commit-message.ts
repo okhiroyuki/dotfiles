@@ -1,4 +1,4 @@
-import type { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
 
 const PREFIXES = [
   "feat",
@@ -120,11 +120,13 @@ function violations(message: string): string[] {
   return errs
 }
 
-export const CommitMessagePlugin: Plugin = async () => {
-  return {
-    "tool.execute.before": async (input, output) => {
-      if (input.tool !== "bash") return
-      const command = output.args?.command
+export default Plugin.define({
+  id: "commit-message",
+  async setup(ctx) {
+    await ctx.tool.hook("execute.before", (event) => {
+      if (event.tool !== "bash") return
+      const input = event.input as { command?: unknown } | undefined
+      const command = input?.command
       if (typeof command !== "string" || !/\bgit\s+commit\b/.test(command)) return
 
       const tokens = splitShellWords(command)
@@ -142,6 +144,6 @@ export const CommitMessagePlugin: Plugin = async () => {
           `\n\n書式: \`<プレフィックス>: <日本語の説明>\`（説明は1行・50文字以内）\n` +
           `例:   \`docs: pre-commitルールにyamllint迂回手順を追加\``,
       )
-    },
-  }
-}
+    })
+  },
+})

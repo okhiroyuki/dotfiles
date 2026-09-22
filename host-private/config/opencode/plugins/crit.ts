@@ -7,20 +7,23 @@
 // 2. Toasts when the agent starts a blocking `crit` wait so Attention-style
 //    users notice a review is ready even while the tool call is still running.
 //
-// Notes captured during implementation:
+// Notes captured during implementation (V2 plugin API):
 //   - opencode auto-loads .ts files dropped into `.opencode/plugins/` (project)
 //     or `~/.config/opencode/plugins/` (global). No registration in
 //     opencode.jsonc is required for local files.
-//   - The hook used here is `experimental.chat.system.transform`, which
-//     receives a mutable `output.system: string[]`. We append a single entry.
-//   - The hook fires for every chat turn including opencode's internal
-//     title-generator subagent. We skip injection there so the title model
-//     isn't seeded with sharing copy.
+//   - The V1 `experimental.chat.system.transform` hook maps to
+//     `ctx.session.hook("context", ...)`, which appends SystemPart entries to
+//     the mutable `event.system` array. V2 runs "context" only for the agent
+//     loop — title generation has its own hook — so the old title-generator
+//     skip check is no longer needed.
 //   - Crit config is read by shelling out to `crit config`, which prints a
-//     JSON object. We parse `share_url` and bail out if empty.
+//     JSON object. We parse `share_url` and bail out if empty. This runs once
+//     in setup (transforms/hooks must not do one-time side effects), and the
+//     sharing hook is only registered when sharing is enabled.
 
 import { createRequire } from "node:module"
-import type { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
+import { spawnText } from "./lib/spawn.ts"
 
 const require = createRequire(import.meta.url)
 const { isCritWaitCommand, roundReadyToast } = require("./lib/crit-wait-notify.js") as {
@@ -45,79 +48,73 @@ crit unpublish [file...]                              # Remove shared review
 
 type CritConfig = { share_url?: string }
 
-let cachedShareURL: string | null | undefined
+type TuiLike = { showToast?: (input: unknown) => Promise<unknown> | unknown }
+type LogLike = { log?: (input: unknown) => Promise<unknown> | unknown }
 
-async function loadShareURL($: any): Promise<string | null> {
-  if (cachedShareURL !== undefined) return cachedShareURL
+async function loadShareURL(): Promise<string | null> {
   try {
-    const result = await $`crit config`.quiet()
-    const text = result.stdout.toString()
-    const parsed = JSON.parse(text) as CritConfig
-    cachedShareURL = parsed.share_url && parsed.share_url.length > 0 ? parsed.share_url : null
+    const res = await spawnText(["crit", "config"])
+    if (res.code !== 0) return null
+    const parsed = JSON.parse(res.stdout) as CritConfig
+    return parsed.share_url && parsed.share_url.length > 0 ? parsed.share_url : null
   } catch {
-    cachedShareURL = null
+    return null
   }
-  return cachedShareURL
 }
 
-function isTitleGenerator(system: string[]): boolean {
-  for (const entry of system) {
-    const lower = entry.toLowerCase()
-    if (lower.includes("title generator") || lower.includes("generate a title")) {
-      return true
+async function showToast(ctx: unknown, title: string, message: string): Promise<void> {
+  // Toast delivery is best-effort: the tui domain is undocumented in the V2
+  // plugin context, so try both payload shapes, then fall back to app.log.
+  const tui = (ctx as { tui?: TuiLike }).tui
+  if (typeof tui?.showToast === "function") {
+    const payloads = [{ body: { title, message, variant: "info" } }, { title, message, variant: "info" }]
+    for (const payload of payloads) {
+      try {
+        await tui.showToast(payload)
+        return
+      } catch {
+        // Try the next payload shape.
+      }
     }
   }
-  return false
-}
-
-function bashCommandFromToolInput(input: any, output: any): string {
-  const fromOutput = output?.args?.command ?? output?.args?.cmd
-  if (typeof fromOutput === "string") return fromOutput
-  const fromInput = input?.args?.command ?? input?.args?.cmd ?? input?.command
-  if (typeof fromInput === "string") return fromInput
-  return ""
-}
-
-function showToast(client: any, title: string, message: string): void {
   try {
-    const result = client?.tui?.showToast?.({
-      body: { title, message, variant: "info" },
-    })
-    if (result && typeof result.catch === "function") result.catch(() => {})
-  } catch {
-    // Toast delivery is best-effort.
-  }
-  try {
-    // SDK expects { body: { service, level, message } } — a flat payload
-    // rejects with "Expected object, got undefined" and never reaches the log.
-    const result = client?.app?.log?.({
-      body: {
-        service: "crit",
-        level: "info",
-        message: `[Crit] ${message}`,
-      },
-    })
-    if (result && typeof result.catch === "function") result.catch(() => {})
+    const app = (ctx as { app?: LogLike }).app
+    if (typeof app?.log === "function") {
+      await app.log({ body: { service: "crit", level: "info", message: `[Crit] ${message}` } })
+    }
   } catch {
     // Logging is best-effort.
   }
 }
 
-export const CritSharingPlugin: Plugin = async ({ $, client }) => {
-  return {
-    "experimental.chat.system.transform": async (_input, output) => {
-      if (isTitleGenerator(output.system)) return
-      const shareURL = await loadShareURL($)
-      if (!shareURL) return
-      output.system.push(SHARING_BLOCK)
-    },
-    "tool.execute.before": async (input, output) => {
-      const tool = String(input?.tool || "").toLowerCase()
-      if (tool !== "bash" && tool !== "shell") return
-      const command = bashCommandFromToolInput(input, output)
-      if (!isCritWaitCommand(command)) return
-      const toast = roundReadyToast()
-      showToast(client, toast.title, toast.message)
-    },
-  }
+function bashCommandFromEvent(input: unknown): string {
+  const args = (input as { args?: { command?: unknown; cmd?: unknown } } | undefined)?.args
+  if (typeof args?.command === "string") return args.command
+  if (typeof args?.cmd === "string") return args.cmd
+  const direct = (input as { command?: unknown; cmd?: unknown } | undefined)
+  if (typeof direct?.command === "string") return direct.command
+  if (typeof direct?.cmd === "string") return direct.cmd
+  return ""
 }
+
+export default Plugin.define({
+  id: "crit",
+  async setup(ctx) {
+    const shareURL = await loadShareURL()
+
+    if (shareURL) {
+      await ctx.session.hook("context", (event) => {
+        event.system.push({ type: "text", text: SHARING_BLOCK })
+      })
+    }
+
+    await ctx.tool.hook("execute.before", (event) => {
+      const tool = String(event.tool ?? "").toLowerCase()
+      if (tool !== "bash" && tool !== "shell") return
+      const command = bashCommandFromEvent(event.input)
+      if (!isCritWaitCommand(command)) return
+      const toast = roundReadyToast(shareURL ?? undefined)
+      void showToast(ctx, toast.title, toast.message)
+    })
+  },
+})

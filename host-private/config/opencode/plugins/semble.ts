@@ -1,4 +1,6 @@
-import { type Plugin, tool } from "@opencode-ai/plugin"
+// V2 plugin: registers semble_search / semble_find_related custom tools.
+
+import { Plugin } from "@opencode/plugin"
 import { spawnText } from "./lib/spawn.ts"
 
 const CONTENT_TYPES = ["code", "docs", "config", "all"] as const
@@ -27,43 +29,79 @@ function commonFlags(args: SearchArgs) {
   return flags
 }
 
-function commonArgDefs() {
+function commonProperties() {
   return {
-    path: tool.schema.string().optional().describe("Project directory or git URL to search (defaults to the session working directory)"),
-    top_k: tool.schema.number().optional().describe("Number of results (default 5)"),
-    content: tool.schema.array(tool.schema.enum(CONTENT_TYPES)).optional().describe("Content types to search; default is code only"),
-    max_snippet_lines: tool.schema.number().optional().describe("Lines of source per result (default: full chunk, 0 hides code)"),
-  }
-}
-
-export const SemblePlugin: Plugin = async () => {
-  return {
-    tool: {
-      semble_search: tool({
-        description:
-          "Semantic code search via the semble CLI. Finds code by concept, symbol name, or intent and returns file:line snippets. Prefer this over grep/Read brute-force when looking for where something is implemented.",
-        args: {
-          query: tool.schema.string().describe("Natural language or code query, e.g. 'authentication flow', 'retry logic'"),
-          ...commonArgDefs(),
-        },
-        async execute(args, ctx) {
-          const argv = ["search", args.query, ...commonFlags(args)]
-          return runSemble(argv, args.path ?? ctx.directory)
-        },
-      }),
-      semble_find_related: tool({
-        description:
-          "Find implementations similar to a known location via the semble CLI. Pass a file path + line from semble_search results to discover related code.",
-        args: {
-          file_path: tool.schema.string().describe("File path as shown in search results"),
-          line: tool.schema.number().describe("Line number in the file (1-indexed)"),
-          ...commonArgDefs(),
-        },
-        async execute(args, ctx) {
-          const argv = ["find-related", args.file_path, String(args.line), ...commonFlags(args)]
-          return runSemble(argv, args.path ?? ctx.directory)
-        },
-      }),
+    path: {
+      type: "string",
+      description: "Project directory to search (defaults to the session working directory)",
+    },
+    top_k: { type: "integer", minimum: 1, description: "Number of results (default 5)" },
+    content: {
+      type: "array",
+      items: { type: "string", enum: [...CONTENT_TYPES] },
+      description: "Content types to search; default is code only",
+    },
+    max_snippet_lines: {
+      type: "integer",
+      minimum: 0,
+      description: "Lines of source per result (default: full chunk, 0 hides code)",
     },
   }
 }
+
+export default Plugin.define({
+  id: "semble",
+  async setup(ctx) {
+    const directory = ctx.location.directory
+
+    await ctx.tool.transform((editor) => {
+      editor.add({
+        name: "semble_search",
+        description:
+          "Semantic code search via the semble CLI. Finds code by concept, symbol name, or intent and returns file:line snippets. Prefer this over grep/Read brute-force when looking for where something is implemented.",
+        input: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description:
+                "Natural language or code query, e.g. 'authentication flow', 'retry logic'",
+            },
+            ...commonProperties(),
+          },
+          required: ["query"],
+          additionalProperties: false,
+        },
+        async execute(input) {
+          const args = input as SearchArgs & { query: string }
+          const argv = ["search", args.query, ...commonFlags(args)]
+          return { content: await runSemble(argv, args.path ?? directory) }
+        },
+      })
+
+      editor.add({
+        name: "semble_find_related",
+        description:
+          "Find implementations similar to a known location via the semble CLI. Pass a file path + line from semble_search results to discover related code.",
+        input: {
+          type: "object",
+          properties: {
+            file_path: {
+              type: "string",
+              description: "File path as shown in search results",
+            },
+            line: { type: "integer", minimum: 1, description: "Line number in the file (1-indexed)" },
+            ...commonProperties(),
+          },
+          required: ["file_path", "line"],
+          additionalProperties: false,
+        },
+        async execute(input) {
+          const args = input as SearchArgs & { file_path: string; line: number }
+          const argv = ["find-related", args.file_path, String(args.line), ...commonFlags(args)]
+          return { content: await runSemble(argv, args.path ?? directory) }
+        },
+      })
+    })
+  },
+})
