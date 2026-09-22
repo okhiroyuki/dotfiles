@@ -57,9 +57,16 @@ export default Plugin.define({
     const hasBin = fs.existsSync(TEXTLINT_BIN)
     if (!hasJs && !hasBin) return
 
-    // Prefer the JS entry when it exists; fall back to the bin shim only then.
+    // Prefer the JS entry when node is available, else the bin shim, else bail.
     const node = hasJs ? which("node") : null
-    const command = node ? [node, TEXTLINT_JS] : [TEXTLINT_BIN]
+    let command: string[]
+    if (hasJs && node) {
+      command = [node, TEXTLINT_JS]
+    } else if (hasBin) {
+      command = [TEXTLINT_BIN]
+    } else {
+      return
+    }
     const directory = ctx.location.directory
 
     await ctx.tool.hook("execute.after", async (event) => {
