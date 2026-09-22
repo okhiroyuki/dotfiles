@@ -3,16 +3,14 @@
   "small_model": "opencode-go/mimo-v2.5",
   "share": "disabled",
   "instructions": [
-    "~/.claude/rules/thinking.md",
-    "~/.claude/rules/git.md",
-    "~/.claude/rules/llm-wiki.md",
-    "~/.claude/rules/security.md",
-    "~/.claude/rules/local.md",
-    "~/.claude/rules/subagent-delegation.md",
-    "~/.claude/rules/zat.md",
-    "~/.claude/rules/rtk.md",
-    "~/.claude/rules/semble.md",
-    "~/.claude/rules/web-access.md"
+    "~/dotfiles/claude/rules/thinking.md",
+    "~/dotfiles/claude/rules/git.md",
+    "~/dotfiles/claude/rules/llm-wiki.md",
+    "~/dotfiles/claude/rules/security.md",
+    "~/dotfiles/claude/rules/zat.md",
+    "~/dotfiles/claude/rules/rtk.md",
+    "~/dotfiles/claude/rules/semble.md",
+    "~/dotfiles/claude/rules/web-access.md"
   ],
   "permission": {
     "external_directory": {
