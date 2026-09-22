@@ -20,7 +20,9 @@
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow",
-      "~/.ssh/**": "deny"
+      "~/.ssh/**": "deny",
+      "**/.opencode/**": "allow",
+      "~/.config/opencode/**": "allow"
     },
     "skill": "allow",
     "todowrite": "allow",
@@ -36,6 +38,8 @@
       "git status": "allow",
       "git log *": "allow",
       "git log": "allow",
+      "git diff": "allow",
+      "git diff *": "allow",
       "mise run lint": "allow",
       "git push *": "ask",
       "curl *": "deny",
@@ -109,6 +113,10 @@
       "rtk tsc *": "allow",
       "rtk ruff check": "allow",
       "rtk ruff check *": "allow",
+      "ls": "allow",
+      "ls *": "allow",
+      "git fetch": "allow",
+      "git fetch *": "allow",
       "*": "ask"
     }
   }
