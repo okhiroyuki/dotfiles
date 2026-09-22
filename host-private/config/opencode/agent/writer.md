@@ -1,7 +1,7 @@
 ---
 description: 文章の推敲・校正・リライト。技術文書やREADME、ブログ草稿の編集に使用
 mode: primary
-model: opencode-go/kimi-k2.7-code
+model: opencode-go/gpt-5.6-luna
 permission:
   bash: deny
   read: allow
