@@ -18,10 +18,6 @@
 @rules/web-access.md
 @rules/llm-wiki.md
 
-## 文書作成
-
-@rules/tanteki.md
-
 ## セキュリティ
 
 @rules/security.md
