@@ -17,7 +17,6 @@
 @rules/rtk.md
 @rules/web-access.md
 @rules/llm-wiki.md
-@rules/subagent-delegation.md
 
 ## セキュリティ
 
