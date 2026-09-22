@@ -52,22 +52,5 @@ else
   echo "jq または $settings_file が見つからないため、プラグインの自動導入をスキップしました。" >&2
 fi
 
-# gh skills で管理するエージェントスキル（スクリプト内にハードコード、冪等）。
-# main 追従の方針のためバージョンは固定せず、更新は `gh skills update` で行う。
-if command -v gh >/dev/null 2>&1; then
-  # pipefail 下で grep -q が SIGPIPE を起こすため、一覧を一度変数に受け、awk で最後まで読む。
-  # 一覧取得の失敗（gh の不調など）と未導入を区別し、失敗時は導入せずスキップする。
-  if skills_list="$(gh skills list 2>/dev/null)"; then
-    if ! printf '%s\n' "$skills_list" | \
-        awk -F'\t' '$1 == "tanteki" && $2 ~ /(^|, ?)claude-code(, ?|$)/ && $3 == "user" { found = 1 } END { exit found ? 0 : 1 }'; then
-      gh skills install iwasa-kosui/tanteki tanteki --scope user --agent claude-code
-    fi
-  else
-    echo "gh skills list に失敗したため、tanteki スキルの導入判定をスキップしました。" >&2
-  fi
-else
-  echo "gh が見つからないため、tanteki スキルの導入をスキップしました。" >&2
-fi
-
 # 導入済みプラグインを最新へ更新する。
 "$(dirname "$0")/update-plugins.sh"
