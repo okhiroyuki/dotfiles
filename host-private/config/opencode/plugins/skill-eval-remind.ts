@@ -3,7 +3,6 @@
 import fs from "node:fs"
 import path from "node:path"
 import { Plugin } from "@opencode/plugin"
-import { which } from "./lib/spawn.ts"
 
 const EDIT_TOOLS = new Set(["write", "edit", "apply_patch"])
 const KILL_SWITCH = "SKILL_EVAL_REMIND_DISABLE"
@@ -44,7 +43,6 @@ export default Plugin.define({
   id: "skill-eval-remind",
   async setup(ctx) {
     if (process.env[KILL_SWITCH]) return
-    if (!which("opencode")) return
     const directory = ctx.location.directory
 
     await ctx.tool.hook("execute.after", (event) => {
@@ -59,7 +57,7 @@ export default Plugin.define({
       const hasEvals = fs.existsSync(path.join(skillDir, "evals", "evals.json"))
       const headline = `SKILL.md (${skillName}) を編集しました。skill-management スキルの評価プロセスに従い、挙動に影響する変更の場合は eval を実行してください。`
       const guidance = hasEvals
-        ? `evals/evals.json が存在します。/skill-eval ${skillName} で実行できます。`
+        ? `evals/evals.json が存在します。/eval skill ${skillName} で実行できます。`
         : `evals/evals.json が存在しません。挙動に影響する変更の場合は skill-management スキルの4節に従って追加を検討してください。`
       const extra = `\n\n# skill-eval-remind\n${headline}\n${guidance}`
       if (typeof result.content === "string") {
