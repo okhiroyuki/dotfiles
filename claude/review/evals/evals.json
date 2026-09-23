@@ -1,0 +1,46 @@
+{
+  "name": "document-review",
+  "description": "Claude CodeとOpenCodeの並列文書レビュー機構を検証する",
+  "evals": [
+    {
+      "id": "fact-check",
+      "file": "cases/fact-check.md",
+      "expectations": [
+        "月800件と再問い合わせ4割を事実として保持する",
+        "問い合わせが多い原因を材料なしに断定しない",
+        "共通窓口の導入効果を材料なしに断定しない",
+        "未確認の主張には根拠不足または未確認と示す"
+      ]
+    },
+    {
+      "id": "structure",
+      "file": "cases/structure.md",
+      "expectations": [
+        "個人メールへの集中、担当者不在時の返答停止、履歴を引き継げない問題を保持する",
+        "問題、影響、提案の順序または関係を明確にする",
+        "原因や効果を材料なしに追加しない",
+        "同じ内容の重複を一つの指摘にまとめる"
+      ]
+    },
+    {
+      "id": "language",
+      "file": "cases/language.md",
+      "expectations": [
+        "文書内だけの略語『共窓』を採用しない",
+        "『それ』『前述のとおり』などの参照先が曖昧な表現を指摘する",
+        "事実と提案を混同しない",
+        "原文にない効果や手順を修正案へ追加しない"
+      ]
+    },
+    {
+      "id": "deduplication",
+      "file": "cases/deduplication.md",
+      "expectations": [
+        "同じ原因に関する重複指摘を統合する",
+        "異なる観点の指摘を一つに潰さない",
+        "根拠のない指摘を棄却または未確認として扱う",
+        "critical、major、minorの重要度順に整理する"
+      ]
+    }
+  ]
+}
