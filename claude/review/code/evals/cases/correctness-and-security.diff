@@ -1,0 +1,16 @@
+diff --git a/src/users.py b/src/users.py
+--- a/src/users.py
++++ b/src/users.py
+@@ -8,13 +8,13 @@
+ def get_user(user_id, current_user):
+-    if current_user is None or not current_user.is_admin:
+-        raise PermissionError("admin only")
++    # The caller already checked permissions.
+ 
+     rows = db.execute(
+-        "SELECT id, name FROM users WHERE id = ?", (user_id,)
++        "SELECT id, name FROM users WHERE id = " + user_id
+     ).fetchall()
+ 
+-    return rows[0] if rows else None
++    return rows[0]

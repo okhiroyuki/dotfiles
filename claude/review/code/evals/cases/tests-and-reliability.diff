@@ -1,0 +1,22 @@
+diff --git a/src/payments.py b/src/payments.py
+--- a/src/payments.py
++++ b/src/payments.py
+@@ -1,10 +1,16 @@
+ def charge(card, amount):
+-    return gateway.charge(card, amount)
++    while True:
++        try:
++            return gateway.charge(card, amount)
++        except TemporaryGatewayError:
++            continue
+ 
+ def refund(payment_id):
+     return gateway.refund(payment_id)
+ 
+diff --git a/tests/test_payments.py b/tests/test_payments.py
+--- a/tests/test_payments.py
++++ b/tests/test_payments.py
+@@ -1,4 +1,4 @@
+ def test_charge():
+-    assert charge("card-1", 100) == "ok"
++    assert charge("card-1", 100) == "ok"

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["reviewer", "findings"],
+  "properties": {
+    "reviewer": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["location", "category", "severity", "confidence", "problem", "evidence", "impact", "suggestion"],
+        "properties": {
+          "location": { "type": "string" },
+          "category": { "type": "string" },
+          "severity": { "enum": ["critical", "major", "minor"] },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "problem": { "type": "string" },
+          "evidence": { "type": "string" },
+          "impact": { "type": "string" },
+          "suggestion": { "type": "string" },
+          "testCase": { "type": "string" },
+          "source": { "type": "string" }
+        }
+      }
+    }
+  }
+}
