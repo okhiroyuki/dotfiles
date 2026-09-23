@@ -1,0 +1,5 @@
+packages:
+  - tools/textlint
+  - tools/cli/scapple
+allowBuilds:
+  esbuild: true

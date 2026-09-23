@@ -19,8 +19,12 @@ uv = "0"
 
 [tasks.setup]
 description = "gitフックを有効化し、Claude Codeのhookが使うツールを用意する（初回のみ）"
-depends = ["install:textlint"]
+depends = ["install:pnpm"]
 run = "lefthook install"
+
+[tasks."install:pnpm"]
+description = "pnpmワークスペース全体の依存をインストールする（textlint、scappleを含む）"
+run = "pnpm install --frozen-lockfile"
 
 [tasks.fmt]
 description = "dprintでフォーマットを適用する"
@@ -48,8 +52,7 @@ depends = ["lint:dprint", "lint:yaml", "lint:shell", "lint:actions"]
 
 [tasks."test:scapple"]
 description = "scappleのテストと型検査を実行する"
-dir = "tools/cli/scapple"
-run = "pnpm install --frozen-lockfile && pnpm exec tsc --noEmit && pnpm test"
+run = "pnpm --filter scapple exec tsc --noEmit && pnpm --filter scapple test"
 
 [tasks."install:scapple"]
 description = "scappleをグローバルコマンドとしてインストールする"
@@ -70,14 +73,17 @@ description = "全テストを実行する"
 depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer"]
 
 [tasks."install:textlint"]
-description = "日本語Markdownを検出するtextlint環境を用意する（Claude Codeのhookが使う）"
-dir = "tools/textlint"
+description = "textlint環境を用意する（install:pnpmの別名。Claude Codeのhookが使う）"
 run = "pnpm install --frozen-lockfile"
 
 [tasks."lint:text"]
 description = "textlintで日本語Markdownをチェックする"
 dir = "tools/textlint"
 run = "./node_modules/.bin/textlint --config .textlintrc.json '../../claude/**/*.md' '../../agents/**/*.md' '../../.claude/**/*.md' README.md"
+
+[tasks."update:pnpm"]
+description = "pnpmワークスペース全体の依存を対話的に更新する"
+run = "pnpm update -r -i"
 
 [tasks."install:semble"]
 description = "sembleをグローバルコマンドとしてインストールする"
