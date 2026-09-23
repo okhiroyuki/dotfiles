@@ -104,7 +104,7 @@ The JSON status output exposes the candidates in `sessions`.
 Field rules:
 
 - `resolved`: `false` or **missing** — both mean unresolved. Only `true` means resolved.
-- `quote` (optional): the specific text the reviewer selected — narrows scope within the line range.
+- `quote` (optional): the specific text the reviewer selected — narrows scope within the line range. Focus changes on the quoted text rather than the entire range.
 - `anchor` (line comments): full text of the commented lines when placed. When edits shift line numbers, locate content by anchor rather than trusting `start_line`/`end_line`.
 - `drifted: true`: original content was removed or heavily rewritten — line numbers are approximate at best.
 - Comment IDs are stable across review rounds, and comments follow file renames. So an ID from a previous round is still valid. For heavily edited regions, quoted text or anchors remain the more reliable locator.

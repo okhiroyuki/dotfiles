@@ -35,6 +35,10 @@
 - 設定変更は起動時にロードされるため、反映には opencode 自体の再起動が必要
 - 新マシン構築時は `~/.config/opencode` に package.json(依存: `@opencode/plugin`)を作成し
   `npm install` を実行する。バージョンは brew でインストールした opencode に合わせる
+- crit は private 専用。`crit install opencode` の出力を `config/opencode/commands/crit.md` に
+  vendoring する（更新は一時dirで `crit install opencode` を実行し差分を反映、その後 dprint fmt）。
+  CLIリファレンススキルは `agents/skills/crit-cli/`（`~/.agents/skills` に展開）。
+  プラグインは install物の V1 版を使わず V2 版（plugins/crit.ts）を使う
 
 ## 検証
 
