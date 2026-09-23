@@ -78,11 +78,13 @@ function collectFiles(input: unknown, result: unknown, directory: string): strin
 
 async function debugLog(line: string): Promise<void> {
   try {
+    // 上限を厳密に守るため、既存サイズに余裕(append分のヘッドルーム)があるときだけ追記する
     const stat = await fsAsync.stat(DEBUG_LOG).catch(() => null)
-    if (stat && stat.size > 200_000) return
+    if (stat && stat.size > 190_000) return
+    if (line.length + 64 > 190_000 - (stat?.size ?? 0)) return
     await fsAsync.appendFile(DEBUG_LOG, `${new Date().toISOString()} ${line}\n`)
   } catch {
-    // デバッグログは本筋ではないので失敗は握り潰す
+    // デバッグログは本筋ではないので失敗は握り潰す。同時競合での超過は許容する
   }
 }
 
@@ -114,7 +116,6 @@ export default Plugin.define({
       if (!EDIT_TOOLS.has(String(toolEvent.tool))) return
 
       const files = collectFiles(toolEvent.input, toolEvent.result, directory)
-      void debugLog(`collect tool=${JSON.stringify(String(toolEvent.tool))} files=${JSON.stringify(files)}`)
       if (files.length === 0) return
 
       const reports: string[] = []
@@ -125,6 +126,9 @@ export default Plugin.define({
         if (res.stdout.trim()) reports.push(res.stdout.trim())
       }
       if (reports.length === 0) return
+
+      // lint検出時のみ診断ログを残す(収集結果と検出数)
+      void debugLog(`detect tool=${JSON.stringify(String(toolEvent.tool))} files=${JSON.stringify(files)} reports=${reports.length}`)
 
       const result = toolEvent.result as { content?: unknown; output?: unknown } | undefined
       const extra = `\n\n# textlint\n${reports.join("\n")}`
