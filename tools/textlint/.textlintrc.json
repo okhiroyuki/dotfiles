@@ -22,9 +22,12 @@
       "max-kanji-continuous-len": false,
       "arabic-kanji-numbers": false,
       "no-mix-dearu-desumasu": {
-        // 見出しは体言止めが多いので判定しない（nakita628/technical-document-lint に準拠）
+        // 見出しは体言止めが多いので判定しない。
+        // このリポジトリの規範文書（SKILL.md 等）の文末は「〜すること」「〜せよ」が
+        // 主体であるため、本文はである調に寄せる。出典の nakita628/technical-document-lint
+        // はですます調に寄せているが、既存コーパスの性格が違うため逆に選択した
         "preferInHeader": "",
-        "preferInBody": "ですます",
+        "preferInBody": "である",
         "preferInList": "である",
         "strict": false
       },
