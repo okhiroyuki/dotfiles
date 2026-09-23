@@ -20,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 # ---- カテゴリ定義 ------------------------------------------------------------
@@ -223,26 +224,46 @@ def cmd_search(args) -> int:
 
 def cmd_read(args) -> int:
     root = get_root()
-    target = (root / args.relpath)
-    if not target.exists():
-        # wiki/ 起点でも解決を試みる
-        alt = root / "wiki" / args.relpath
-        if alt.exists():
-            target = alt
-        else:
-            eprint("エラー: ファイルが見つかりません: %s" % args.relpath)
+    root_resolved = root.resolve()
+    rel = Path(args.relpath)
+    target = None
+    # root起点 → wiki/ 起点の順で解決を試みる。root配下以外（絶対パス・..・
+    # symlink経由の逸脱）は絶対に読まない。
+    for cand in (root / rel, root / "wiki" / rel):
+        if not cand.is_file():
+            continue
+        resolved = cand.resolve()
+        try:
+            resolved.relative_to(root_resolved)
+        except ValueError:
+            eprint("エラー: root配下のパスのみ指定できます: %s" % args.relpath)
             return 2
+        target = resolved
+        break
+    if target is None:
+        eprint("エラー: ファイルが見つかりません: %s" % args.relpath)
+        return 2
     sys.stdout.write(target.read_text(encoding="utf-8"))
     return 0
 
 
 def read_body(args) -> str:
     if args.body_file:
-        p = Path(os.path.expanduser(args.body_file))
-        if not p.is_file():
+        raw = Path(os.path.expanduser(args.body_file))
+        # 誤誘導・prompt injection による機密ファイル（~/.ssh 等）の取り込みを
+        # 防ぐ。読み込み先は root / カレントディレクトリ / 一時ディレクトリ配下のみ。
+        resolved = raw.resolve()
+        bases = [Path.cwd().resolve(), Path("/tmp").resolve(), Path(tempfile.gettempdir()).resolve()]
+        cfg_root = get_root(required=False)
+        if cfg_root:
+            bases.append(cfg_root.resolve())
+        if not any(resolved == base or base in resolved.parents for base in bases):
+            eprint("エラー: --body-file は root・カレントディレクトリ・一時ディレクトリ配下のみ指定できます: %s" % args.body_file)
+            sys.exit(2)
+        if not raw.is_file():
             eprint("エラー: --body-file が見つかりません: %s" % args.body_file)
             sys.exit(2)
-        return p.read_text(encoding="utf-8").rstrip("\n")
+        return raw.read_text(encoding="utf-8").rstrip("\n")
     if args.stdin:
         return sys.stdin.read().rstrip("\n")
     return ""
