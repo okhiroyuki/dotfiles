@@ -1,6 +1,6 @@
 ---
 description: 複数の観点でコード変更を並列レビューする
-agent: review-code-orchestrator
+agent: review-orchestrator
 ---
 
 `$ARGUMENTS` のコード変更をレビューする。引数が空なら対象（コミット、コミット範囲、ブランチ、PR、ファイル）を尋ねて終了する。

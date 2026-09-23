@@ -1,6 +1,6 @@
 ---
 description: 複数の観点で日本語技術文書を並列レビューする
-agent: review-doc-orchestrator
+agent: review-orchestrator
 ---
 
 `$ARGUMENTS` の文書をレビューする。引数が空なら対象ファイルを尋ねて終了する。
