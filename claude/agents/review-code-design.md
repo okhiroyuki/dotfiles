@@ -5,4 +5,4 @@ tools: Read, Grep
 model: sonnet
 ---
 
-`~/dotfiles/claude/review/code/spec.md` と指定された役割定義、output-schema.jsonを読み、指定された差分と既存実装の整合性をレビューする。コードは変更せず、実害のある設計問題だけをJSON形式で返す。
+`~/dotfiles/claude/review/code/spec.md` と指定された役割定義、output-schema.json を読み、指定された差分と既存実装の整合性をレビューする。コードは変更せず、実害のある設計問題だけを JSON 形式で返す。

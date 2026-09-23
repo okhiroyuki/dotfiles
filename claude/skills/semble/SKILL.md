@@ -23,12 +23,12 @@ semble find-related src/auth.py 42 ./my-project               # 既知箇所と�
 
 1. `semble search` で該当箇所を探す
 2. `--content docs/config/all` で対象を絞る
-3. 返ってきた file:line に直接ジャンプする。同じ内容を再検索・grepしない
+3. 返ってきた file:line に直接ジャンプする。同じ内容を再検索・grep しない
 4. 有望な結果があれば `semble find-related` で関連実装を探す
-5. grepは「特定の文字列を全リポジトリで完全に洗い出す」ときだけ使う（例: リネームした関数の全呼び出し元）
+5. grep は「特定の文字列を全リポジトリで完全に洗い出す」ときだけ使う（例: リネームした関数の全呼び出し元）
 
 ## 成功基準
 
-- grepやReadでの総当たりより先に `semble search` を試したか
+- grep や Read での総当たりより先に `semble search` を試したか
 - 返ってきた file:line に直接ジャンプし、同じ内容を再検索していないか
 - 全件の網羅が必要な場面（リネーム後の呼び出し元探索など）では grep を選んだか

@@ -4,11 +4,11 @@ description: LLM-wikiに知見・メモ・決定事項を追加する。「wiki�
 model: opus
 ---
 
-wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`）にある。検索インデックスは`semble`側のグローバルキャッシュ（`~/Library/Caches/semble`）にあり、ファイル変更を自動検知するため明示的な再インデックスは不要。
+wiki の実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`）にある。検索インデックスは `semble` 側のグローバルキャッシュ（`~/Library/Caches/semble`）にあり、ファイル変更を自動検知するため明示的な再インデックスは不要。
 
-ファイル配置・`_index.md`/`_log.md`更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/cli/llm-wiki`、PATH済み・任意のcwdから動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki`が扱わない`raw/`・画像の取り回しに集中する。`cd`やsembleの直接実行、`_index.md`/`_log.md`の手編集はしない。
+ファイル配置・`_index.md`/`_log.md` 更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/cli/llm-wiki`、PATH 済み・任意の cwd から動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki` が扱わない `raw/`・画像の取り回しに集中する。`cd` や semble の直接実行、`_index.md`/`_log.md` の手編集はしない。
 
-`~/Documents/llm-wiki/` はgitリポジトリだが今後コミットは行わない（履歴は残すが更新しない。必要な場合はユーザー自身が行う）。
+`~/Documents/llm-wiki/` は git リポジトリだが今後コミットは行わない（履歴は残すが更新しない。必要な場合はユーザー自身が行う）。
 
 このスキルが扱うのは記録側（Push / Ingest）である。作業開始前に既存の知見を検索する義務は `rules/llm-wiki.md` が担当する。
 
@@ -19,17 +19,17 @@ wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`�
 | `llm-wiki search "<query>"`                                                     | 意味検索（semble委譲、`--content docs`）。作業前・記録前の確認に使う |
 | `llm-wiki read <relpath>`                                                       | ページ表示                                                           |
 | `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新まで一括                                    |
-| `llm-wiki log "<msg>"`                                                          | `_log.md`に追記（lint等、add以外の操作の記録用）                     |
+| `llm-wiki log "<msg>"`                                                          | `_log.md` に追記（lint等、add以外の操作の記録用）                    |
 
-`--category`: `decision` / `prd` / `concept` / `research` / `session`。本文は`--stdin`か`--body-file`で渡す。**titleが非ASCII（日本語等）の場合は`--slug`（英小文字）を必ず指定する**。`decision`はADR番号を自動採番しfrontmatterも付与する。**`--slug`に日付を含めない**（`session`等は日付を自動で前置するため、slug側にも日付を入れると`2026-07-24-2026-07-24-...`のように重複する）。
+`--category`: `decision` / `prd` / `concept` / `research` / `session`。本文は `--stdin` か `--body-file` で渡す。**titleが非ASCII（日本語等）の場合は `--slug`（英小文字）を必ず指定する**。`decision` は ADR 番号を自動採番し frontmatter も付与する。**`--slug` に日付を含めない**（`session` 等は日付を自動で前置するため、slug 側にも日付を入れると `2026-07-24-2026-07-24-...` のように重複する）。
 
 ## 基本原則
 
 1. `raw/` は不変。MUST NOT: 一度置いた資料を変更・削除する
-2. `wiki/` は更新可能。raw/ や会話からLLMが更新・補完する
+2. `wiki/` は更新可能。raw/ や会話から LLM が更新・補完する
 3. 作成前に必ず `llm-wiki search` で既存資料を検索し、重複がないか確認する
 4. 情報は失わない。更新時は既存内容を保持して追記する
-5. 相互参照は標準Markdownの相対リンク `[表示テキスト](相対パス.md)` を使う（例: `[OAuth 2.0](../Concepts/oauth2.md)`）。`[[]]` 形式は使わない
+5. 相互参照は標準 Markdown の相対リンク `[表示テキスト](相対パス.md)` を使う（例: `[OAuth 2.0](../Concepts/oauth2.md)`）。`[[]]` 形式は使わない
 6. 既存資料を探すときは grep・Read の前にまず `llm-wiki search` で意味検索し、対象を特定してから読む
 
 ## 1. 記録の判断（Push）
@@ -37,31 +37,31 @@ wikiの実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`�
 明示的な依頼がある場合は常に実行する。ない場合は以下に従い、迷う場合はユーザーに確認する。
 
 記録を検討する: 意思決定・技術選定を行った / 調査・比較の結論が出た / 恒久的に価値のある学び・気づきがあった
-記録しない: read-onlyな調査で結論が出ていない / 既存ページと重複するだけ / 些末な質問応答・手順確認のみ
+記録しない: read-only な調査で結論が出ていない / 既存ページと重複するだけ / 些末な質問応答・手順確認のみ
 
 ## 2. 記録手順（Ingest）
 
 1. **既存ページを確認**: `llm-wiki search "<キーワード>"` で検索。全体像が要るなら `llm-wiki read wiki/_index.md`
 2. **カテゴリを判断**: `decision`/`prd`/`concept`/`research`/`session` から選ぶ。新しい概念があれば `concept` を作る
-3. **raw/ に資料を保存**（該当時のみ）: `raw/` は`llm-wiki`の対象外。手動で配置する。すでにあれば読むだけ。画像は「画像の扱い」に従う
-4. **本文を用意して `llm-wiki add`**: 相互リンクを本文に含める。既存ページの更新は`llm-wiki`ではなくファイルを直接編集し、内容を保持して追記する（semble側は次回検索時に自動反映されるため再インデックス操作は不要）
+3. **raw/ に資料を保存**（該当時のみ）: `raw/` は `llm-wiki` の対象外。手動で配置する。すでにあれば読むだけ。画像は「画像の扱い」に従う
+4. **本文を用意して `llm-wiki add`**: 相互リンクを本文に含める。既存ページの更新は `llm-wiki` ではなくファイルを直接編集し、内容を保持して追記する（semble 側は次回検索時に自動反映されるため再インデックス操作は不要）
 5. 完了後、`llm-wiki add` が index/log を更新済みであることを確認する
-6. PDF等の外部ファイルをMarkdown化してraw/に保存した場合、変換元の外部ファイルは削除する（raw/内を唯一の正本とする）
+6. PDF 等の外部ファイルを Markdown 化して raw/に保存した場合、変換元の外部ファイルは削除する（raw/内を唯一の正本とする）
 
 ## 3. その他のワークフロー
 
-**Query（質問に答える）**: `llm-wiki search` はJSON（`file_path`/`score`/`content`スニペット）を返す。スニペットだけで判断せず、有望な`file_path`を`llm-wiki read`で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
+**Query（質問に答える）**: `llm-wiki search` は JSON（`file_path`/`score`/`content` スニペット）を返す。スニペットだけで判断せず、有望な `file_path` を `llm-wiki read` で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
 
-**Spec（仕様・要件を作る）**: `wiki/_index.md`で関連把握 → `llm-wiki add --category decision` でADR作成、または既存ADRを直接編集 → 実装前に MUST ユーザー承認
+**Spec（仕様・要件を作る）**: `wiki/_index.md` で関連把握 → `llm-wiki add --category decision` で ADR 作成、または既存 ADR を直接編集 → 実装前に MUST ユーザー承認
 
-**Lint（健全性チェック）**: 「lintして」で実行。破損リンク・孤立ページ・矛盾を検出 → 修正前に MUST ユーザーに報告・承認 → `llm-wiki log "lint | <内容>"` に記録
+**Lint（健全性チェック）**:「lint して」で実行。破損リンク・孤立ページ・矛盾を検出 → 修正前に MUST ユーザーに報告・承認 → `llm-wiki log "lint | <内容>"` に記録
 
 ## 画像の扱い（raw/）
 
-raw/ にMarkdownを新規作成する際、画像は必ずその場でインライン表示できる状態にする。
+raw/ に Markdown を新規作成する際、画像は必ずその場でインライン表示できる状態にする。
 
-1. 画像実体をダウンロードし、Markdownと同じディレクトリか `<topic>-images/` 等に保存する
-2. 参照は `![説明](相対パス.png)` の相対パスに統一する（絶対パス・`attachment:`スキームは使わない）
+1. 画像実体をダウンロードし、Markdown と同じディレクトリか `<topic>-images/` 等に保存する
+2. 参照は `![説明](相対パス.png)` の相対パスに統一する（絶対パス・`attachment:` スキームは使わない）
 3. 取得できない画像は参照を消さず「取得不可（理由）」を明記する
 4. raw/は原則不変だが、既存資料の**画像パスの相対パス化は例外的に許容**する
 
@@ -69,7 +69,7 @@ raw/ にMarkdownを新規作成する際、画像は必ずその場でインラ�
 
 - MUST NOT: `raw/` 内のファイルを変更・削除する（画像パスの相対化のみ例外）
 - MUST NOT: 承認なしに `decided` ステータスのページを大きく書き換える
-- MUST NOT: `cd`やsembleの直接実行、`_index.md`/`_log.md`の手編集（すべて`llm-wiki`経由）
+- MUST NOT: `cd` や semble の直接実行、`_index.md`/`_log.md` の手編集（すべて `llm-wiki` 経由）
 - 追加内容が不明確なときは、先に何を追加するか確認する
 
 ## 成功基準
@@ -79,9 +79,9 @@ raw/ にMarkdownを新規作成する際、画像は必ずその場でインラ�
 - [ ] `llm-wiki add`（または直接編集）で index/log が最新化されている
 - [ ] `raw/` 配下のファイルを変更・削除していない
 - [ ] 既存ページの内容を消さず、保持したまま追記・統合した
-- [ ] 内部リンクが標準Markdownリンク形式（`[[]]` を使っていない）
+- [ ] 内部リンクが標準 Markdown リンク形式（`[[]]` を使っていない）
 
 ## 実行開始
 
 明示的な依頼、または自発的な記録判断で記録すべきと判断した場合、上記手順を実行する。
-追加内容が示されていない場合は「どんな内容をwikiに追加しますか？」と確認する。
+追加内容が示されていない場合は「どんな内容を wiki に追加しますか？」と確認する。

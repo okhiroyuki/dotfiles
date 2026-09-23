@@ -1,6 +1,6 @@
 # textlint（日本語Markdownの検出）
 
-AIが書いた日本語と、技術文書として雑な日本語を3つのプリセットで検出する。
+AI が書いた日本語と、技術文書として雑な日本語を 3 つのプリセットで検出する。
 プロンプトで「この単語を使わないで」と指示しても守られるかは確率に左右されるため、リンターで決定論的に拾う。
 
 - [textlint-rule-preset-ai-words-ja](https://github.com/p1ass/textlint-rule-preset-ai-words-ja) —
@@ -23,16 +23,16 @@ mise run install:textlint
 ## Claude Codeのhookとしての動作
 
 `host-private/claude/settings.json` の `PostToolUse` に登録してあり、
-Claude Codeが `*.md` を Write / Edit するたびに
+Claude Code が `*.md` を Write / Edit するたびに
 [claude/hooks/textlint-ai-words.sh](../../claude/hooks/textlint-ai-words.sh) 経由で実行される。
 指摘があれば exit 2 で stderr に返り、エージェントが自分で書き直す。
 
-判断できない状況（未インストール、nodeがPATHに無い、対象外の拡張子）では何も出力せず通す。
+判断できない状況（未インストール、node が PATH に無い、対象外の拡張子）では何も出力せず通す。
 英語中心のリポジトリなどで一時的に止めたいときは `TEXTLINT_AI_WORDS_SKIP=1` を渡す。
 
 ## 手動での実行
 
-このリポジトリ内のMarkdownをまとめてチェックする。
+このリポジトリ内の Markdown をまとめてチェックする。
 
 ```shell
 mise run lint:text
@@ -45,28 +45,42 @@ mise run lint:text
 
 検出設定の単一の真実の源は [.textlintrc.json](.textlintrc.json)。
 
+[nakita628/technical-document-lint](https://github.com/nakita628/technical-document-lint) のベストプラクティス設定から追加した部分：
+
+- `preset-ja-spacing` を追加した。空白の入れ方を機械に任せる
+  （和文と英数字の間に半角スペース、コードとリンクの前後に空白、括弧の内側は入れない）
+- `prh` を追加した。表記ゆれ（ユーザー/サーバー、出来る/できる、GitHub/JS製品名の綴り）を
+  [dict/prh.yml](dict/prh.yml) の辞書で統一する。閾値の根拠は出典リポジトリの
+  [docs/RESEARCH.md](https://github.com/nakita628/technical-document-lint/blob/main/docs/RESEARCH.md)（Zenn / Qiita / note のトレンド記事 219 本の実測）
+- `sentence-length` を `max: 100` に緩めた。実測の 95 パーセンタイルが 77 文字で、
+  100 文字は「普通に書いていれば当たらない」上限になる（デフォルトの 90 から緩和）
+- 衝突するルール（`no-doubled-joshi`、`ja-no-weak-phrase` など）は無効のまま引き上げていない。
+  既存の無効化理由（下記）を優先する
+
+既存の設定判断：
+
 - `no-ai-words.allows` に `断定`、`経路`、`漏れ` を入れている。
-  `japanese-tech-writing` はAI語の指摘を補助検査として扱い、文脈上正確な語の使用を許容する。
+  `japanese-tech-writing` は AI 語の指摘を補助検査として扱い、文脈上正確な語の使用を許容する。
   「断定と推量の使い分け」のように規範上必要な語は、機械的な指摘から除外する
 - `no-short-topic-comma` は無効にしている。「〜は、」で主題を示す書き方は日本語として自然な場面も多く、
-  指摘が多すぎてhookのフィードバックが埋もれる
+  指摘が多すぎて hook のフィードバックが埋もれる
 - `no-ai-list-formatting.disableBoldListItems` を `true` にしている。
-  `- **ファイル名** — 説明` 形式の索引リストをskill群が9ファイルで使っており、
+  `- **ファイル名** — 説明` 形式の索引リストを skill 群が 9 ファイルで使っており、
   これを検出対象にすると参照ファイルの一覧が書けなくなる。絵文字リストの検出は残している
-- `ai-tech-writing-guideline` は無効にしている。「曖昧な判断表現」「7つのCの原則に基づいて見直しを」のような
-  文書全体への助言が中心で、書き直しを促すhookのメッセージとしては具体性が足りない。
-  なお上流が案内する `severity: "info"` はプリセット内の指定では反映されず、error のままになる（1.7.0で確認）
+- `ai-tech-writing-guideline` は無効にしている。「曖昧な判断表現」「7 つの C の原則に基づいて見直しを」のような
+  文書全体への助言が中心で、書き直しを促す hook のメッセージとしては具体性が足りない。
+  なお上流が案内する `severity: "info"` はプリセット内の指定では反映されず、error のままになる（1.7.0 で確認）
 - `ja-no-weak-phrase` は無効にしている。japanese-tech-writing が、根拠のない弱めだけを削り、
   未確認の可能性・推量・読者の疑念は残すよう定めている。機械的に「かも」を落とすと規範と衝突する
 - `no-exclamation-question-mark` は無効にしている。同スキルが見出しの疑問形を許容し、
   議論の山場では感嘆符つきの短い一文も許容している
-- `no-doubled-joshi` は無効にしている。助詞の連続は例外が多く、hookの指摘が文意と無関係な書き換えを誘う
-- `max-kanji-continuous-len` は無効にしている。技術用語の複合漢字は6文字を超えることが常であり、
+- `no-doubled-joshi` は無効にしている。助詞の連続は例外が多く、hook の指摘が文意と無関係な書き換えを誘う
+- `max-kanji-continuous-len` は無効にしている。技術用語の複合漢字は 6 文字を超えることが常であり、
   上流自身も例外前提のルールだと書いている
-- `arabic-kanji-numbers` は無効にしている。「一つ」を「1つ」に直す類の指摘が、スキル本文の自然な日本語と衝突する
+- `arabic-kanji-numbers` は無効にしている。「一つ」を「1 つ」に直す類の指摘が、スキル本文の自然な日本語と衝突する
 - `no-mix-dearu-desumasu` は本文・見出し・箇条書きの希望文体を空にしている。
-  この設定は全プロジェクトのMarkdownに掛かるため、ですます調のREADMEとである調のスキルを
+  この設定は全プロジェクトの Markdown に掛かるため、ですます調の README とである調のスキルを
   どちらか一方へ寄せられない。混在の検出だけ残す
 
-分野固有の単語を足したいときは `dictionaryPath` で辞書を追加できる（上流のREADMEを参照）。
+分野固有の単語を足したいときは `dictionaryPath` で辞書を追加できる（上流の README を参照）。
 ただしこの設定は全プロジェクト共通に適用されるため、特定の案件だけで必要な語はここに書かない。

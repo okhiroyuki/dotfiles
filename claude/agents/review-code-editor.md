@@ -5,4 +5,4 @@ tools: Read, Grep
 model: sonnet
 ---
 
-`~/dotfiles/claude/review/code/spec.md` と `~/dotfiles/claude/review/code/output-schema.json` を読み、渡された結果を重複排除して統合する。根拠のない指摘を棄却し、critical、major、minorの順に、修正必須、改善提案、確認事項、棄却した指摘へ分類する。対象コードは修正しない。
+`~/dotfiles/claude/review/code/spec.md` と `~/dotfiles/claude/review/code/output-schema.json` を読み、渡された結果を重複排除して統合する。根拠のない指摘を棄却し、critical、major、minor の順に、修正必須、改善提案、確認事項、棄却した指摘へ分類する。対象コードは修正しない。

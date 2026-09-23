@@ -13,6 +13,12 @@
       "ai-tech-writing-guideline": false
     },
     "preset-ja-technical-writing": {
+      "sentence-length": {
+        // 95パーセンタイルが77文字（nakita628/technical-document-lint の実測）。
+        // 100文字なら普通に書いていて当たらない上限
+        "max": 100,
+        "skipUrlStringLink": true
+      },
       "max-kanji-continuous-len": false,
       "arabic-kanji-numbers": false,
       "no-mix-dearu-desumasu": {
@@ -24,6 +30,41 @@
       "no-doubled-joshi": false,
       "no-exclamation-question-mark": false,
       "ja-no-weak-phrase": false
+    },
+    // 空白の入れ方（nakita628/technical-document-lint の統合設定から採用）
+    "preset-ja-spacing": {
+      // 和文と英数字の間に半角スペースを入れる
+      "ja-space-between-half-and-full-width": {
+        "space": "always"
+      },
+      // かっこの内側・外側に空白を入れない
+      "ja-no-space-around-parentheses": true,
+      // インラインコードの前後に空白を入れる
+      "ja-space-around-code": {
+        "before": true,
+        "after": true
+      },
+      // リンクの前後に空白を入れる
+      "ja-space-around-link": {
+        "before": true,
+        "after": true
+      },
+      // 全角文字どうしの間に空白を入れない
+      "ja-no-space-between-full-width": true,
+      // カタカナ語の区切りは文書の性格で分かれるので無効
+      "ja-nakaguro-or-halfwidth-space-between-katakana": false,
+      // 感嘆符・疑問符は判定しない
+      "ja-space-after-exclamation": false,
+      "ja-space-after-question": false,
+      // 対等な項目を並べるスラッシュは前後の空白を許す
+      "ja-no-space-around-slash": false,
+      // フォーマッタと衝突しやすいので無効
+      "ja-space-between-full-width-and-punctuation": false
+    },
+
+    // 表記ゆれは辞書で機械的に統一する
+    "prh": {
+      "rulePaths": ["./dict/prh.yml"]
     }
   },
   "filters": {

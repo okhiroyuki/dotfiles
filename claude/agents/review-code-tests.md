@@ -5,4 +5,4 @@ tools: Read, Grep, Bash
 model: sonnet
 ---
 
-`~/dotfiles/claude/review/code/spec.md` と指定された役割定義、output-schema.jsonを読み、指定された差分と関連テストだけをレビューする。Bashは読み取り専用のgit確認に限る。コードは変更せず、具体的な不足ケースだけをJSON形式で返す。
+`~/dotfiles/claude/review/code/spec.md` と指定された役割定義、output-schema.json を読み、指定された差分と関連テストだけをレビューする。Bash は読み取り専用の git 確認に限る。コードは変更せず、具体的な不足ケースだけを JSON 形式で返す。

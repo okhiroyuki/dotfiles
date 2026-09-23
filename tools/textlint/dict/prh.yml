@@ -1,0 +1,101 @@
+---
+# 表記ゆれ辞書（prh 形式）
+# ==================================================================
+# textlint-rule-prh がこのファイルを読み、`expected` の表記に揃える。
+# `pattern` に書いた表記が見つかると「expected に直してください」と報告し、
+# `textlint --fix` で自動的に置き換えられる。
+#
+# 出典: nakita628/technical-document-lint (dict/prh.yml)
+# https://github.com/nakita628/technical-document-lint
+# ここに並べた語は、Zenn / Qiita / note のトレンド記事 219 本を数えて
+# 「実際に多数派だったほう」を expected にしている。
+version: 1
+
+rules:
+  # ----------------------------------------------------------------
+  # カタカナ語の長音符
+  # ----------------------------------------------------------------
+  # JIS Z 8301 の「3 音以上の語では長音符を省く」は古い規約で、
+  # 現在の技術文書では語ごとに慣用が固まっている。
+
+  # ユーザー 481 回 / ユーザ 24 回
+  - expected: ユーザー
+    pattern: /ユーザ(?![ー])/
+    specs:
+      - from: ユーザ登録
+        to: ユーザー登録
+
+  # サーバー 555 回 / サーバ 229 回
+  - expected: サーバー
+    pattern: /サーバ(?![ー])/
+    specs:
+      - from: サーバ構成
+        to: サーバー構成
+
+  # ブラウザ 225 回 / ブラウザー 3 回（こちらは長音符を付けない側が多数派）
+  - expected: ブラウザ
+    pattern: /ブラウザー/
+    specs:
+      - from: ブラウザーの設定
+        to: ブラウザの設定
+
+  # メモリ 180 回 / メモリー 5 回
+  - expected: メモリ
+    pattern: /メモリー/
+    specs:
+      - from: メモリー使用量
+        to: メモリ使用量
+
+  # ----------------------------------------------------------------
+  # 漢字をひらく
+  # ----------------------------------------------------------------
+  # 補助的に使う語は、ひらがなで書いたほうが漢字の密度が下がって読みやすい。
+
+  # できる 2,242 回 / 出来る 17 回
+  - expected: でき$1
+    pattern: /出来(る|ます|ない|ませ|た|れ)/
+    specs:
+      - from: 出来ます
+        to: できます
+
+  # ください 384 回 / 下さい 12 回
+  - expected: ください
+    pattern: /下さい/
+    specs:
+      - from: 実行して下さい
+        to: 実行してください
+
+  # 行う 458 回 / 行なう 11 回（送り仮名は「行う」が常用漢字表の本則）
+  - expected: 行$1
+    pattern: /行な(う|い|っ|わ)/
+    specs:
+      - from: 設定を行ないます
+        to: 設定を行います
+
+  # ----------------------------------------------------------------
+  # 製品名・サービス名の大文字小文字
+  # ----------------------------------------------------------------
+
+  - expected: GitHub
+    pattern: /(?<![A-Za-z])(Github|github)(?![A-Za-z])/
+    specs:
+      - from: Github Actions
+        to: GitHub Actions
+
+  - expected: JavaScript
+    pattern: /(?<![A-Za-z])(Javascript|javascript)(?![A-Za-z.])/
+    specs:
+      - from: Javascript の仕様
+        to: JavaScript の仕様
+
+  - expected: TypeScript
+    pattern: /(?<![A-Za-z])(Typescript|typescript)(?![A-Za-z.])/
+    specs:
+      - from: Typescript の型
+        to: TypeScript の型
+
+  - expected: Node.js
+    pattern: /(?<![A-Za-z.])(NodeJS|Nodejs|nodejs)(?![A-Za-z])/
+    specs:
+      - from: NodeJS のバージョン
+        to: Node.js のバージョン
