@@ -18,6 +18,7 @@
 @rules/web-access.md
 @rules/llm-wiki.md
 @rules/review.md
+@rules/crit.md
 
 ## セキュリティ
 
