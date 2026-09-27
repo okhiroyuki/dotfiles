@@ -12,7 +12,15 @@ const TEXTLINT_DIR = path.join(process.env.HOME ?? "", "dotfiles", "tools", "tex
 const TEXTLINT_BIN = path.join(TEXTLINT_DIR, "node_modules", ".bin", "textlint")
 const TEXTLINT_JS = path.join(TEXTLINT_DIR, "node_modules", "textlint", "bin", "textlint.js")
 const TEXTLINT_CONFIG = path.join(TEXTLINT_DIR, ".textlintrc.json")
-const EDIT_TOOLS = new Set(["write", "edit", "apply_patch"])
+const EDIT_TOOLS = new Set([
+  "write",
+  "edit",
+  "apply_patch",
+  // OpenCode tool names used by different harness versions.
+  "patch",
+  "functions.patch",
+  "functions.apply_patch",
+])
 const DEBUG_LOG = path.join(os.tmpdir(), "textlint-plugin-debug.log")
 
 type ToolResult = {
@@ -60,6 +68,21 @@ function collectFiles(input: unknown, result: unknown, directory: string): strin
 
   scan(input)
   if (input && typeof input === "object") scan((input as Record<string, unknown>).args)
+
+  // The functions.patch tool stores paths in patchText rather than in a path field.
+  // Support both absolute and workspace-relative paths in file operation headers.
+  const patchText = input && typeof input === "object"
+    ? (input as Record<string, unknown>).patchText
+    : null
+  if (typeof patchText === "string") {
+    for (const match of patchText.matchAll(/^\*\*\* (?:Add|Update|Delete) File: (.+)$/gm)) {
+      scan(match[1].trim())
+    }
+    for (const match of patchText.matchAll(/^\*\*\* Move to: (.+)$/gm)) {
+      scan(match[1].trim())
+    }
+  }
+
   scan(result)
   if (result && typeof result === "object") scan((result as Record<string, unknown>).metadata)
 

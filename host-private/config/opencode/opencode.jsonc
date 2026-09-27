@@ -35,6 +35,7 @@
     "todowrite": "allow",
     "question": "allow",
     "ax": "allow",
+    "parse": "allow",
     "semble_search": "allow",
     "semble_find_related": "allow",
     "webfetch": "deny",
