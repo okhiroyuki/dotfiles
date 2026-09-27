@@ -1,7 +1,7 @@
 ---
 description: 日本語文書の主張を反証可能性の観点でレビューする読み取り専用エージェント
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/gpt-6-luna
 permission:
   bash: deny
   edit: deny

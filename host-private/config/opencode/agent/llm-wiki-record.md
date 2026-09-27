@@ -1,7 +1,7 @@
 ---
 description: 会話や調査結果を重複確認・構造化してllm-wikiへ記録する書き込み担当エージェント
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/gpt-6-luna
 permission:
   bash:
     "*": deny

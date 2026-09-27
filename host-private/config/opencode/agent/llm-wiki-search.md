@@ -1,7 +1,7 @@
 ---
 description: llm-wikiを検索し、関連ページを全文確認して根拠付きで要約する読み取り専用エージェント
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/gpt-6-luna
 permission:
   bash:
     "*": deny

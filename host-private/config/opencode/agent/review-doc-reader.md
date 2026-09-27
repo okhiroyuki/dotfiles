@@ -1,7 +1,7 @@
 ---
 description: 想定読者の視点だけで日本語文書をレビューする読み取り専用エージェント
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/gpt-6-luna
 permission:
   bash: deny
   edit: deny

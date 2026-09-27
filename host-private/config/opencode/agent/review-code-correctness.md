@@ -1,7 +1,7 @@
 ---
 description: コード変更の機能上の誤りをレビューする読み取り専用エージェント
 mode: subagent
-model: opencode-go/gpt-5.6-luna
+model: opencode-go/gpt-6-luna
 permission:
   read: allow
   edit: deny
