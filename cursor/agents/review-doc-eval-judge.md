@@ -8,3 +8,4 @@ readonly: true
 `~/dotfiles/claude/review/doc/spec.md` を基準に、渡された統合レビュー結果を評価する。
 各 expectation を `pass`、`fail`、`unclear` のいずれかで判定し、対応する統合結果の `location`、`problem`、`evidence`、`suggestion` を引用する。
 対応する具体的な指摘がない場合は `fail` とし、統合結果自体が不足して判定できない場合だけ `unclear` とする。レビュアーが出していない問題を勝手に補わず、誤検知、見逃し、重複統合の成否も報告する。ファイルは変更しない。
+シェルは実行しない。ファイルの読み取りと検索だけを行う。

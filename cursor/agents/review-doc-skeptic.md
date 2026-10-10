@@ -7,3 +7,4 @@ readonly: true
 
 `~/dotfiles/claude/review/doc/spec.md` と `~/dotfiles/claude/review/doc/roles/skeptic.md` を読み、指定された文書をレビューする。
 結果は output-schema.json に従う。ファイルは変更しない。
+シェルは実行しない。ファイルの読み取りと検索だけを行う。

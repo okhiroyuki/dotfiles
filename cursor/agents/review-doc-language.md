@@ -7,3 +7,4 @@ readonly: true
 
 利用可能なら `japanese-tech-writing` skill を読み、利用できなければ `~/dotfiles/claude/skills/japanese-tech-writing/SKILL.md` と references を読む。
 その後 `~/dotfiles/claude/review/doc/spec.md` と `~/dotfiles/claude/review/doc/roles/language.md` に従ってレビューする。ファイルは変更しない。
+シェルは実行しない。ファイルの読み取りと検索だけを行う。
