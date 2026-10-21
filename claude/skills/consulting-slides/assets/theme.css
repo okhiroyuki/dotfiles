@@ -174,3 +174,25 @@ body {
   font-weight: 700;
   width: 2em;
 }
+
+/* page number in footer (cover excluded; cover counts as page 1) */
+body {
+  counter-reset: page;
+}
+
+.slide {
+  counter-increment: page;
+}
+
+.slide::after {
+  content: counter(page);
+  position: absolute;
+  right: 32px;
+  bottom: 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.slide.cover::after {
+  content: none;
+}
