@@ -20,6 +20,10 @@
 @rules/review.md
 @rules/crit.md
 
+## 文章作成
+
+@rules/writing.md
+
 ## セキュリティ
 
 @rules/security.md
