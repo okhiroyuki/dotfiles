@@ -5,6 +5,8 @@ ignore: |
   **/node_modules/**
   **/pnpm-lock.yaml
   **/pnpm-workspace.yaml
+  # git worktree の作業コピー (.claude/worktrees/) は別ブランチの複製なので対象外
+  .claude/worktrees/**
 rules:
   line-length:
     max: 140
