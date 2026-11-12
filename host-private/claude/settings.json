@@ -138,6 +138,7 @@
       "Bash(rtk ruff check)",
       "Bash(rtk ruff check *)",
       "Bash(llm-wiki *)",
+      "Bash(python3 ~/.claude/hooks/doc-review.py mark:*)",
       "Read(~/.claude/skills/**)",
       "Skill(update-config)",
       "Skill(update-config:*)",
@@ -230,7 +231,7 @@
         ]
       },
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
           {
             "type": "command",
@@ -241,7 +242,25 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/doc-review-state.py write"
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/doc-review-state.py skill"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
           {
             "type": "command",

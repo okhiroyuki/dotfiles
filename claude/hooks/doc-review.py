@@ -10,14 +10,19 @@
 `.doc-review/.gitignore` に `*` を書き、記録自体は git の対象外にする。
 
 gate は、このターンで書き込んだ `.md` ごとに記録との差分を数える。記録がなければ全文を差分とみなす。
-変更した日本語が閾値以上の文書があれば、ターンの終了を止め、レビューするかをユーザーに確認させる。
+変更した日本語が閾値を超える文書があれば、ターンの終了を止め、レビューするかをユーザーに確認させる。
 実行するか、指摘を採用するかは常にユーザーが決める。
 
-判断できない状況（入力の解析失敗・transcript がない）は fail open で通す。
+判断できない状況（入力の解析失敗・ターン識別子がない）は fail open で通す。
 """
+
+from __future__ import annotations
+
+from __future__ import annotations
 
 import difflib
 import json
+import importlib.util
 import os
 import re
 import shutil
@@ -28,7 +33,16 @@ DEFAULT_THRESHOLD = 400
 JAPANESE_CHAR = re.compile(r"[぀-ヿ一-鿿]")
 TARGET_SUFFIXES = (".md", ".markdown")
 STATE_DIR = ".doc-review"
-WRITE_TOOLS = {"Write", "Edit", "MultiEdit"}
+STATE_HOOK = Path(__file__).with_name("doc-review-state.py")
+
+
+def load_state_module():
+    spec = importlib.util.spec_from_file_location("doc_review_state", STATE_HOOK)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def japanese_count(text: str) -> int:
@@ -55,49 +69,6 @@ def changed_japanese(doc: Path) -> int:
         added = japanese_count("\n".join(current[b1:b2]))
         total += max(removed, added)
     return total
-
-
-def is_user_prompt(entry: dict) -> bool:
-    """ツール結果やスキル本文の注入ではない、ユーザー自身の発言か。"""
-    if entry.get("type") != "user" or entry.get("isMeta") or entry.get("isSidechain"):
-        return False
-    content = (entry.get("message") or {}).get("content")
-    if isinstance(content, str):
-        return True
-    if isinstance(content, list):
-        return not any(
-            isinstance(block, dict) and block.get("type") == "tool_result"
-            for block in content
-        )
-    return False
-
-
-def files_written_this_turn(transcript_path: str) -> list[Path]:
-    written: dict[str, None] = {}
-    with open(transcript_path, encoding="utf-8") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if is_user_prompt(entry):
-                written.clear()
-                continue
-            if entry.get("type") != "assistant" or entry.get("isSidechain"):
-                continue
-            content = (entry.get("message") or {}).get("content")
-            if not isinstance(content, list):
-                continue
-            for block in content:
-                if (
-                    isinstance(block, dict)
-                    and block.get("type") == "tool_use"
-                    and block.get("name") in WRITE_TOOLS
-                ):
-                    path = (block.get("input") or {}).get("file_path")
-                    if path:
-                        written[path] = None
-    return [Path(p) for p in written]
 
 
 def is_target(doc: Path) -> bool:
@@ -128,8 +99,10 @@ def gate() -> int:
         return 0
 
     try:
-        docs = files_written_this_turn(payload.get("transcript_path") or "")
-    except OSError:
+        state_module = load_state_module()
+        state = state_module.read_state(payload) if state_module else None
+        docs = [Path(p) for p in (state or {}).get("written", [])]
+    except (OSError, TypeError):
         return 0
 
     limit = threshold()
@@ -141,7 +114,7 @@ def gate() -> int:
             count = changed_japanese(doc)
         except (OSError, UnicodeDecodeError):
             continue
-        if count >= limit:
+        if count > limit:
             first = not snapshot_path(doc).exists()
             pending.append((doc, count, first))
 
@@ -176,11 +149,30 @@ def mark(paths: list[str]) -> int:
             status = 1
             continue
         state = doc.parent / STATE_DIR
+        # 保存先がシンボリックリンクだと copyfile がリンク先を上書きする。
+        # 信頼できないチェックアウトからの攻撃を防ぐため、リンクなら使わない。
+        if state.is_symlink():
+            print(f"保存先がシンボリックリンクです: {state}", file=sys.stderr)
+            status = 1
+            continue
         state.mkdir(exist_ok=True)
         ignore = state / ".gitignore"
         if not ignore.exists():
             ignore.write_text("*\n", encoding="utf-8")
-        shutil.copyfile(doc, state / doc.name)
+        snapshot = state / doc.name
+        # 一時ファイルはリンクをたどらない O_NOFOLLOW|O_EXCL で作り、
+        # os.replace なら保存先がリンクでもリンク自体を差し替えるので安全。
+        temporary = state / f".{doc.name}.{os.getpid()}.tmp"
+        try:
+            nofollow = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+            fd = os.open(temporary, nofollow, 0o600)
+            with os.fdopen(fd, "wb") as dst, open(doc, "rb") as src:
+                shutil.copyfileobj(src, dst)
+            os.replace(temporary, snapshot)
+        except OSError as e:
+            print(f"記録に失敗しました: {doc}（{e}）", file=sys.stderr)
+            status = 1
+            continue
         print(f"記録しました: {doc}")
     return status
 

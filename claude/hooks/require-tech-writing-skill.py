@@ -1,22 +1,37 @@
 #!/usr/bin/env python3
 """まとまった量の日本語Markdownを書く前に japanese-tech-writing スキルの起動を強制する。
 
-PreToolUse (Write|Edit) から呼ばれる。書き込む日本語の文字数が閾値以上で、
+PreToolUse (Write|Edit|MultiEdit|NotebookEdit) から呼ばれる。書き込む日本語の文字数が閾値を超え、
 最後のユーザー発言以降に Skill(japanese-tech-writing) を呼んでいなければ exit 2 で止める。
 ターン単位で見るのは、書き直しのたびにスキルで見直させるため。
 
-判断できない状況（入力の解析失敗・transcript がない・サブエージェント）は fail open で通す。
+ターン識別子があれば、状態が空でも「まだスキルを起動していない」とみなして止める。
+判断できない状況（入力の解析失敗・ターン識別子がない・サブエージェント）は fail open で通す。
 """
+
+from __future__ import annotations
 
 import json
 import os
 import re
 import sys
+import importlib.util
+from pathlib import Path
 
 SKILL_NAME = "japanese-tech-writing"
 DEFAULT_THRESHOLD = 400
 JAPANESE_CHAR = re.compile(r"[぀-ヿ一-鿿]")
 TARGET_SUFFIXES = (".md", ".markdown")
+STATE_HOOK = Path(__file__).with_name("doc-review-state.py")
+
+
+def load_state_module():
+    spec = importlib.util.spec_from_file_location("doc_review_state", STATE_HOOK)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def written_text(tool_name: str, tool_input: dict) -> str:
@@ -24,54 +39,13 @@ def written_text(tool_name: str, tool_input: dict) -> str:
         return tool_input.get("content") or ""
     if tool_name == "Edit":
         return tool_input.get("new_string") or ""
-    return ""
-
-
-def is_user_prompt(entry: dict) -> bool:
-    """ツール結果やスキル本文の注入ではない、ユーザー自身の発言か。"""
-    if entry.get("type") != "user" or entry.get("isMeta") or entry.get("isSidechain"):
-        return False
-    content = (entry.get("message") or {}).get("content")
-    if isinstance(content, str):
-        return True
-    if isinstance(content, list):
-        return not any(
-            isinstance(block, dict) and block.get("type") == "tool_result"
-            for block in content
+    if tool_name in {"MultiEdit", "NotebookEdit"}:
+        return "\n".join(
+            edit.get("new_string") or ""
+            for edit in tool_input.get("edits") or []
+            if isinstance(edit, dict)
         )
-    return False
-
-
-def calls_skill(entry: dict) -> bool:
-    if entry.get("type") != "assistant":
-        return False
-    content = (entry.get("message") or {}).get("content")
-    if not isinstance(content, list):
-        return False
-    for block in content:
-        if (
-            isinstance(block, dict)
-            and block.get("type") == "tool_use"
-            and block.get("name") == "Skill"
-            and (block.get("input") or {}).get("skill") == SKILL_NAME
-        ):
-            return True
-    return False
-
-
-def skill_called_this_turn(transcript_path: str) -> bool:
-    called = False
-    with open(transcript_path, encoding="utf-8") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if is_user_prompt(entry):
-                called = False
-            elif calls_skill(entry):
-                called = True
-    return called
+    return ""
 
 
 def main() -> int:
@@ -100,14 +74,24 @@ def main() -> int:
 
     text = written_text(payload.get("tool_name") or "", tool_input)
     count = len(JAPANESE_CHAR.findall(text))
-    if count < threshold:
+    if count <= threshold:
         return 0
 
-    transcript_path = payload.get("transcript_path") or ""
-    try:
-        if skill_called_this_turn(transcript_path):
+    state_module = load_state_module()
+    if state_module is None:
+        return 0
+    state = state_module.read_state(payload)
+    if state is None:
+        # ターン識別子があるのに状態がない＝ターン開始直後でまだ何も記録されていない。
+        # 最初の書き込みでもスキル未起動なら止める（transcript 方式と同じ強度）。
+        # 識別子が取れないときだけ判断できないとして fail open する。
+        if state_module.state_path(payload) is None:
             return 0
-    except OSError:
+        state = {"written": [], "skills": []}
+    if any(
+        skill.rsplit(":", 1)[-1] == SKILL_NAME
+        for skill in state.get("skills", [])
+    ):
         return 0
 
     print(
