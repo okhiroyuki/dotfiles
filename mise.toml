@@ -68,9 +68,14 @@ description = "github-html-viewer Chrome拡張のロジック部分のテスト�
 dir = "tools/extensions/chrome/github-html-viewer"
 run = "node --test lib/*.test.js"
 
+[tasks."test:opencode-plugin"]
+description = "OpenCodeプラグイン（doc-review/spawn）のテストを実行する"
+dir = "host-private/config/opencode"
+run = "node --test tests/"
+
 [tasks.test]
 description = "全テストを実行する"
-depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer"]
+depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer", "test:opencode-plugin"]
 
 [tasks."install:textlint"]
 description = "textlint環境を用意する（install:pnpmの別名。Claude Codeのhookが使う）"

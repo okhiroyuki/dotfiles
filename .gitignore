@@ -46,6 +46,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# OpenCodeプラグインのテスト用。ランタイム側の node_modules への symlink（COPY_ALWAYS で配備されない開発用）。
+host-private/config/opencode/node_modules
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
