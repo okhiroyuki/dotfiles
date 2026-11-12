@@ -249,6 +249,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/doc-review.py gate"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
