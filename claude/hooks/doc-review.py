@@ -97,6 +97,9 @@ def gate() -> int:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
         return 0
+    # 配列や数値など dict 以外の入力は判断できないとして fail open する。
+    if not isinstance(payload, dict):
+        return 0
 
     # 一度止めたあとの再停止では通す。記録の更新を忘れても無限ループにしない。
     if payload.get("stop_hook_active"):
@@ -166,8 +169,16 @@ def mark(paths: list[str]) -> int:
             continue
         state.mkdir(exist_ok=True)
         ignore = state / ".gitignore"
+        if ignore.is_symlink():
+            # dangling symlink も exists() は False になるため、書く前に拒否する。
+            print(f"保存先がシンボリックリンクです: {ignore}", file=sys.stderr)
+            status = 1
+            continue
         if not ignore.exists():
-            ignore.write_text("*\n", encoding="utf-8")
+            nofollow = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+            fd = os.open(ignore, nofollow, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write("*\n")
         snapshot = state / doc.name
         # 一時ファイルはリンクをたどらない O_NOFOLLOW|O_EXCL で作り、
         # os.replace なら保存先がリンクでもリンク自体を差し替えるので安全。

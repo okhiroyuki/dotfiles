@@ -375,6 +375,12 @@ class DocGateTest(unittest.TestCase):
             finally:
                 gate_mod.LLM_WIKI_ROOT = original
 
+    def test_fails_open_on_non_dict_payload(self) -> None:
+        # JSON として妥当でもトップレベルが配列・null・数値なら判断できないとして通す
+        for payload in ("[]", "null", "123"):
+            with self.subTest(payload=payload):
+                self.assertEqual(self.gate(payload), 0)
+
     def test_fails_open_without_prompt_id(self) -> None:
         # prompt_id がない Stop hook は、none キーに記録があっても判断できないとして通す
         doc = self.doc
@@ -386,6 +392,69 @@ class DocGateTest(unittest.TestCase):
         record("write", {**self.base, "tool_name": "Write",
                          "tool_input": {"file_path": str(doc)}})
         self.assertEqual(self.gate(self.base), 2)
+
+
+class MarkTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.turn = tempfile.TemporaryDirectory()
+        self.doc = Path(self.turn.name) / "doc.md"
+        self.doc.write_text("# 本文", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self.turn.cleanup()
+
+    def mark(self, doc: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(GATE), "mark", str(doc)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_records_snapshot_and_gitignore(self) -> None:
+        result = self.mark(self.doc)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        snapshot = self.doc.parent / gate_mod.STATE_DIR / self.doc.name
+        self.assertTrue(snapshot.exists())
+        self.assertEqual(snapshot.read_text(encoding="utf-8"), "# 本文")
+        ignore = self.doc.parent / gate_mod.STATE_DIR / ".gitignore"
+        self.assertEqual(ignore.read_text(encoding="utf-8"), "*\n")
+
+    def test_rejects_symlinked_state_dir(self) -> None:
+        outside = Path(self.turn.name) / "outside.md"
+        outside.write_text("外部", encoding="utf-8")
+        state = self.doc.parent / gate_mod.STATE_DIR
+        state.mkdir(exist_ok=True)
+        state.rmdir()
+        state.symlink_to(outside)
+        result = self.mark(self.doc)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(outside.read_text(encoding="utf-8"), "外部")
+
+    def test_rejects_dangling_symlinked_gitignore(self) -> None:
+        target = Path(self.turn.name) / "victim.txt"
+        state = self.doc.parent / gate_mod.STATE_DIR
+        state.mkdir()
+        (state / ".gitignore").symlink_to(target)
+        result = self.mark(self.doc)
+        self.assertEqual(result.returncode, 1)
+        # リンクは実体化されず、リンク先にもファイルが作られない
+        self.assertTrue((state / ".gitignore").is_symlink())
+        self.assertFalse(target.exists())
+
+    def test_replaces_snapshot_symlink_without_following(self) -> None:
+        outside = Path(self.turn.name) / "outside.md"
+        outside.write_text("外部", encoding="utf-8")
+        state = self.doc.parent / gate_mod.STATE_DIR
+        state.mkdir()
+        (state / self.doc.name).symlink_to(outside)
+        result = self.mark(self.doc)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        # リンク先は保持され、リンク自体が通常ファイルに差し替わる
+        self.assertEqual(outside.read_text(encoding="utf-8"), "外部")
+        snapshot = state / self.doc.name
+        self.assertFalse(snapshot.is_symlink())
+        self.assertEqual(snapshot.read_text(encoding="utf-8"), "# 本文")
 
 
 class SettingsWiringTest(unittest.TestCase):
