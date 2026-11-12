@@ -64,11 +64,21 @@ function resolveArgv(argv: string[]): string[] {
   return found ? [found, ...rest] : argv
 }
 
-export async function spawnText(argv: string[], options: { cwd?: string } = {}): Promise<SpawnResult> {
+export async function spawnText(
+  argv: string[],
+  options: { cwd?: string; stdin?: string } = {},
+): Promise<SpawnResult> {
   const resolved = resolveArgv(argv)
   if (bun?.spawn) {
     try {
-      const proc = bun.spawn(resolved, { stdout: "pipe", stderr: "pipe", cwd: options.cwd })
+      const proc = bun.spawn(resolved, {
+        stdout: "pipe",
+        stderr: "pipe",
+        stdin: options.stdin === undefined ? "inherit" : "pipe",
+        cwd: options.cwd,
+      })
+      if (options.stdin !== undefined) proc.stdin.write(options.stdin)
+      await proc.stdin.end()
       const [stdout, stderr] = await Promise.all([
         new Response(proc.stdout).text(),
         new Response(proc.stderr).text(),
@@ -80,6 +90,21 @@ export async function spawnText(argv: string[], options: { cwd?: string } = {}):
     }
   }
   try {
+    // node フォールバックは stdin を渡せないため spawnSync を使う(実運用は Bun 経由)。
+    if (options.stdin !== undefined) {
+      const { spawnSync } = await import("node:child_process")
+      const result = spawnSync(resolved[0], resolved.slice(1), {
+        cwd: options.cwd,
+        input: options.stdin,
+        encoding: "utf8",
+        maxBuffer: 32 * 1024 * 1024,
+      })
+      return {
+        code: result.status ?? 127,
+        stdout: result.stdout ?? "",
+        stderr: result.stderr ?? "",
+      }
+    }
     const { stdout, stderr } = await execFileAsync(resolved[0], resolved.slice(1), {
       cwd: options.cwd,
       maxBuffer: 32 * 1024 * 1024,
