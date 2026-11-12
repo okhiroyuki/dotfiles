@@ -62,6 +62,11 @@ def main() -> int:
     if payload.get("agent_id"):
         return 0
 
+    # ターン識別子が取れないときだけ判断できないとして fail open する。
+    # state_path は prompt_id 欠落を "none" に正規化するため、生の識別子をここで見る。
+    if not payload.get("session_id") or not payload.get("prompt_id"):
+        return 0
+
     tool_input = payload.get("tool_input") or {}
     file_path = tool_input.get("file_path") or ""
     if not file_path.endswith(TARGET_SUFFIXES):
@@ -82,11 +87,8 @@ def main() -> int:
         return 0
     state = state_module.read_state(payload)
     if state is None:
-        # ターン識別子があるのに状態がない＝ターン開始直後でまだ何も記録されていない。
+        # ターン識別子はあるが状態ファイルがない＝ターン開始直後でまだ何も記録されていない。
         # 最初の書き込みでもスキル未起動なら止める（transcript 方式と同じ強度）。
-        # 識別子が取れないときだけ判断できないとして fail open する。
-        if state_module.state_path(payload) is None:
-            return 0
         state = {"written": [], "skills": []}
     if any(
         skill.rsplit(":", 1)[-1] == SKILL_NAME

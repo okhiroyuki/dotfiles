@@ -28,8 +28,11 @@ CLEANUP_SECONDS = 3600
 
 def state_path(payload: dict) -> Path | None:
     session_id = payload.get("session_id")
-    prompt_id = payload.get("prompt_id")
-    if not session_id or not prompt_id:
+    # prompt_id は通常のツール呼び出しでは必ず含まれるが、仕様上「初回ユーザー入力前」
+    # などは欠け得る。欠落時はセッション単位のキーに正規化して状態を保持し、
+    # ターン分離の代替は cleanup の mtime 期限(1時間)に任せる。
+    prompt_id = payload.get("prompt_id") or "none"
+    if not session_id:
         return None
     key = hashlib.sha256(f"{session_id}:{prompt_id}".encode()).hexdigest()
     return STATE_ROOT / f"{key}.json"
@@ -43,15 +46,23 @@ def locked_state(payload: dict) -> Iterator[dict | None]:
         return
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     with path.with_suffix(".lock").open("a+") as lock_file:
+        locked = False
         try:
             import fcntl
 
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
-        except (ImportError, OSError):
-            # 排他できない環境での read-modify-write は更新ロスの恐れがあるため、
-            # 更新を中止して fail open（ゲート側は状態なしとして扱う）。
-            yield None
-            return
+            locked = True
+        except OSError:
+            # 一度だけ待って再試行し、それでも取れなければロックなしで続行する。
+            # 排他を断念するより記録が失われてゲートが誤ブロックする方が害が大きい。
+            time.sleep(0.05)
+            try:
+                import fcntl
+
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+                locked = True
+            except OSError:
+                locked = False
         try:
             try:
                 state = json.loads(path.read_text(encoding="utf-8"))
@@ -64,12 +75,13 @@ def locked_state(payload: dict) -> Iterator[dict | None]:
             temporary.write_text(json.dumps(state), encoding="utf-8")
             os.replace(temporary, path)
         finally:
-            try:
-                import fcntl
+            if locked:
+                try:
+                    import fcntl
 
-                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
-            except (ImportError, OSError):
-                pass
+                    fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+                except (ImportError, OSError):
+                    pass
 
 
 def cleanup() -> None:
@@ -81,7 +93,23 @@ def cleanup() -> None:
         return
     for entry in entries:
         try:
-            if now - entry.stat().st_mtime > CLEANUP_SECONDS:
+            if now - entry.stat().st_mtime <= CLEANUP_SECONDS:
+                continue
+            if entry.name.endswith(".lock"):
+                # 保持中のロックを消すと別 inode の同名ロックが並行更新を許す。
+                # 非ブロッキングで取れたときだけ「今は保持されていない」とみなして、
+                # 保持したまま削除してから手放す。
+                import fcntl
+
+                fd = os.open(entry, os.O_RDWR)
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except OSError:
+                    os.close(fd)
+                    continue
+                entry.unlink()
+                os.close(fd)
+            else:
                 entry.unlink()
         except OSError:
             continue
@@ -127,6 +155,20 @@ def read_state(payload: dict) -> dict | None:
     return state if isinstance(state, dict) else None
 
 
+def log_payload_keys(payload: dict) -> None:
+    """フック入力のキー一覧を初回だけ記録する。将来のフィールド増減に気づくため。"""
+    try:
+        STATE_ROOT.mkdir(mode=0o700, parents=True, exist_ok=True)
+        marker = STATE_ROOT / ".keys-logged"
+        if marker.exists():
+            return
+        line = json.dumps(sorted(payload.keys()), ensure_ascii=False)
+        (STATE_ROOT / "payload-keys.log").write_text(line + "\n", encoding="utf-8")
+        marker.write_text("", encoding="utf-8")
+    except OSError:
+        pass
+
+
 def main() -> int:
     cleanup()
     try:
@@ -135,6 +177,7 @@ def main() -> int:
         return 0
     if not isinstance(payload, dict):
         return 0
+    log_payload_keys(payload)
     if sys.argv[1:] == ["write"]:
         add_written_file(payload)
     elif sys.argv[1:] == ["skill"]:
