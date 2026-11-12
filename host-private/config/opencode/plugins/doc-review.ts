@@ -36,7 +36,9 @@ type PromptEvent = {
   prompt?: { skills?: unknown[] }
 }
 
-type IdleEvent = { sessionID?: string; properties?: { sessionID?: string } }
+// V2 の session.idle イベントは data.sessionID にセッション識別子を持つ
+// （top-level や properties ではない。@opencode/client の SessionIdle 型を参照）。
+type IdleEvent = { data?: { sessionID?: string } }
 
 const turns = new Map<string, number>()
 
@@ -245,7 +247,7 @@ export default Plugin.define({
       if (!python || !fs.existsSync(GATE_SCRIPT)) return
       for await (const event of ctx.event.subscribe({ types: ["session.idle"] })) {
         const e = event as IdleEvent
-        const sessionID = e.properties?.sessionID ?? e.sessionID ?? "default"
+        const sessionID = e.data?.sessionID ?? "default"
         const turn = String(turnOf(sessionID))
         const key = `${sessionID}:${turn}`
         if (nudged.has(key)) continue
