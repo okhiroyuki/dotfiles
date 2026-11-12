@@ -228,6 +228,15 @@
             "command": "python3 ~/.claude/hooks/validate-commit-message.py"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/require-tech-writing-skill.py"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -237,6 +246,16 @@
           {
             "type": "command",
             "command": "sh ~/.claude/hooks/textlint-ai-words.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/doc-review.py gate"
           }
         ]
       }
