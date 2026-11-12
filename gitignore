@@ -13,3 +13,6 @@
 # 機密（どのリポジトリでも誤コミットを防ぐ）
 .env
 .env.devcontainer
+
+# ツールの個人用ローカル設定
+**/.claude/settings.local.json
