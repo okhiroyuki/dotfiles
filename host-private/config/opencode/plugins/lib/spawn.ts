@@ -10,7 +10,7 @@ type BunProcess = {
 
 type BunApi = {
   which?: (bin: string) => string | null
-  spawn?: (argv: string[], options: { cwd?: string; stdout: "pipe"; stderr: "pipe" }) => BunProcess
+  spawn?: (argv: string[], options: { cwd?: string; stdout: "pipe"; stderr: "pipe"; stdin?: "pipe" | "ignore" | "inherit" }) => BunProcess
 }
 
 const bun = (globalThis as typeof globalThis & { Bun?: BunApi }).Bun
@@ -72,7 +72,8 @@ export async function spawnText(
       const proc = bun.spawn(resolved, {
         stdout: "pipe",
         stderr: "pipe",
-        stdin: piped ? "pipe" : "inherit",
+        // 子プロセスが opencode サーバーの stdin を共有しないよう ignore にする。
+        stdin: piped ? "pipe" : "ignore",
         cwd: options.cwd,
       })
       if (piped && proc.stdin) {
