@@ -79,6 +79,9 @@ if [ ! -e node_modules/@opencode/plugin ]; then
   mkdir -p node_modules
   npm install --no-save --silent --prefix . @opencode/plugin
 fi
+# 状態・ゲートスクリプトはリポジトリ内のものを使う（CI には ~/.claude/hooks が無いため）。
+export DOC_REVIEW_STATE_SCRIPT="$PWD/../../../claude/hooks/doc-review-state.py"
+export DOC_REVIEW_GATE_SCRIPT="$PWD/../../../claude/hooks/doc-review.py"
 node --test tests/
 '''
 

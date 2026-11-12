@@ -17,8 +17,11 @@ const SKILL_NAME = "japanese-tech-writing"
 const DEFAULT_THRESHOLD = 400
 const JAPANESE_CHAR = /[\u3040-\u30FF\u4E00-\u9FFF]/g
 const WRITE_TOOLS = new Set(["write", "edit", "multiedit", "notebookedit"])
-const STATE_SCRIPT = path.join(os.homedir(), ".claude", "hooks", "doc-review-state.py")
-const GATE_SCRIPT = path.join(os.homedir(), ".claude", "hooks", "doc-review.py")
+const STATE_SCRIPT = process.env.DOC_REVIEW_STATE_SCRIPT
+  // テストはリポジトリ内のスクリプトを指す（CI には ~/.claude/hooks が無いため）。
+  ?? path.join(os.homedir(), ".claude", "hooks", "doc-review-state.py")
+const GATE_SCRIPT = process.env.DOC_REVIEW_GATE_SCRIPT
+  ?? path.join(os.homedir(), ".claude", "hooks", "doc-review.py")
 const STATE_ROOT = path.join(os.tmpdir(), "claude-doc-review")
 
 type ToolEvent = {
