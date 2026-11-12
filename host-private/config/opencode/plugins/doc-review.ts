@@ -2,7 +2,8 @@
 // Claude Code hooks (doc-review-state.py / doc-review.py) の状態ファイルを再利用する。
 // 確認済み: execute.before での throw はツールをブロックする(commit-message.ts と同様)。
 //           session.idle でのゲート文言は ctx.session.synthetic({sessionID, text}) で注入する。
-// 未確認: subagent 判別に使えるフィールド(現在は区別せず記録)。
+// 確認済み: サブエージェントのツールでも execute.* は発火する(実機実測)。判別は agent の
+//           mode("subagent")で行い、書き込みは親セッションの状態に記録して Stop ゲートの対象にする。
 // 識別子は Claude Code の session_id/prompt_id に sessionID/ターン番号を対応させる。
 
 import { Plugin } from "@opencode/plugin"
@@ -24,6 +25,7 @@ type ToolEvent = {
   tool: string
   input?: Record<string, unknown>
   sessionID?: string
+  agent?: string
 }
 
 type PromptEvent = {
@@ -130,6 +132,31 @@ export default Plugin.define({
   async setup(ctx) {
     const limit = threshold()
 
+    // サブエージェント判定: agent の mode を起動時に一覧化し、フックからは同期判定する。
+    // execute.before は同期的に throw してブロックする必要があるため、async 判定は使わない。
+    // 起動後に追加された agent は判定できない（起動時の一覧に含まれないためメイン扱い）。
+    const subagentAgents = new Set<string>()
+    try {
+      const agents = await ctx.agent.list()
+      for (const info of agents.data) {
+        if (info.mode === "subagent") subagentAgents.add(info.id)
+      }
+    } catch {}
+
+    // サブエージェントの書き込みを親セッションの状態に記録するため、親 ID を一度だけ取得して保持する。
+    const parentCache = new Map<string, string | null>()
+    async function parentSessionID(sessionID: string): Promise<string | null> {
+      if (parentCache.has(sessionID)) return parentCache.get(sessionID) ?? null
+      try {
+        const info = await ctx.session.get({ sessionID })
+        const parent = info.parentID ?? null
+        parentCache.set(sessionID, parent)
+        return parent
+      } catch {
+        return null
+      }
+    }
+
     // ターン境界: ユーザープロンプトの承認ごとにターン番号を進める。
     // prompt.skills はスキル解決前に決まる一次情報。フック成否に依存しないためここでも記録する。
     await ctx.session.hook("prompt", async (event) => {
@@ -151,6 +178,7 @@ export default Plugin.define({
     })
 
     // 書き込み前ゲート: 閾値を超える日本語をスキル未起動で書こうとしたら止める。
+    // サブエージェントは対象外（Claude Code 版と同じ契約）。判定は同期（Set 参照）のみ。
     await ctx.tool.hook("execute.before", (event) => {
       const e = event as ToolEvent
       const tool = (e.tool ?? "").toLowerCase()
@@ -158,6 +186,7 @@ export default Plugin.define({
       const input = e.input ?? {}
       const file = filePathOf(input)
       if (!file.endsWith(".md") && !file.endsWith(".markdown")) return
+      if (subagentAgents.has(e.agent ?? "")) return
       const count = (writtenTextOf(tool, input).match(JAPANESE_CHAR) ?? []).length
       if (count <= limit) return
 
@@ -174,6 +203,8 @@ export default Plugin.define({
 
     // 状態記録: V2 の execute.after は失敗時にも発火するため status を見る。
     // 記録完了を待たないとゲートが未記録の状態を読む競合が起きるため await する。
+    // サブエージェント: Skill は記録しない（メインの起動済み証拠にならない）。
+    // 書き込みは親セッションの状態に記録し、メインの Stop ゲートのレビュー対象にする。
     await ctx.tool.hook("execute.after", async (event) => {
       const e = event as ToolEvent & { status?: string }
       if (e.status !== "completed") return
@@ -182,16 +213,22 @@ export default Plugin.define({
       const file = filePathOf(input)
       const skill = skillNameOf(input)
       const sessionID = e.sessionID ?? "default"
-      const payload = { session_id: sessionID, prompt_id: String(turnOf(sessionID)) }
+      const subagent = subagentAgents.has(e.agent ?? "")
 
       if (WRITE_TOOLS.has(tool) && file) {
+        let payload = { session_id: sessionID, prompt_id: String(turnOf(sessionID)) }
+        if (subagent) {
+          const parent = await parentSessionID(sessionID)
+          if (parent) payload = { session_id: parent, prompt_id: String(turnOf(parent)) }
+        }
         await withTimeout(
           runStateScript("write", { ...payload, tool_input: { file_path: file } }),
           "書き込みの状態記録",
         )
       } else if (tool === "skill" && skill) {
+        if (subagent) return
         await withTimeout(
-          runStateScript("skill", { ...payload, tool_input: { skill } }),
+          runStateScript("skill", { session_id: sessionID, prompt_id: String(turnOf(sessionID)), tool_input: { skill } }),
           "スキルの状態記録",
         )
       }
