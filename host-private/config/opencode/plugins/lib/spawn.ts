@@ -92,8 +92,13 @@ export async function spawnText(
   }
   try {
     // Bun がない環境でもイベントループを塞がないよう非同期 spawn を使う。
+    // Bun 経路と同じく、stdin を渡さないときは ignore にして子プロセスの入力待ちを防ぐ。
     const { spawn } = await import("node:child_process")
-    const child = spawn(resolved[0], resolved.slice(1), { cwd: options.cwd })
+    const piped = options.stdin !== undefined
+    const child = spawn(resolved[0], resolved.slice(1), {
+      cwd: options.cwd,
+      stdio: [piped ? "pipe" : "ignore", "pipe", "pipe"],
+    })
     let stdout = ""
     let stderr = ""
     child.stdout!.setEncoding("utf8")
@@ -104,7 +109,7 @@ export async function spawnText(
     child.stderr!.on("data", (chunk: string) => {
       stderr += chunk
     })
-    if (options.stdin !== undefined) child.stdin!.end(options.stdin)
+    if (piped) child.stdin!.end(options.stdin)
     const code: number = await new Promise((resolve, reject) => {
       child.on("error", reject)
       child.on("close", (exit) => resolve(exit ?? 127))

@@ -208,6 +208,57 @@ test("ゲート: サブエージェントの書き込みは対象外", async () 
   })
 })
 
+test("ゲート: 閾値ちょうどは通し、1字超えると止める", async () => {
+  const session = newSession()
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+
+  harness.fireBefore({
+    tool: "write",
+    sessionID: session,
+    agent: "build",
+    input: { file_path: "/tmp/doc.md", content: jp(5) },
+  })
+  assert.throws(() => {
+    harness.fireBefore({
+      tool: "write",
+      sessionID: session,
+      agent: "build",
+      input: { file_path: "/tmp/doc.md", content: jp(6) },
+    })
+  }, /japanese-tech-writing/)
+})
+
+test("ゲート: multiedit の edits と代替パスキー・.markdown を判定する", async () => {
+  const session = newSession()
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+
+  assert.throws(() => {
+    harness.fireBefore({
+      tool: "multiedit",
+      sessionID: session,
+      agent: "build",
+      input: { path: "/tmp/doc.markdown", edits: [{ new_string: jp(6) }] },
+    })
+  }, /japanese-tech-writing/)
+})
+
+test("ゲート: notebookedit も対象になる", async () => {
+  const session = newSession()
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+
+  assert.throws(() => {
+    harness.fireBefore({
+      tool: "notebookedit",
+      sessionID: session,
+      agent: "build",
+      input: { file_path: "/tmp/doc.md", edits: [{ new_string: jp(6) }] },
+    })
+  }, /japanese-tech-writing/)
+})
+
 // ---- 状態記録（execute.after）とターン分離 --------------------------------
 
 test("状態記録: completed の書き込みだけを記録する", async () => {
