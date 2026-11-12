@@ -50,14 +50,12 @@ function readState(sessionID: string, turn: number): { written?: string[]; skill
 type AgentInfo = { id: string; mode: "subagent" | "primary" | "all" }
 type SessionInfo = { parentID?: string | null }
 
-function makeCtx(options: {
-  agents: AgentInfo[]
-  sessions: Map<string, SessionInfo>
-  idleEvents?: unknown[]
-}) {
+function makeCtx(options: { agents: AgentInfo[]; sessions: Map<string, SessionInfo> }) {
   const sessionHook: Array<(event: unknown) => Promise<void> | void> = []
   const toolHooks: Record<string, Array<(event: unknown) => unknown>> = {}
   const synthetic: { sessionID: string; text: string }[] = []
+  // session.wait の解決をテスト側から制御する（実機ではターン終了で解決する）
+  const waitResolvers: Array<() => void> = []
   const ctx = {
     session: {
       hook: async (_name: string, cb: (event: unknown) => Promise<void> | void) => {
@@ -69,17 +67,15 @@ function makeCtx(options: {
       synthetic: async (input: { sessionID: string; text: string }) => {
         synthetic.push(input)
       },
+      wait: async () =>
+        new Promise<void>((resolve) => {
+          waitResolvers.push(resolve)
+        }),
     },
     tool: {
       hook: async (name: string, cb: (event: unknown) => unknown) => {
         ;(toolHooks[name] ??= []).push(cb)
         return {}
-      },
-    },
-    event: {
-      subscribe: async function* (_input: unknown) {
-        // 指定がなければ idle イベントを流さない（ターン終了ループを即座に終了させる）
-        for (const event of options.idleEvents ?? []) yield event
       },
     },
     agent: {
@@ -96,6 +92,10 @@ function makeCtx(options: {
       Promise.all(sessionHook.map((hook) => hook(event))),
     fireBefore: (event: unknown) => toolHooks["execute.before"][0](event),
     fireAfter: (event: unknown) => Promise.all(toolHooks["execute.after"].map((hook) => hook(event))),
+    // 待機中の session.wait をすべて解決し、ターン終了ゲートを走らせる
+    resolveWaits: () => {
+      for (const resolve of waitResolvers.splice(0)) resolve()
+    },
   }
 }
 
@@ -364,9 +364,9 @@ test("状態記録: 親が取れないサブエージェント書き込みは子
   assert.deepEqual(state.written, ["/tmp/orphan.md"])
 })
 
-// ---- ターン終了ゲート（session.idle） ---------------------------------------
-// V2 の idle イベントは { type: "session.idle", data: { sessionID } } の形状。
-// 形状を誤ると sessionID が取れず fail open で無言になる（実機で発覚したバグ）。
+// ---- ターン終了ゲート（session.wait） ---------------------------------------
+// 実機では session.idle イベントが配信されないため、プラグインはプロンプトごとに
+// session.wait でターン終了を待ち、ゲートを走らせる。
 
 const waitFor = async (fn: () => boolean, ms = 2000): Promise<void> => {
   const deadline = Date.now() + ms
@@ -376,15 +376,11 @@ const waitFor = async (fn: () => boolean, ms = 2000): Promise<void> => {
   }
 }
 
-test("ターン終了ゲート: data.sessionID を見てレビュー確認を注入する", async () => {
+test("ターン終了ゲート: wait 解決後にレビュー確認を注入する", async () => {
   const session = newSession()
   const doc = path.join(os.tmpdir(), `gate-doc-${crypto.randomUUID()}.md`)
   fs.writeFileSync(doc, jp(10))
-  const harness = makeCtx({
-    agents: AGENTS,
-    sessions: new Map(),
-    idleEvents: [{ type: "session.idle", data: { sessionID: session } }],
-  })
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
   await plugin.setup(harness.ctx)
   await harness.firePrompt({ sessionID: session, prompt: {} })
   await harness.fireAfter({
@@ -394,6 +390,7 @@ test("ターン終了ゲート: data.sessionID を見てレビュー確認を注
     status: "completed",
     input: { file_path: doc },
   })
+  harness.resolveWaits()
 
   await waitFor(() => harness.synthetic.length > 0)
   assert.equal(harness.synthetic.length, 1)
@@ -402,12 +399,11 @@ test("ターン終了ゲート: data.sessionID を見てレビュー確認を注
   assert.match(harness.synthetic[0].text, new RegExp(doc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
 })
 
-test("ターン終了ゲート: 同一ターンの2回目の idle では注入しない", async () => {
+test("ターン終了ゲート: 次のターンでは再び注入する", async () => {
   const session = newSession()
   const doc = path.join(os.tmpdir(), `gate-doc-${crypto.randomUUID()}.md`)
   fs.writeFileSync(doc, jp(10))
-  const idle = { type: "session.idle", data: { sessionID: session } }
-  const harness = makeCtx({ agents: AGENTS, sessions: new Map(), idleEvents: [idle, idle] })
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
   await plugin.setup(harness.ctx)
   await harness.firePrompt({ sessionID: session, prompt: {} })
   await harness.fireAfter({
@@ -417,20 +413,30 @@ test("ターン終了ゲート: 同一ターンの2回目の idle では注入�
     status: "completed",
     input: { file_path: doc },
   })
-
+  harness.resolveWaits()
   await waitFor(() => harness.synthetic.length > 0)
-  assert.equal(harness.synthetic.length, 1)
+
+  // ターン2: 同じ文書をさらに書き換えると、新しいターンのキーで再度注入する
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+  fs.writeFileSync(doc, jp(20))
+  await harness.fireAfter({
+    tool: "edit",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { file_path: doc, new_string: jp(20) },
+  })
+  harness.resolveWaits()
+  await waitFor(() => harness.synthetic.length > 1)
+  assert.equal(harness.synthetic.length, 2)
 })
 
 test("ターン終了ゲート: 書き込みがなければ注入しない", async () => {
   const session = newSession()
-  const harness = makeCtx({
-    agents: AGENTS,
-    sessions: new Map(),
-    idleEvents: [{ type: "session.idle", data: { sessionID: session } }],
-  })
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
   await plugin.setup(harness.ctx)
   await harness.firePrompt({ sessionID: session, prompt: {} })
+  harness.resolveWaits()
 
   // ゲートスクリプトが fail open で抜けるのを待つ
   await new Promise((r) => setTimeout(r, 300))
