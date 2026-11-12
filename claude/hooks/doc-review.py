@@ -102,6 +102,11 @@ def gate() -> int:
     if payload.get("stop_hook_active"):
         return 0
 
+    # prompt_id 欠落時の "none" キー状態は参照しない。require ゲートと同じく、
+    # ターンを特定できないときは判断できないとして fail open する。
+    if not payload.get("prompt_id"):
+        return 0
+
     try:
         state_module = load_state_module()
         state = state_module.read_state(payload) if state_module else None

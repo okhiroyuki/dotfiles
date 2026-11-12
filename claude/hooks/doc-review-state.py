@@ -38,6 +38,24 @@ def state_path(payload: dict) -> Path | None:
     return STATE_ROOT / f"{key}.json"
 
 
+def _merge_lists(fresh: dict, before: dict, mutated: dict) -> dict:
+    """状態への変更は追記だけなので、無排他時に書き戻すときは和集合で合流する。
+
+    ロックを取れなかった場合も、読み取り時の差分だけを現在の状態に積み上げる。
+    これで後勝ちの上書きで他プロセスの追記が消えることを防ぐ。
+    """
+    merged = dict(fresh)
+    for key in ("written", "skills"):
+        old = before.get(key) or []
+        new = mutated.get(key) or []
+        current = list(merged.get(key) or [])
+        for item in new:
+            if item not in old and item not in current:
+                current.append(item)
+        merged[key] = current
+    return merged
+
+
 @contextmanager
 def locked_state(payload: dict) -> Iterator[dict | None]:
     path = state_path(payload)
@@ -55,6 +73,7 @@ def locked_state(payload: dict) -> Iterator[dict | None]:
         except OSError:
             # 一度だけ待って再試行し、それでも取れなければロックなしで続行する。
             # 排他を断念するより記録が失われてゲートが誤ブロックする方が害が大きい。
+            # ロックなし時の更新ロスは書き戻し時の和集合マージで吸収する。
             time.sleep(0.05)
             try:
                 import fcntl
@@ -70,9 +89,12 @@ def locked_state(payload: dict) -> Iterator[dict | None]:
                 state = {"written": [], "skills": []}
             if not isinstance(state, dict):
                 state = {"written": [], "skills": []}
+            before = json.loads(json.dumps(state))
             yield state
+            fresh = _read_json(path)
+            merged = _merge_lists(fresh or {}, before, state)
             temporary = path.with_suffix(f".{os.getpid()}.tmp")
-            temporary.write_text(json.dumps(state), encoding="utf-8")
+            temporary.write_text(json.dumps(merged), encoding="utf-8")
             os.replace(temporary, path)
         finally:
             if locked:
@@ -84,8 +106,21 @@ def locked_state(payload: dict) -> Iterator[dict | None]:
                     pass
 
 
+def _read_json(path: Path) -> dict | None:
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+    return state if isinstance(state, dict) else None
+
+
 def cleanup() -> None:
-    """放置された古い状態・ロック・一時ファイルを掃除して蓄積を防ぐ。"""
+    """放置された古い状態・一時ファイルを掃除して蓄積を防ぐ。
+
+    ロックファイルは削除しない。削除の瞬間に旧 inode を待つプロセスがいると、
+    新旧のロックで排他が分裂する。ロックファイルは 0 バイトなので蓄積の害は小さく、
+    寿命は OS 側の一時ディレクトリ掃除に任せる。
+    """
     now = time.time()
     try:
         entries = list(STATE_ROOT.iterdir())
@@ -93,24 +128,11 @@ def cleanup() -> None:
         return
     for entry in entries:
         try:
+            if entry.name.endswith(".lock"):
+                continue
             if now - entry.stat().st_mtime <= CLEANUP_SECONDS:
                 continue
-            if entry.name.endswith(".lock"):
-                # 保持中のロックを消すと別 inode の同名ロックが並行更新を許す。
-                # 非ブロッキングで取れたときだけ「今は保持されていない」とみなして、
-                # 保持したまま削除してから手放す。
-                import fcntl
-
-                fd = os.open(entry, os.O_RDWR)
-                try:
-                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                except OSError:
-                    os.close(fd)
-                    continue
-                entry.unlink()
-                os.close(fd)
-            else:
-                entry.unlink()
+            entry.unlink()
         except OSError:
             continue
 
@@ -148,11 +170,7 @@ def read_state(payload: dict) -> dict | None:
     path = state_path(payload)
     if path is None:
         return None
-    try:
-        state = json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return None
-    return state if isinstance(state, dict) else None
+    return _read_json(path)
 
 
 def log_payload_keys(payload: dict) -> None:

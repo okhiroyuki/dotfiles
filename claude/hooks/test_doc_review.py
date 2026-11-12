@@ -86,6 +86,13 @@ class StateTest(unittest.TestCase):
                              "tool_input": {"skill": "japanese-tech-writing"}})
         self.assertEqual(self.state()["skills"], ["japanese-tech-writing"])
 
+    def test_records_when_lock_retry_succeeds(self) -> None:
+        # 初回のロック取得に失敗しても、再試行で取れれば排他付きで記録される。
+        payload = {**self.base, "tool_input": {"skill": "japanese-tech-writing"}}
+        with mock.patch("fcntl.flock", side_effect=[OSError, None, None]):
+            self.assertTrue(state_mod.add_skill(payload))
+        self.assertEqual(self.state()["skills"], ["japanese-tech-writing"])
+
     def test_turns_are_isolated(self) -> None:
         record("write", {**self.base, "tool_name": "Write",
                          "tool_input": {"file_path": "/tmp/a.md"}})
@@ -146,9 +153,9 @@ class CleanupTest(unittest.TestCase):
             finally:
                 state_mod.STATE_ROOT = original
 
-    def test_skips_held_lock_file(self) -> None:
-        import fcntl
-
+    def test_preserves_lock_files(self) -> None:
+        # cleanup はロックファイルを削除しない。削除の瞬間に旧 inode を待つ
+        # プロセスがいると新旧のロックで排他が分裂するため。
         with tempfile.TemporaryDirectory() as tmp:
             original = state_mod.STATE_ROOT
             state_mod.STATE_ROOT = Path(tmp)
@@ -156,18 +163,28 @@ class CleanupTest(unittest.TestCase):
                 lock = Path(tmp) / "old.lock"
                 lock.write_text("", encoding="utf-8")
                 os.utime(lock, (time.time() - 7200, time.time() - 7200))
-                fd = os.open(lock, os.O_RDWR)
-                try:
-                    fcntl.flock(fd, fcntl.LOCK_EX)
-                    state_mod.cleanup()
-                    self.assertTrue(lock.exists())
-                finally:
-                    fcntl.flock(fd, fcntl.LOCK_UN)
-                    os.close(fd)
                 state_mod.cleanup()
-                self.assertFalse(lock.exists())
+                self.assertTrue(lock.exists())
             finally:
                 state_mod.STATE_ROOT = original
+
+
+class MergeListsTest(unittest.TestCase):
+    def test_union_preserves_concurrent_additions(self) -> None:
+        # 無排他時に書き戻す場合も、読み取り時の差分を現在の状態へ和集合で積む。
+        # 後勝ちの上書きで他プロセスの追記が消えないことを確認する。
+        before = {"written": ["a.md"], "skills": []}
+        mutated = {"written": ["a.md", "b.md"], "skills": ["x"]}
+        fresh = {"written": ["a.md", "c.md"], "skills": ["y"]}
+        merged = state_mod._merge_lists(fresh, before, mutated)
+        self.assertEqual(merged["written"], ["a.md", "c.md", "b.md"])
+        self.assertEqual(merged["skills"], ["y", "x"])
+
+    def test_union_is_idempotent_for_unchanged_state(self) -> None:
+        before = {"written": ["a.md"], "skills": []}
+        fresh = {"written": ["a.md", "c.md"], "skills": ["y"]}
+        merged = state_mod._merge_lists(fresh, before, before)
+        self.assertEqual(merged, fresh)
 
 
 class WrittenTextTest(unittest.TestCase):
@@ -357,6 +374,18 @@ class DocGateTest(unittest.TestCase):
                 self.assertTrue(gate_mod.is_target(outside))
             finally:
                 gate_mod.LLM_WIKI_ROOT = original
+
+    def test_fails_open_without_prompt_id(self) -> None:
+        # prompt_id がない Stop hook は、none キーに記録があっても判断できないとして通す
+        doc = self.doc
+        doc.write_text("あいうえおかきくけこ" * 60, encoding="utf-8")
+        record("write", {"session_id": self.base["session_id"], "tool_name": "Write",
+                         "tool_input": {"file_path": str(doc)}})
+        self.assertEqual(self.gate({"session_id": self.base["session_id"]}), 0)
+        # 対比: prompt_id 付きの記録があれば同じ文書で停止する
+        record("write", {**self.base, "tool_name": "Write",
+                         "tool_input": {"file_path": str(doc)}})
+        self.assertEqual(self.gate(self.base), 2)
 
 
 class SettingsWiringTest(unittest.TestCase):

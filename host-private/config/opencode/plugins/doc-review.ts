@@ -37,7 +37,10 @@ const turns = new Map<string, number>()
 
 function threshold(): number {
   // 書込前ゲートは Claude Code 版と同じ TECH_WRITING_GATE_THRESHOLD を共有する。
-  const parsed = Number.parseInt(process.env.TECH_WRITING_GATE_THRESHOLD ?? "", 10)
+  // Python 側 int() と同じく値全体が整数のときだけ受け付け、不正値は既定値に戻す。
+  const raw = process.env.TECH_WRITING_GATE_THRESHOLD ?? ""
+  if (!/^-?\d+$/.test(raw)) return DEFAULT_THRESHOLD
+  const parsed = Number.parseInt(raw, 10)
   return Number.isFinite(parsed) ? parsed : DEFAULT_THRESHOLD
 }
 
@@ -103,6 +106,25 @@ async function runStateScript(mode: "write" | "skill", payload: Record<string, u
   }
 }
 
+// 子プロセスの終了を無期限に待つとロック待ちなどでセッションが停滞するため、
+// 状態記録とゲートの呼び出しは有限の期限で打ち切る。打ち切りは理由とともに可視化する。
+const CHILD_TIMEOUT_MS = 5000
+
+async function withTimeout<T>(promise: Promise<T>, label: string): Promise<T | undefined> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<undefined>((resolve) => {
+    timer = setTimeout(() => {
+      console.error(`doc-review: ${label}がタイムアウトしました (${CHILD_TIMEOUT_MS}ms)`)
+      resolve(undefined)
+    }, CHILD_TIMEOUT_MS)
+  })
+  try {
+    return await Promise.race([promise, timeout])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
 export default Plugin.define({
   id: "doc-review",
   async setup(ctx) {
@@ -116,11 +138,14 @@ export default Plugin.define({
       turns.set(sessionID, turnOf(sessionID) + 1)
       for (const skill of e.prompt?.skills ?? []) {
         if (typeof skill === "string") {
-          await runStateScript("skill", {
-            session_id: sessionID,
-            prompt_id: String(turnOf(sessionID)),
-            tool_input: { skill },
-          })
+          await withTimeout(
+            runStateScript("skill", {
+              session_id: sessionID,
+              prompt_id: String(turnOf(sessionID)),
+              tool_input: { skill },
+            }),
+            "プロンプト時のスキル記録",
+          )
         }
       }
     })
@@ -160,9 +185,15 @@ export default Plugin.define({
       const payload = { session_id: sessionID, prompt_id: String(turnOf(sessionID)) }
 
       if (WRITE_TOOLS.has(tool) && file) {
-        await runStateScript("write", { ...payload, tool_input: { file_path: file } })
+        await withTimeout(
+          runStateScript("write", { ...payload, tool_input: { file_path: file } }),
+          "書き込みの状態記録",
+        )
       } else if (tool === "skill" && skill) {
-        await runStateScript("skill", { ...payload, tool_input: { skill } })
+        await withTimeout(
+          runStateScript("skill", { ...payload, tool_input: { skill } }),
+          "スキルの状態記録",
+        )
       }
     })
 
@@ -179,8 +210,11 @@ export default Plugin.define({
         const key = `${sessionID}:${turn}`
         if (nudged.has(key)) continue
         const payload = JSON.stringify({ session_id: sessionID, prompt_id: turn })
-        const result = await spawnText([python, GATE_SCRIPT, "gate"], { stdin: payload }).catch(
-          (error) => ({ code: 127, stdout: "", stderr: String(error) }),
+        const result = await withTimeout(
+          spawnText([python, GATE_SCRIPT, "gate"], { stdin: payload }).catch(
+            (error) => ({ code: 127, stdout: "", stderr: String(error) }),
+          ),
+          "ターン終了ゲート",
         )
         if (result && result.code === 2 && result.stderr) {
           nudged.add(key)
