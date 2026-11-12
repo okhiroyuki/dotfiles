@@ -12,6 +12,8 @@
 gate は、このターンで書き込んだ `.md` ごとに記録との差分を数える。記録がなければ全文を差分とみなす。
 変更した日本語が閾値を超える文書があれば、ターンの終了を止め、レビューするかをユーザーに確認させる。
 実行するか、指摘を採用するかは常にユーザーが決める。
+llm-wiki（~/Documents/llm-wiki）のページは判断の記録であり推敲対象ではないため、レビュー提案の対象外にする。
+スキル起動の強制（require-tech-writing-skill）は llm-wiki にも適用される。
 
 判断できない状況（入力の解析失敗・ターン識別子がない）は fail open で通す。
 """
@@ -31,6 +33,9 @@ DEFAULT_THRESHOLD = 400
 JAPANESE_CHAR = re.compile(r"[぀-ヿ一-鿿]")
 TARGET_SUFFIXES = (".md", ".markdown")
 STATE_DIR = ".doc-review"
+# レビュー提案の対象外にするディレクトリ。llm-wiki の記録は判断のメモであり、
+# 5 レビュアーによる推敲対象の文書ではない。
+LLM_WIKI_ROOT = Path("~/Documents/llm-wiki").expanduser().resolve()
 STATE_HOOK = Path(__file__).with_name("doc-review-state.py")
 
 
@@ -75,6 +80,7 @@ def is_target(doc: Path) -> bool:
         and STATE_DIR not in doc.parts
         and "node_modules" not in doc.parts
         and ".git" not in doc.parts
+        and not doc.resolve().is_relative_to(Path(LLM_WIKI_ROOT).resolve())
         and doc.is_file()
     )
 
