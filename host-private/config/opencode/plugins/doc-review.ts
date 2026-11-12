@@ -36,9 +36,8 @@ type PromptEvent = {
   prompt?: { skills?: unknown[] }
 }
 
-// V2 の session.idle イベントは data.sessionID にセッション識別子を持つ
-// （top-level や properties ではない。@opencode/client の SessionIdle 型を参照）。
-type IdleEvent = { data?: { sessionID?: string } }
+// V2 の session.idle イベントは data.sessionID にセッション識別子を持つが、
+// 実機では配信されないため、ターン終了検出は session.wait を使う。
 
 const turns = new Map<string, number>()
 
@@ -164,6 +163,9 @@ export default Plugin.define({
 
     // ターン境界: ユーザープロンプトの承認ごとにターン番号を進める。
     // prompt.skills はスキル解決前に決まる一次情報。フック成否に依存しないためここでも記録する。
+    // プロンプトごとに session.wait を起動し、実行完了（ターン終了）でゲートを走らせる。
+    // v2.2.7 の実機では session.idle イベントがプラグインに配信されないため
+    // （2026-11 実測）、イベント購読の代わりに wait を使う。
     await ctx.session.hook("prompt", async (event) => {
       const e = event as PromptEvent
       const sessionID = e.sessionID ?? "default"
@@ -180,6 +182,7 @@ export default Plugin.define({
           )
         }
       }
+      void turnEndWatch(sessionID)
     })
 
     // 書き込み前ゲート: 閾値を超える日本語をスキル未起動で書こうとしたら止める。
@@ -239,34 +242,36 @@ export default Plugin.define({
       }
     })
 
-    // ターン終了ゲート: exit 2 ならレビュー手順のメッセージをセッションに注入して促す。
+    // ターン終了ゲート: session.wait が実行完了で解決したらゲートスクリプトを走らせる。
+    // exit 2 ならレビュー手順のメッセージをセッションに注入して促す。
     // 同一ターンで複数回の注入は無限ループになるため 1 回に制限する（stop_hook_active 相当）。
     const nudged = new Set<string>()
-    void (async () => {
+    async function turnEndWatch(sessionID: string): Promise<void> {
+      try {
+        await ctx.session.wait({ sessionID })
+      } catch {
+        return
+      }
       const python = which("python3")
       if (!python || !fs.existsSync(GATE_SCRIPT)) return
-      for await (const event of ctx.event.subscribe({ types: ["session.idle"] })) {
-        const e = event as IdleEvent
-        const sessionID = e.data?.sessionID ?? "default"
-        const turn = String(turnOf(sessionID))
-        const key = `${sessionID}:${turn}`
-        if (nudged.has(key)) continue
-        const payload = JSON.stringify({ session_id: sessionID, prompt_id: turn })
-        const result = await withTimeout(
-          spawnText([python, GATE_SCRIPT, "gate"], { stdin: payload }).catch(
-            (error) => ({ code: 127, stdout: "", stderr: String(error) }),
-          ),
-          "ターン終了ゲート",
-        )
-        if (result && result.code === 2 && result.stderr) {
-          nudged.add(key)
-          try {
-            await ctx.session.synthetic({ sessionID, text: result.stderr.trim() })
-          } catch (error) {
-            console.error(`doc-review: ターン継続の注入に失敗しました: ${String(error)}`)
-          }
+      const turn = String(turnOf(sessionID))
+      const key = `${sessionID}:${turn}`
+      if (nudged.has(key)) return
+      const payload = JSON.stringify({ session_id: sessionID, prompt_id: turn })
+      const result = await withTimeout(
+        spawnText([python, GATE_SCRIPT, "gate"], { stdin: payload }).catch(
+          (error) => ({ code: 127, stdout: "", stderr: String(error) }),
+        ),
+        "ターン終了ゲート",
+      )
+      if (result && result.code === 2 && result.stderr) {
+        nudged.add(key)
+        try {
+          await ctx.session.synthetic({ sessionID, text: result.stderr.trim() })
+        } catch (error) {
+          console.error(`doc-review: ターン継続の注入に失敗しました: ${String(error)}`)
         }
       }
-    })()
+    }
   },
 })
