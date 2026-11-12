@@ -71,7 +71,16 @@ run = "node --test lib/*.test.js"
 [tasks."test:opencode-plugin"]
 description = "OpenCodeプラグイン（doc-review/spawn）のテストを実行する"
 dir = "host-private/config/opencode"
-run = "node --test tests/"
+run = '''
+# 開発マシンではランタイム側（~/.config/opencode）の node_modules への symlink を使う。
+# CI には symlink も OpenCode も無いため、無ければ npm から入手する。
+if [ ! -e node_modules/@opencode/plugin ]; then
+  rm -f node_modules
+  mkdir -p node_modules
+  npm install --no-save --silent --prefix . @opencode/plugin
+fi
+node --test tests/
+'''
 
 [tasks.test]
 description = "全テストを実行する"
