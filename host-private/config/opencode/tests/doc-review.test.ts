@@ -26,7 +26,10 @@ const { spawnText } = await import("../plugins/lib/spawn.ts")
 // ---- テスト用ヘルパ --------------------------------------------------------
 
 // 閾値を小さくして境界を狙いやすくする。setup のたびに読まれる。
+// TECH_WRITING_GATE_THRESHOLD は書込前ゲート（プラグイン）、
+// DOC_REVIEW_THRESHOLD はターン終了ゲート（doc-review.py）の閾値。
 process.env.TECH_WRITING_GATE_THRESHOLD = "5"
+process.env.DOC_REVIEW_THRESHOLD = "5"
 
 const jp = (count: number): string => "あいうえおかきくけこ".repeat(Math.ceil(count / 10)).slice(0, count)
 
@@ -47,7 +50,11 @@ function readState(sessionID: string, turn: number): { written?: string[]; skill
 type AgentInfo = { id: string; mode: "subagent" | "primary" | "all" }
 type SessionInfo = { parentID?: string | null }
 
-function makeCtx(options: { agents: AgentInfo[]; sessions: Map<string, SessionInfo> }) {
+function makeCtx(options: {
+  agents: AgentInfo[]
+  sessions: Map<string, SessionInfo>
+  idleEvents?: unknown[]
+}) {
   const sessionHook: Array<(event: unknown) => Promise<void> | void> = []
   const toolHooks: Record<string, Array<(event: unknown) => unknown>> = {}
   const synthetic: { sessionID: string; text: string }[] = []
@@ -71,7 +78,8 @@ function makeCtx(options: { agents: AgentInfo[]; sessions: Map<string, SessionIn
     },
     event: {
       subscribe: async function* (_input: unknown) {
-        // idle イベントを流さない（ターン終了ループを即座に終了させる）
+        // 指定がなければ idle イベントを流さない（ターン終了ループを即座に終了させる）
+        for (const event of options.idleEvents ?? []) yield event
       },
     },
     agent: {
@@ -83,6 +91,7 @@ function makeCtx(options: { agents: AgentInfo[]; sessions: Map<string, SessionIn
   }
   return {
     ctx,
+    synthetic,
     firePrompt: (event: { sessionID: string; prompt?: { skills?: string[] } }) =>
       Promise.all(sessionHook.map((hook) => hook(event))),
     fireBefore: (event: unknown) => toolHooks["execute.before"][0](event),
@@ -353,6 +362,79 @@ test("状態記録: 親が取れないサブエージェント書き込みは子
   const state = readState(child, 0)
   assert.ok(state)
   assert.deepEqual(state.written, ["/tmp/orphan.md"])
+})
+
+// ---- ターン終了ゲート（session.idle） ---------------------------------------
+// V2 の idle イベントは { type: "session.idle", data: { sessionID } } の形状。
+// 形状を誤ると sessionID が取れず fail open で無言になる（実機で発覚したバグ）。
+
+const waitFor = async (fn: () => boolean, ms = 2000): Promise<void> => {
+  const deadline = Date.now() + ms
+  while (!fn()) {
+    if (Date.now() > deadline) throw new Error("タイムアウト: 条件を満たしませんでした")
+    await new Promise((r) => setTimeout(r, 20))
+  }
+}
+
+test("ターン終了ゲート: data.sessionID を見てレビュー確認を注入する", async () => {
+  const session = newSession()
+  const doc = path.join(os.tmpdir(), `gate-doc-${crypto.randomUUID()}.md`)
+  fs.writeFileSync(doc, jp(10))
+  const harness = makeCtx({
+    agents: AGENTS,
+    sessions: new Map(),
+    idleEvents: [{ type: "session.idle", data: { sessionID: session } }],
+  })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+  await harness.fireAfter({
+    tool: "write",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { file_path: doc },
+  })
+
+  await waitFor(() => harness.synthetic.length > 0)
+  assert.equal(harness.synthetic.length, 1)
+  assert.equal(harness.synthetic[0].sessionID, session)
+  assert.match(harness.synthetic[0].text, /閾値を超えています/)
+  assert.match(harness.synthetic[0].text, new RegExp(doc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+})
+
+test("ターン終了ゲート: 同一ターンの2回目の idle では注入しない", async () => {
+  const session = newSession()
+  const doc = path.join(os.tmpdir(), `gate-doc-${crypto.randomUUID()}.md`)
+  fs.writeFileSync(doc, jp(10))
+  const idle = { type: "session.idle", data: { sessionID: session } }
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map(), idleEvents: [idle, idle] })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+  await harness.fireAfter({
+    tool: "write",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { file_path: doc },
+  })
+
+  await waitFor(() => harness.synthetic.length > 0)
+  assert.equal(harness.synthetic.length, 1)
+})
+
+test("ターン終了ゲート: 書き込みがなければ注入しない", async () => {
+  const session = newSession()
+  const harness = makeCtx({
+    agents: AGENTS,
+    sessions: new Map(),
+    idleEvents: [{ type: "session.idle", data: { sessionID: session } }],
+  })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+
+  // ゲートスクリプトが fail open で抜けるのを待つ
+  await new Promise((r) => setTimeout(r, 300))
+  assert.equal(harness.synthetic.length, 0)
 })
 
 // ---- スクリプトが無い環境では何もしない ------------------------------------
