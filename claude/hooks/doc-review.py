@@ -18,11 +18,9 @@ gate は、このターンで書き込んだ `.md` ごとに記録との差分�
 
 from __future__ import annotations
 
-from __future__ import annotations
-
 import difflib
-import json
 import importlib.util
+import json
 import os
 import re
 import shutil

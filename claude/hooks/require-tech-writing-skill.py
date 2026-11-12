@@ -58,7 +58,7 @@ def main() -> int:
     except (json.JSONDecodeError, ValueError):
         return 0
 
-    # サブエージェントの呼び出しは本体の transcript で判定できないため対象外にする。
+    # サブエージェントは状態を共有するため、スキル起動済みと誤判定される恐れがある。対象外にする。
     if payload.get("agent_id"):
         return 0
 

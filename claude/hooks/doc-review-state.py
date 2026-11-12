@@ -11,8 +11,6 @@ Skill 記録はメインエージェント（agent_id なし）に限定する�
 
 from __future__ import annotations
 
-from __future__ import annotations
-
 import hashlib
 import json
 import os
