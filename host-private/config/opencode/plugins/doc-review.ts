@@ -1,7 +1,8 @@
 // V2 plugin: doc-review の opencode 版ゲート。
 // Claude Code hooks (doc-review-state.py / doc-review.py) の状態ファイルを再利用する。
 // 確認済み: execute.before での throw はツールをブロックする(commit-message.ts と同様)。
-// 未確認: session.idle の正確なペイロード、subagent 判別に使えるフィールド(現在は区別せず記録)。
+//           session.idle でのゲート文言は ctx.session.synthetic({sessionID, text}) で注入する。
+// 未確認: subagent 判別に使えるフィールド(現在は区別せず記録)。
 // 識別子は Claude Code の session_id/prompt_id に sessionID/ターン番号を対応させる。
 
 import { Plugin } from "@opencode/plugin"
@@ -25,12 +26,18 @@ type ToolEvent = {
   sessionID?: string
 }
 
-type IdleEvent = { sessionID?: string }
+type PromptEvent = {
+  sessionID?: string
+  prompt?: { skills?: unknown[] }
+}
+
+type IdleEvent = { sessionID?: string; properties?: { sessionID?: string } }
 
 const turns = new Map<string, number>()
 
 function threshold(): number {
-  const parsed = Number.parseInt(process.env.DOC_REVIEW_THRESHOLD ?? "", 10)
+  // 書込前ゲートは Claude Code 版と同じ TECH_WRITING_GATE_THRESHOLD を共有する。
+  const parsed = Number.parseInt(process.env.TECH_WRITING_GATE_THRESHOLD ?? "", 10)
   return Number.isFinite(parsed) ? parsed : DEFAULT_THRESHOLD
 }
 
@@ -87,7 +94,13 @@ function writtenTextOf(tool: string, input: Record<string, unknown>): string {
 async function runStateScript(mode: "write" | "skill", payload: Record<string, unknown>): Promise<void> {
   const python = which("python3")
   if (!python || !fs.existsSync(STATE_SCRIPT)) return
-  await spawnText([python, STATE_SCRIPT, mode], { stdin: JSON.stringify(payload) }).catch(() => undefined)
+  const result = await spawnText([python, STATE_SCRIPT, mode], { stdin: JSON.stringify(payload) }).catch(
+    (error) => ({ code: 127, stdout: "", stderr: String(error) }),
+  )
+  if (result.code !== 0) {
+    // 記録失敗のまま黙ると、スキル起動済みでもゲートが誤ブロックする。可視化だけする。
+    console.error(`doc-review: 状態記録に失敗しました (${mode}): ${result.stderr.trim()}`)
+  }
 }
 
 export default Plugin.define({
@@ -96,12 +109,23 @@ export default Plugin.define({
     const limit = threshold()
 
     // ターン境界: ユーザープロンプトの承認ごとにターン番号を進める。
-    await ctx.session.hook("prompt", (event) => {
-      const sessionID = (event as { sessionID?: string }).sessionID ?? "default"
+    // prompt.skills はスキル解決前に決まる一次情報。フック成否に依存しないためここでも記録する。
+    await ctx.session.hook("prompt", async (event) => {
+      const e = event as PromptEvent
+      const sessionID = e.sessionID ?? "default"
       turns.set(sessionID, turnOf(sessionID) + 1)
+      for (const skill of e.prompt?.skills ?? []) {
+        if (typeof skill === "string") {
+          await runStateScript("skill", {
+            session_id: sessionID,
+            prompt_id: String(turnOf(sessionID)),
+            tool_input: { skill },
+          })
+        }
+      }
     })
 
-    // 書き込み前ゲート: 閾値以上の日本語をスキル未起動で書こうとしたら止める。
+    // 書き込み前ゲート: 閾値を超える日本語をスキル未起動で書こうとしたら止める。
     await ctx.tool.hook("execute.before", (event) => {
       const e = event as ToolEvent
       const tool = (e.tool ?? "").toLowerCase()
@@ -110,7 +134,7 @@ export default Plugin.define({
       const file = filePathOf(input)
       if (!file.endsWith(".md") && !file.endsWith(".markdown")) return
       const count = (writtenTextOf(tool, input).match(JAPANESE_CHAR) ?? []).length
-      if (count < limit) return
+      if (count <= limit) return
 
       const sessionID = e.sessionID ?? "default"
       const skills = readState(sessionID)?.skills ?? []
@@ -123,9 +147,11 @@ export default Plugin.define({
       )
     })
 
-    // 状態記録: 書き込みとスキル起動を Python 側の状態ファイルに渡す。
-    await ctx.tool.hook("execute.after", (event) => {
-      const e = event as ToolEvent
+    // 状態記録: V2 の execute.after は失敗時にも発火するため status を見る。
+    // 記録完了を待たないとゲートが未記録の状態を読む競合が起きるため await する。
+    await ctx.tool.hook("execute.after", async (event) => {
+      const e = event as ToolEvent & { status?: string }
+      if (e.status !== "completed") return
       const tool = (e.tool ?? "").toLowerCase()
       const input = e.input ?? {}
       const file = filePathOf(input)
@@ -134,24 +160,35 @@ export default Plugin.define({
       const payload = { session_id: sessionID, prompt_id: String(turnOf(sessionID)) }
 
       if (WRITE_TOOLS.has(tool) && file) {
-        void runStateScript("write", { ...payload, tool_input: { file_path: file } })
+        await runStateScript("write", { ...payload, tool_input: { file_path: file } })
       } else if (tool === "skill" && skill) {
-        void runStateScript("skill", { ...payload, tool_input: { skill } })
+        await runStateScript("skill", { ...payload, tool_input: { skill } })
       }
     })
 
-    // ターン終了ゲート: exit 2 ならレビュー手順のメッセージを標準エラーに出す。
-    // TODO: Claude Code 版と同様に ctx.session.synthetic でメッセージを注入する。
+    // ターン終了ゲート: exit 2 ならレビュー手順のメッセージをセッションに注入して促す。
+    // 同一ターンで複数回の注入は無限ループになるため 1 回に制限する（stop_hook_active 相当）。
+    const nudged = new Set<string>()
     void (async () => {
       const python = which("python3")
       if (!python || !fs.existsSync(GATE_SCRIPT)) return
       for await (const event of ctx.event.subscribe({ types: ["session.idle"] })) {
         const e = event as IdleEvent
-        const sessionID = e.sessionID ?? "default"
-        const payload = JSON.stringify({ session_id: sessionID, prompt_id: String(turnOf(sessionID)) })
-        const result = await spawnText([python, GATE_SCRIPT, "gate"], { stdin: payload }).catch(() => undefined)
+        const sessionID = e.properties?.sessionID ?? e.sessionID ?? "default"
+        const turn = String(turnOf(sessionID))
+        const key = `${sessionID}:${turn}`
+        if (nudged.has(key)) continue
+        const payload = JSON.stringify({ session_id: sessionID, prompt_id: turn })
+        const result = await spawnText([python, GATE_SCRIPT, "gate"], { stdin: payload }).catch(
+          (error) => ({ code: 127, stdout: "", stderr: String(error) }),
+        )
         if (result && result.code === 2 && result.stderr) {
-          console.error(`doc-review: ${result.stderr.trim()}`)
+          nudged.add(key)
+          try {
+            await ctx.session.synthetic({ sessionID, text: result.stderr.trim() })
+          } catch (error) {
+            console.error(`doc-review: ターン継続の注入に失敗しました: ${String(error)}`)
+          }
         }
       }
     })()

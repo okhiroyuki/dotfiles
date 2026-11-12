@@ -1,13 +1,10 @@
-import { execFile } from "node:child_process"
-import { promisify } from "node:util"
 import fs from "node:fs"
 import path from "node:path"
-
-const execFileAsync = promisify(execFile)
 
 type BunProcess = {
   stdout: ReadableStream<Uint8Array>
   stderr: ReadableStream<Uint8Array>
+  stdin?: { write(data: string): number; end(): number }
   exited: Promise<number>
 }
 
@@ -71,14 +68,17 @@ export async function spawnText(
   const resolved = resolveArgv(argv)
   if (bun?.spawn) {
     try {
+      const piped = options.stdin !== undefined
       const proc = bun.spawn(resolved, {
         stdout: "pipe",
         stderr: "pipe",
-        stdin: options.stdin === undefined ? "inherit" : "pipe",
+        stdin: piped ? "pipe" : "inherit",
         cwd: options.cwd,
       })
-      if (options.stdin !== undefined) proc.stdin.write(options.stdin)
-      await proc.stdin.end()
+      if (piped && proc.stdin) {
+        proc.stdin.write(options.stdin)
+        await proc.stdin.end()
+      }
       const [stdout, stderr] = await Promise.all([
         new Response(proc.stdout).text(),
         new Response(proc.stderr).text(),
@@ -90,32 +90,31 @@ export async function spawnText(
     }
   }
   try {
-    // node フォールバックは stdin を渡せないため spawnSync を使う(実運用は Bun 経由)。
-    if (options.stdin !== undefined) {
-      const { spawnSync } = await import("node:child_process")
-      const result = spawnSync(resolved[0], resolved.slice(1), {
-        cwd: options.cwd,
-        input: options.stdin,
-        encoding: "utf8",
-        maxBuffer: 32 * 1024 * 1024,
-      })
-      return {
-        code: result.status ?? 127,
-        stdout: result.stdout ?? "",
-        stderr: result.stderr ?? "",
-      }
-    }
-    const { stdout, stderr } = await execFileAsync(resolved[0], resolved.slice(1), {
-      cwd: options.cwd,
-      maxBuffer: 32 * 1024 * 1024,
+    // Bun がない環境でもイベントループを塞がないよう非同期 spawn を使う。
+    const { spawn } = await import("node:child_process")
+    const child = spawn(resolved[0], resolved.slice(1), { cwd: options.cwd })
+    let stdout = ""
+    let stderr = ""
+    child.stdout!.setEncoding("utf8")
+    child.stderr!.setEncoding("utf8")
+    child.stdout!.on("data", (chunk: string) => {
+      stdout += chunk
     })
-    return { code: 0, stdout, stderr }
+    child.stderr!.on("data", (chunk: string) => {
+      stderr += chunk
+    })
+    if (options.stdin !== undefined) child.stdin!.end(options.stdin)
+    const code: number = await new Promise((resolve, reject) => {
+      child.on("error", reject)
+      child.on("close", (exit) => resolve(exit ?? 127))
+    })
+    return { code, stdout, stderr }
   } catch (error) {
-    const err = error as { code?: number | string; stdout?: string; stderr?: string; message?: string }
+    const err = error as { code?: number | string; message?: string }
     return {
       code: typeof err.code === "number" ? err.code : 127,
-      stdout: err.stdout ?? "",
-      stderr: err.stderr ?? err.message ?? String(error),
+      stdout: "",
+      stderr: err.message ?? String(error),
     }
   }
 }
