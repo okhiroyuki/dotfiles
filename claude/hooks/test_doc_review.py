@@ -13,6 +13,7 @@ import time
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 
 HOOKS = Path(__file__).parent
@@ -62,9 +63,28 @@ class StateTest(unittest.TestCase):
     def state(self) -> dict | None:
         return state_mod.read_state(self.base)
 
-    def test_missing_ids_fail_open(self) -> None:
-        self.assertIsNone(state_mod.state_path({"session_id": "only-session"}))
-        self.assertIsNone(state_mod.read_state({"session_id": "only-session"}))
+    def test_missing_session_id_fails_open(self) -> None:
+        # session_id 欠落のみ判断不能として扱う。prompt_id 欠落は "none" に正規化する。
+        self.assertIsNone(state_mod.state_path({}))
+        self.assertIsNone(state_mod.state_path({"prompt_id": "p-only"}))
+        self.assertIsNone(state_mod.read_state({}))
+
+    def test_missing_prompt_id_falls_back_to_session_key(self) -> None:
+        # prompt_id 欠落は "none" に正規化し、セッション単位のキーで状態を保持する。
+        session = f"s-{uuid.uuid4()}"
+        path = state_mod.state_path({"session_id": session})
+        import hashlib
+
+        expected = hashlib.sha256(f"{session}:none".encode()).hexdigest()
+        self.assertEqual(path, state_mod.STATE_ROOT / f"{expected}.json")
+        self.assertIsNone(state_mod.state_path({"prompt_id": "p-only"}))
+
+    def test_records_despite_lock_failure(self) -> None:
+        # ロック取得に失敗しても記録は失われない（誤ブロック防止のためのフォールバック）。
+        with mock.patch("fcntl.flock", side_effect=OSError):
+            record("skill", {**self.base, "tool_name": "Skill",
+                             "tool_input": {"skill": "japanese-tech-writing"}})
+        self.assertEqual(self.state()["skills"], ["japanese-tech-writing"])
 
     def test_turns_are_isolated(self) -> None:
         record("write", {**self.base, "tool_name": "Write",
@@ -123,6 +143,29 @@ class CleanupTest(unittest.TestCase):
                 state_mod.cleanup()
                 self.assertFalse(old.exists())
                 self.assertTrue(recent.exists())
+            finally:
+                state_mod.STATE_ROOT = original
+
+    def test_skips_held_lock_file(self) -> None:
+        import fcntl
+
+        with tempfile.TemporaryDirectory() as tmp:
+            original = state_mod.STATE_ROOT
+            state_mod.STATE_ROOT = Path(tmp)
+            try:
+                lock = Path(tmp) / "old.lock"
+                lock.write_text("", encoding="utf-8")
+                os.utime(lock, (time.time() - 7200, time.time() - 7200))
+                fd = os.open(lock, os.O_RDWR)
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX)
+                    state_mod.cleanup()
+                    self.assertTrue(lock.exists())
+                finally:
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+                    os.close(fd)
+                state_mod.cleanup()
+                self.assertFalse(lock.exists())
             finally:
                 state_mod.STATE_ROOT = original
 
@@ -299,6 +342,21 @@ class DocGateTest(unittest.TestCase):
         self.assertFalse(gate_mod.is_target(Path("/tmp/x.doc-review/doc.md")))
         self.assertFalse(gate_mod.is_target(Path("/tmp/node_modules/doc.md")))
         self.assertFalse(gate_mod.is_target(Path("/tmp/doc.txt")))
+
+    def test_llm_wiki_pages_are_not_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as wiki, tempfile.TemporaryDirectory() as other:
+            original = gate_mod.LLM_WIKI_ROOT
+            gate_mod.LLM_WIKI_ROOT = Path(wiki)
+            try:
+                inside = Path(wiki) / "Decisions" / "adr.md"
+                inside.parent.mkdir()
+                inside.write_text("# adr", encoding="utf-8")
+                outside = Path(other) / "doc.md"
+                outside.write_text("# doc", encoding="utf-8")
+                self.assertFalse(gate_mod.is_target(inside))
+                self.assertTrue(gate_mod.is_target(outside))
+            finally:
+                gate_mod.LLM_WIKI_ROOT = original
 
 
 class SettingsWiringTest(unittest.TestCase):
