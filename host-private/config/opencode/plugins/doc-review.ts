@@ -5,6 +5,8 @@
 // 確認済み: サブエージェントのツールでも execute.* は発火する(実機実測)。判別は agent の
 //           mode("subagent")で行い、書き込みは親セッションの状態に記録して Stop ゲートの対象にする。
 // 識別子は Claude Code の session_id/prompt_id に sessionID/ターン番号を対応させる。
+// question ツール（crit を含む選択肢の質問）は ask モードで記録し、同じターンの
+// ターン終了ゲートがレビュー確認を再要求しないようにする（Claude Code 版 d9152b3 と同じ）。
 
 import { Plugin } from "@opencode/plugin"
 import fs from "node:fs"
@@ -101,7 +103,7 @@ function writtenTextOf(tool: string, input: Record<string, unknown>): string {
   return ""
 }
 
-async function runStateScript(mode: "write" | "skill", payload: Record<string, unknown>): Promise<void> {
+async function runStateScript(mode: "write" | "skill" | "ask", payload: Record<string, unknown>): Promise<void> {
   const python = which("python3")
   if (!python || !fs.existsSync(STATE_SCRIPT)) return
   const result = await spawnText([python, STATE_SCRIPT, mode], { stdin: JSON.stringify(payload) }).catch(
@@ -255,6 +257,18 @@ export default Plugin.define({
         await withTimeout(
           runStateScript("skill", { session_id: sessionID, prompt_id: String(turnOf(sessionID)), tool_input: { skill } }),
           "スキルの状態記録",
+        )
+      } else if (tool === "question") {
+        // レビュー確認の質問を記録する。crit を含む選択肢の判定は状態スクリプト側で行う。
+        // サブエージェントはユーザーに直接聞けないため記録しない（Claude Code 版と同じ契約）。
+        if (subagent) return
+        await withTimeout(
+          runStateScript("ask", {
+            session_id: sessionID,
+            prompt_id: String(turnOf(sessionID)),
+            tool_input: { questions: input.questions },
+          }),
+          "レビュー確認の質問の記録",
         )
       }
     })

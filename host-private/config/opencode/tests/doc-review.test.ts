@@ -39,7 +39,10 @@ const key = (sessionID: string, turn: number): string =>
 const statePath = (sessionID: string, turn: number): string =>
   path.join(os.tmpdir(), "claude-doc-review", `${key(sessionID, turn)}.json`)
 
-function readState(sessionID: string, turn: number): { written?: string[]; skills?: string[] } | null {
+function readState(
+  sessionID: string,
+  turn: number,
+): { written?: string[]; skills?: string[]; asked?: string[] } | null {
   try {
     return JSON.parse(fs.readFileSync(statePath(sessionID, turn), "utf8"))
   } catch {
@@ -386,6 +389,76 @@ test("状態記録: 親が取れないサブエージェント書き込みは子
   assert.deepEqual(state.written, ["/tmp/orphan.md"])
 })
 
+// ---- レビュー確認の質問の記録（execute.after の question） ------------------
+// crit を含む選択肢の質問ツールの完了を ask モードで記録する。判定は状態スクリプト側。
+
+const REVIEW_QUESTION = {
+  question: "文書をレビューしますか？",
+  header: "レビュー",
+  options: [
+    { label: "5 人のレビュアーで回す", description: "" },
+    { label: "crit で自分で見る", description: "" },
+    { label: "どちらもしない", description: "" },
+  ],
+}
+
+test("質問記録: crit を含む質問ツールの完了を asked に記録する", async () => {
+  const session = newSession()
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+
+  await harness.fireAfter({
+    tool: "question",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { questions: [REVIEW_QUESTION] },
+  })
+
+  const state = readState(session, 1)
+  assert.ok(state)
+  assert.deepEqual(state.asked, ["review"])
+})
+
+test("質問記録: crit を含まない質問は記録しない", async () => {
+  const session = newSession()
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+
+  await harness.fireAfter({
+    tool: "question",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: {
+      questions: [{ question: "次へ進みますか？", header: "確認", options: [{ label: "はい", description: "" }] }],
+    },
+  })
+
+  const state = readState(session, 1)
+  assert.ok(state === null || (state.asked ?? []).length === 0)
+})
+
+test("質問記録: サブエージェントの質問は記録しない", async () => {
+  const session = newSession()
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+
+  await harness.fireAfter({
+    tool: "question",
+    sessionID: session,
+    agent: "general",
+    status: "completed",
+    input: { questions: [REVIEW_QUESTION] },
+  })
+
+  const state = readState(session, 1)
+  assert.ok(state === null || (state.asked ?? []).length === 0)
+})
+
 // ---- ターン終了ゲート（session.wait） ---------------------------------------
 // 実機では session.idle イベントが配信されないため、プラグインはプロンプトごとに
 // session.wait でターン終了を待ち、ゲートを走らせる。
@@ -463,6 +536,48 @@ test("ターン終了ゲート: 書き込みがなければ注入しない", asy
   // ゲートスクリプトが fail open で抜けるのを待つ
   await new Promise((r) => setTimeout(r, 300))
   assert.equal(harness.synthetic.length, 0)
+})
+
+test("ターン終了ゲート: このターンでレビュー確認を出していれば注入しない", async () => {
+  const session = newSession()
+  const doc = path.join(os.tmpdir(), `gate-doc-${crypto.randomUUID()}.md`)
+  fs.writeFileSync(doc, jp(10))
+  const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+  await plugin.setup(harness.ctx)
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+  await harness.fireAfter({
+    tool: "question",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { questions: [REVIEW_QUESTION] },
+  })
+  await harness.fireAfter({
+    tool: "write",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { file_path: doc },
+  })
+  harness.resolveWaits()
+
+  // gate が asked を読んで fail open で抜けるのを待つ
+  await new Promise((r) => setTimeout(r, 300))
+  assert.equal(harness.synthetic.length, 0)
+
+  // ターン2: 質問の記録がないので、同じ文書の追記でも注入する
+  await harness.firePrompt({ sessionID: session, prompt: {} })
+  fs.writeFileSync(doc, jp(20))
+  await harness.fireAfter({
+    tool: "edit",
+    sessionID: session,
+    agent: "build",
+    status: "completed",
+    input: { file_path: doc, new_string: jp(20) },
+  })
+  harness.resolveWaits()
+  await waitFor(() => harness.synthetic.length > 0)
+  assert.equal(harness.synthetic.length, 1)
 })
 
 // ---- スクリプトが無い環境では何もしない ------------------------------------
