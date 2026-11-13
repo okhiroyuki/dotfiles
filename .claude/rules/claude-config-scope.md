@@ -14,7 +14,7 @@
 `~/.claude` は 3 つのレイヤを `rcup` でマージした結果である。
 
 - **claude/**：全マシン共通の設定。リポジトリにコミットされる。グローバルルールの集約点は `claude/CLAUDE.md` 一つに固定する。
-- **host-\<name>/claude/**：マシン固有の設定。`rcup -B private` で選ばれる。コミットされる。`settings.json` はここに置く。
+- **host-\<name>/claude/**：マシン固有の設定。私用マシンで `rcup -B private` を実行したときだけ選ばれ、業務マシンの `rcup` では使われない。コミットされる。`settings.json` はここに置く。
 - **local/claude/**：ドメイン固有・機密の設定。gitignore 対象でコミットされない。
 
 同じリンク先が複数レイヤに存在するときは、`rcrc` の `DOTFILES_DIRS` で先に並ぶレイヤが勝つ。

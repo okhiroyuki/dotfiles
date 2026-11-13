@@ -36,8 +36,10 @@ It then symlinks that `rcrc` to `~/.rcrc`, so later runs need only `rcup -B priv
 
 ```zsh
 git pull
-rcup -B private
+rcup
 ```
+
+On the private machine, run `rcup -B private` instead so that `host-private/` is used.
 
 ## Make your own customizations
 
