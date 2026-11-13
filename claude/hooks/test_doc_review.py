@@ -309,6 +309,65 @@ class ChangedJapaneseTest(unittest.TestCase):
         self.assertEqual(self.count("ああああ\nいいい", "ああああ"), 3)
 
 
+class BaselineTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.doc = Path(self.tmp.name) / "doc.md"
+        self.snapshot = Path(self.tmp.name) / gate_mod.STATE_DIR / "doc.md"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def require(self, tool_input: dict, **overrides) -> int:
+        payload = {"session_id": f"s-{uuid.uuid4()}", "prompt_id": f"p-{uuid.uuid4()}",
+                   "tool_name": "Edit", "tool_input": tool_input, **overrides}
+        return run_hook(REQUIRE, [], payload).returncode
+
+    def test_saves_pre_edit_text_once(self) -> None:
+        self.doc.write_text("編集前", encoding="utf-8")
+        self.assertTrue(gate_mod.baseline(str(self.doc)))
+        self.doc.write_text("編集後", encoding="utf-8")
+        # 既に記録があれば上書きしない（確認済みの記録や、ターン内の最初の基準を保つ）
+        self.assertFalse(gate_mod.baseline(str(self.doc)))
+        self.assertEqual(self.snapshot.read_text(encoding="utf-8"), "編集前")
+        self.assertEqual((self.snapshot.parent / ".gitignore").read_text(encoding="utf-8"), "*\n")
+
+    def test_skips_new_and_out_of_scope_files(self) -> None:
+        self.assertFalse(gate_mod.baseline(str(self.doc)))  # まだ存在しない（新規作成）
+        text = Path(self.tmp.name) / "doc.txt"
+        text.write_text("本文", encoding="utf-8")
+        self.assertFalse(gate_mod.baseline(str(text)))
+        self.assertFalse(self.snapshot.parent.exists())
+
+    def test_one_line_addition_counts_only_the_line(self) -> None:
+        # 既存文書に 1 行足しても、全文ではなく追加行だけが差分になる
+        self.doc.write_text("あいうえお" * 100 + "\n", encoding="utf-8")
+        gate_mod.baseline(str(self.doc))
+        self.doc.write_text("あいうえお" * 100 + "\nかきく\n", encoding="utf-8")
+        self.assertEqual(gate_mod.changed_japanese(self.doc), 3)
+
+    def test_require_hook_saves_baseline_even_when_it_passes(self) -> None:
+        # 閾値未満・サブエージェント・スキップ指定でも基準は保存する
+        cases = [
+            ({"new_string": "x"}, {}),
+            ({"new_string": "x"}, {"agent_id": "sub"}),
+        ]
+        for tool_input, overrides in cases:
+            with self.subTest(overrides=overrides):
+                self.doc.write_text("編集前", encoding="utf-8")
+                if self.snapshot.exists():
+                    self.snapshot.unlink()
+                code = self.require({"file_path": str(self.doc), **tool_input}, **overrides)
+                self.assertEqual(code, 0)
+                self.assertEqual(self.snapshot.read_text(encoding="utf-8"), "編集前")
+
+    def test_require_hook_ignores_baseline_failure(self) -> None:
+        # 保存先がシンボリックリンクで保存できなくても、書き込み判定は通常どおり進む
+        self.doc.write_text("編集前", encoding="utf-8")
+        self.snapshot.parent.symlink_to(self.tmp.name)
+        self.assertEqual(self.require({"file_path": str(self.doc), "new_string": "x"}), 0)
+
+
 class DocGateTest(unittest.TestCase):
     def setUp(self) -> None:
         self.turn = tempfile.TemporaryDirectory()

@@ -3,13 +3,15 @@
 
 2 つの使い方がある。
 
-    doc-review.py gate          Stop hook。stdin に hook 入力を受け取る
-    doc-review.py mark FILE...  文書の現状を「確認済み」として記録する
+    doc-review.py gate              Stop hook。stdin に hook 入力を受け取る
+    doc-review.py mark FILE...      文書の現状を「確認済み」として記録する
+    doc-review.py baseline FILE...  記録のない既存文書の編集前の本文を記録する（書き込み前に呼ぶ）
 
-記録は文書と同じディレクトリの `.doc-review/<ファイル名>` に、確認した時点の本文のコピーとして置く。
+記録は文書と同じディレクトリの `.doc-review/<ファイル名>` に、確認した時点、
+または初めて編集する直前の本文のコピーとして置く。
 `.doc-review/.gitignore` に `*` を書き、記録自体は git の対象外にする。
 
-gate は、このターンで書き込んだ `.md` ごとに記録との差分を数える。記録がなければ全文を差分とみなす。
+gate は、このターンで書き込んだ `.md` ごとに記録との差分を数える。記録がない新規作成の文書は全文を差分とみなす。
 変更した日本語が閾値を超える文書があれば、ターンの終了を止め、レビューするかをユーザーに確認させる。
 実行するか、指摘を採用するかは常にユーザーが決める。
 llm-wiki（~/Documents/llm-wiki）のページは判断の記録であり推敲対象ではないため、レビュー提案の対象外にする。
@@ -134,7 +136,7 @@ def gate() -> int:
         return 0
 
     lines = [
-        f"- {doc}（{'初回・全文' if first else '前回確認から'} {count} 字）"
+        f"- {doc}（{'新規・全文' if first else '前回確認または編集前から'} {count} 字）"
         for doc, count, first in pending
     ]
     mark = f"python3 ~/.claude/hooks/doc-review.py mark <ファイル>"
@@ -152,6 +154,40 @@ def gate() -> int:
     return 2
 
 
+def save_snapshot(doc: Path) -> str | None:
+    """文書の現在の本文を記録として保存する。失敗したら理由を返す。"""
+    state = doc.parent / STATE_DIR
+    # 保存先がシンボリックリンクだと copyfile がリンク先を上書きする。
+    # 信頼できないチェックアウトからの攻撃を防ぐため、リンクなら使わない。
+    if state.is_symlink():
+        return f"保存先がシンボリックリンクです: {state}"
+    try:
+        state.mkdir(exist_ok=True)
+    except OSError as e:
+        return f"記録に失敗しました: {doc}（{e}）"
+    ignore = state / ".gitignore"
+    if ignore.is_symlink():
+        # dangling symlink も exists() は False になるため、書く前に拒否する。
+        return f"保存先がシンボリックリンクです: {ignore}"
+    snapshot = state / doc.name
+    # 一時ファイルはリンクをたどらない O_NOFOLLOW|O_EXCL で作り、
+    # os.replace なら保存先がリンクでもリンク自体を差し替えるので安全。
+    temporary = state / f".{doc.name}.{os.getpid()}.tmp"
+    nofollow = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+    try:
+        if not ignore.exists():
+            fd = os.open(ignore, nofollow, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write("*\n")
+        fd = os.open(temporary, nofollow, 0o600)
+        with os.fdopen(fd, "wb") as dst, open(doc, "rb") as src:
+            shutil.copyfileobj(src, dst)
+        os.replace(temporary, snapshot)
+    except OSError as e:
+        return f"記録に失敗しました: {doc}（{e}）"
+    return None
+
+
 def mark(paths: list[str]) -> int:
     status = 0
     for raw in paths:
@@ -160,41 +196,30 @@ def mark(paths: list[str]) -> int:
             print(f"見つかりません: {raw}", file=sys.stderr)
             status = 1
             continue
-        state = doc.parent / STATE_DIR
-        # 保存先がシンボリックリンクだと copyfile がリンク先を上書きする。
-        # 信頼できないチェックアウトからの攻撃を防ぐため、リンクなら使わない。
-        if state.is_symlink():
-            print(f"保存先がシンボリックリンクです: {state}", file=sys.stderr)
-            status = 1
-            continue
-        state.mkdir(exist_ok=True)
-        ignore = state / ".gitignore"
-        if ignore.is_symlink():
-            # dangling symlink も exists() は False になるため、書く前に拒否する。
-            print(f"保存先がシンボリックリンクです: {ignore}", file=sys.stderr)
-            status = 1
-            continue
-        if not ignore.exists():
-            nofollow = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
-            fd = os.open(ignore, nofollow, 0o600)
-            with os.fdopen(fd, "w", encoding="utf-8") as f:
-                f.write("*\n")
-        snapshot = state / doc.name
-        # 一時ファイルはリンクをたどらない O_NOFOLLOW|O_EXCL で作り、
-        # os.replace なら保存先がリンクでもリンク自体を差し替えるので安全。
-        temporary = state / f".{doc.name}.{os.getpid()}.tmp"
-        try:
-            nofollow = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
-            fd = os.open(temporary, nofollow, 0o600)
-            with os.fdopen(fd, "wb") as dst, open(doc, "rb") as src:
-                shutil.copyfileobj(src, dst)
-            os.replace(temporary, snapshot)
-        except OSError as e:
-            print(f"記録に失敗しました: {doc}（{e}）", file=sys.stderr)
+        error = save_snapshot(doc)
+        if error:
+            print(error, file=sys.stderr)
             status = 1
             continue
         print(f"記録しました: {doc}")
     return status
+
+
+def baseline(raw: str) -> bool:
+    """記録のない既存文書について、編集前の本文を記録として保存する。
+
+    書き込み前の hook から呼ぶ。記録がないまま編集すると全文が差分になり、
+    1 行の追記でもレビュー確認が出るため、編集前の本文を比較の基準にする。
+    git の HEAD を基準にしないのは、ターン内でコミットすると差分が消えるからである。
+    既に記録がある文書・新規作成・対象外の文書には何もしない。保存したら True を返す。
+    """
+    try:
+        doc = Path(raw).resolve()
+        if not is_target(doc) or snapshot_path(doc).exists():
+            return False
+        return save_snapshot(doc) is None
+    except (OSError, ValueError):
+        return False
 
 
 def main() -> int:
@@ -202,7 +227,13 @@ def main() -> int:
         return gate()
     if len(sys.argv) >= 3 and sys.argv[1] == "mark":
         return mark(sys.argv[2:])
-    print("使い方: doc-review.py gate | doc-review.py mark FILE...", file=sys.stderr)
+    if len(sys.argv) >= 3 and sys.argv[1] == "baseline":
+        # 書き込み前に呼ばれるため、失敗しても書き込みは止めない（fail open）。
+        for raw in sys.argv[2:]:
+            baseline(raw)
+        return 0
+    print("使い方: doc-review.py gate | doc-review.py mark FILE... | doc-review.py baseline FILE...",
+          file=sys.stderr)
     return 1
 
 

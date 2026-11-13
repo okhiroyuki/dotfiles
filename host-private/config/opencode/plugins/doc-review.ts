@@ -11,6 +11,7 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { createHash } from "node:crypto"
+import { spawnSync } from "node:child_process"
 import { spawnText, which } from "./lib/spawn.ts"
 
 const SKILL_NAME = "japanese-tech-writing"
@@ -112,6 +113,20 @@ async function runStateScript(mode: "write" | "skill", payload: Record<string, u
   }
 }
 
+// Stop ゲートの比較基準として、記録のない既存文書の編集前の本文を保存する（Claude Code 版と同じ）。
+// 書き込みより先に終わらせる必要があるため同期で呼ぶ。失敗しても書き込みは止めない。
+function saveBaseline(file: string): void {
+  const python = which("python3")
+  if (!python || !fs.existsSync(GATE_SCRIPT)) return
+  const result = spawnSync(python, [GATE_SCRIPT, "baseline", file], {
+    stdio: ["ignore", "ignore", "pipe"],
+    timeout: CHILD_TIMEOUT_MS,
+  })
+  if (result.error || result.status !== 0) {
+    console.error(`doc-review: 編集前の本文の保存に失敗しました: ${String(result.error ?? result.stderr)}`)
+  }
+}
+
 // 子プロセスの終了を無期限に待つとロック待ちなどでセッションが停滞するため、
 // 状態記録とゲートの呼び出しは有限の期限で打ち切る。打ち切りは理由とともに可視化する。
 const CHILD_TIMEOUT_MS = 5000
@@ -194,6 +209,8 @@ export default Plugin.define({
       const input = e.input ?? {}
       const file = filePathOf(input)
       if (!file.endsWith(".md") && !file.endsWith(".markdown")) return
+      // サブエージェントの書き込みも親のゲートで数えるため、判定より前に基準を保存する。
+      saveBaseline(file)
       if (subagentAgents.has(e.agent ?? "")) return
       const count = (writtenTextOf(tool, input).match(JAPANESE_CHAR) ?? []).length
       if (count <= limit) return

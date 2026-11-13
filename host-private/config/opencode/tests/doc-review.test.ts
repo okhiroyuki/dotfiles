@@ -217,6 +217,28 @@ test("ゲート: サブエージェントの書き込みは対象外", async () 
   })
 })
 
+test("基準: 記録のない既存 .md は書き込み前に編集前の本文を保存し、既存の記録は上書きしない", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "doc-review-baseline-"))
+  try {
+    const doc = path.join(dir, "doc.md")
+    const snapshot = path.join(dir, ".doc-review", "doc.md")
+    fs.writeFileSync(doc, "編集前の本文")
+    const harness = makeCtx({ agents: AGENTS, sessions: new Map() })
+    await plugin.setup(harness.ctx)
+
+    // サブエージェントの書き込みも親のゲートで数えるため、基準を保存する
+    const event = { tool: "edit", sessionID: newSession(), agent: "general", input: { file_path: doc, new_string: "x" } }
+    harness.fireBefore(event)
+    assert.equal(fs.readFileSync(snapshot, "utf8"), "編集前の本文")
+
+    fs.writeFileSync(doc, "編集後の本文")
+    harness.fireBefore(event)
+    assert.equal(fs.readFileSync(snapshot, "utf8"), "編集前の本文")
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test("ゲート: 閾値ちょうどは通し、1字超えると止める", async () => {
   const session = newSession()
   const harness = makeCtx({ agents: AGENTS, sessions: new Map() })

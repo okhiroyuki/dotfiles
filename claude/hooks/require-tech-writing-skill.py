@@ -23,6 +23,7 @@ DEFAULT_THRESHOLD = 400
 JAPANESE_CHAR = re.compile(r"[぀-ヿ一-鿿]")
 TARGET_SUFFIXES = (".md", ".markdown")
 STATE_HOOK = Path(__file__).with_name("doc-review-state.py")
+GATE_HOOK = Path(__file__).with_name("doc-review.py")
 
 
 def load_state_module():
@@ -48,14 +49,38 @@ def written_text(tool_name: str, tool_input: dict) -> str:
     return ""
 
 
-def main() -> int:
-    # 一時的に黙らせたいときの逃げ道。
-    if os.environ.get("TECH_WRITING_GATE_SKIP") == "1":
-        return 0
+def save_baseline(tool_input: dict) -> None:
+    """Stop ゲートの比較基準として、記録のない既存文書の編集前の本文を保存する。
 
+    ゲートのスキップ・サブエージェント・閾値未満でも保存する。サブエージェントの書き込みも
+    親の Stop ゲートで数えるため、基準がないと全文が差分になる。保存の失敗は書き込みを止めない。
+    """
+    file_path = tool_input.get("file_path")
+    if not isinstance(file_path, str) or not file_path.endswith(TARGET_SUFFIXES):
+        return
+    try:
+        spec = importlib.util.spec_from_file_location("doc_review_gate", GATE_HOOK)
+        if spec is None or spec.loader is None:
+            return
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.baseline(file_path)
+    except Exception:  # noqa: BLE001 - 基準の保存は補助機能なので何があっても書き込みを止めない
+        pass
+
+
+def main() -> int:
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
+        return 0
+    if not isinstance(payload, dict):
+        return 0
+
+    save_baseline(payload.get("tool_input") or {})
+
+    # 一時的に黙らせたいときの逃げ道。
+    if os.environ.get("TECH_WRITING_GATE_SKIP") == "1":
         return 0
 
     # サブエージェントは状態を共有するため、スキル起動済みと誤判定される恐れがある。対象外にする。
