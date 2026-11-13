@@ -402,6 +402,24 @@ class DocGateTest(unittest.TestCase):
         self.record_write()
         self.assertEqual(self.gate(self.base, threshold="6"), 2)
 
+    def test_block_message_defers_options_to_review_rule(self) -> None:
+        # 選択肢（5 人・crit・しない）の正本は review.md に置き、指示文は節を指すだけにする
+        self.record_write()
+        result = subprocess.run(
+            [sys.executable, str(GATE), "gate"],
+            input=json.dumps(self.base),
+            capture_output=True,
+            text=True,
+            check=False,
+            env={**os.environ, "DOC_REVIEW_THRESHOLD": "1"},
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("review.md の「文書を書いたあとのレビュー確認」", result.stderr)
+        self.assertIn("どの選択肢が選ばれた場合も", result.stderr)
+        self.assertIn("doc-review.py mark", result.stderr)
+        rule = Path(__file__).resolve().parents[1] / "rules" / "review.md"
+        self.assertIn("## 文書を書いたあとのレビュー確認", rule.read_text(encoding="utf-8"))
+
     def test_passes_below_threshold(self) -> None:
         # doc は日本語 7 字なので閾値 8 なら通る
         self.record_write()
