@@ -1,6 +1,6 @@
 {
   "skill_name": "eval",
-  "note": "eval手順の正本がスキル化されていることを検証する。実行には ~/dotfiles/claude/review/ 配下のレビュー機構と ~/.claude/skills/ 配下の既存スキルが存在する環境を前提とする。",
+  "note": "eval手順がスキル本文にまとめられていることを検証する。実行には ~/dotfiles/claude/review/ 配下のレビュー機構と ~/.claude/skills/ 配下の既存スキルが存在する環境を前提とする。",
   "evals": [
     {
       "id": 1,

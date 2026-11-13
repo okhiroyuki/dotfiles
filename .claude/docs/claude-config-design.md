@@ -31,6 +31,6 @@ CLAUDE.md を共有に集約したのは上記の暗黙の欠落を避けるた�
 
 このスタブは全セッションの ambient に載る。
 説明を書き込むと、全プロジェクト・全セッションでその分を払い続けることになるため、本文は 1 行に留める。
-存在理由の正本はこのファイルと `claude-config-scope.md` である。
+存在理由はこのファイルと `claude-config-scope.md` に書いてある。
 
 `local/` 側の運用メモは `local/README.md`（gitignore 対象）にある。

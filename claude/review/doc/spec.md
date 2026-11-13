@@ -1,6 +1,6 @@
 # 共通ドキュメントレビュー仕様
 
-このディレクトリは Claude Code と OpenCode で共有するレビュー仕様の正本です。
+このディレクトリには、Claude Code と OpenCode が共通で読むレビュー仕様を置いています。
 
 ## 基本方針
 
@@ -36,7 +36,7 @@
 ## 日本語技術文書の基準
 
 Language editor と統合者は、利用可能なら `japanese-tech-writing` skill を読み込む。
-skill ツールがない場合は、次の正本を読む。
+skill ツールがない場合は、次のファイルを直接読む。
 
 `~/dotfiles/claude/skills/japanese-tech-writing/SKILL.md`
 

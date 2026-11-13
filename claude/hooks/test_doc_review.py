@@ -403,7 +403,7 @@ class DocGateTest(unittest.TestCase):
         self.assertEqual(self.gate(self.base, threshold="6"), 2)
 
     def test_block_message_defers_options_to_review_rule(self) -> None:
-        # 選択肢（5 人・crit・しない）の正本は review.md に置き、指示文は節を指すだけにする
+        # 選択肢（5 人・crit・しない）は review.md にだけ書き、指示文は節を指すだけにする
         self.record_write()
         result = subprocess.run(
             [sys.executable, str(GATE), "gate"],
