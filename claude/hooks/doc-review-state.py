@@ -45,9 +45,11 @@ def _merge_lists(fresh: dict, before: dict, mutated: dict) -> dict:
     これで後勝ちの上書きで他プロセスの追記が消えることを防ぐ。
     """
     merged = dict(fresh)
-    for key in ("written", "skills"):
+    for key in ("written", "skills", "asked"):
         old = before.get(key) or []
         new = mutated.get(key) or []
+        if key not in merged and key not in mutated:
+            continue
         current = list(merged.get(key) or [])
         for item in new:
             if item not in old and item not in current:
@@ -166,6 +168,44 @@ def add_skill(payload: dict) -> bool:
     return True
 
 
+def is_review_question(tool_input: dict) -> bool:
+    """文書レビューの確認（選択肢に crit を含む質問）かどうかを判定する。
+
+    review.md の確認は「5 人のレビュアー / crit / どちらもしない」を必ず並べ、
+    採否確認後の質問にも crit を加える。crit を含む選択肢を目印にする。
+    """
+    questions = tool_input.get("questions")
+    if not isinstance(questions, list):
+        return False
+    for question in questions:
+        if not isinstance(question, dict):
+            continue
+        for option in question.get("options") or []:
+            if isinstance(option, dict) and "crit" in str(option.get("label", "")).lower():
+                return True
+    return False
+
+
+def add_review_question(payload: dict) -> bool:
+    """このターンでレビュー確認の質問を出したことを記録する。
+
+    Stop hook が、すでに聞いた確認をもう一度求めないようにするため。
+    サブエージェントは質問ツールでユーザーに聞けないので、メインの質問だけを記録する。
+    """
+    if payload.get("agent_id"):
+        return False
+    tool_input = payload.get("tool_input") or {}
+    if not isinstance(tool_input, dict) or not is_review_question(tool_input):
+        return False
+    with locked_state(payload) as state:
+        if state is None:
+            return False
+        asked = state.setdefault("asked", [])
+        if "review" not in asked:
+            asked.append("review")
+    return True
+
+
 def read_state(payload: dict) -> dict | None:
     path = state_path(payload)
     if path is None:
@@ -200,6 +240,8 @@ def main() -> int:
         add_written_file(payload)
     elif sys.argv[1:] == ["skill"]:
         add_skill(payload)
+    elif sys.argv[1:] == ["ask"]:
+        add_review_question(payload)
     return 0
 
 

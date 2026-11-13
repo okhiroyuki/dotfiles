@@ -429,6 +429,40 @@ class DocGateTest(unittest.TestCase):
         self.record_write()
         self.assertEqual(self.gate({**self.base, "stop_hook_active": 1}, threshold="1"), 0)
 
+    def review_question(self, extra: dict | None = None) -> dict:
+        return {**self.base, **(extra or {}), "tool_name": "AskUserQuestion",
+                "tool_input": {"questions": [{
+                    "question": "doc.md をレビューしますか？",
+                    "options": [{"label": "5 人のレビュアーで回す"},
+                                {"label": "crit で自分で見る"},
+                                {"label": "どちらもしない"}],
+                }]}}
+
+    def test_passes_after_review_question_in_same_turn(self) -> None:
+        # すでにレビュー確認を出したターンでは、同じ確認を再要求しない
+        self.record_write()
+        record("ask", self.review_question())
+        self.assertEqual(self.gate(self.base, threshold="1"), 0)
+
+    def test_unrelated_question_still_blocks(self) -> None:
+        self.record_write()
+        record("ask", {**self.base, "tool_name": "AskUserQuestion",
+                       "tool_input": {"questions": [{
+                           "question": "どちらにしますか？",
+                           "options": [{"label": "A"}, {"label": "B"}]}]}})
+        self.assertEqual(self.gate(self.base, threshold="1"), 2)
+
+    def test_subagent_question_is_not_recorded(self) -> None:
+        self.record_write()
+        record("ask", self.review_question({"agent_id": "agent-1"}))
+        self.assertEqual(self.gate(self.base, threshold="1"), 2)
+
+    def test_question_in_other_turn_does_not_pass(self) -> None:
+        self.record_write()
+        other = {**self.base, "prompt_id": f"p-{uuid.uuid4()}"}
+        record("ask", {**self.review_question(), **other})
+        self.assertEqual(self.gate(self.base, threshold="1"), 2)
+
     def test_passes_on_invalid_input(self) -> None:
         self.assertEqual(self.gate("not json"), 0)
 
@@ -557,6 +591,8 @@ class SettingsWiringTest(unittest.TestCase):
         self.assertIn(("Write|Edit|MultiEdit|NotebookEdit",
                        "python3 ~/.claude/hooks/doc-review-state.py write"), pairs)
         self.assertIn(("Skill", "python3 ~/.claude/hooks/doc-review-state.py skill"),
+                      pairs)
+        self.assertIn(("AskUserQuestion", "python3 ~/.claude/hooks/doc-review-state.py ask"),
                       pairs)
 
     def test_stop_gate_runs(self) -> None:

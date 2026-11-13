@@ -14,6 +14,7 @@
 gate は、このターンで書き込んだ `.md` ごとに記録との差分を数える。記録がない新規作成の文書は全文を差分とみなす。
 変更した日本語が閾値を超える文書があれば、ターンの終了を止め、レビューするかをユーザーに確認させる。
 実行するか、指摘を採用するかは常にユーザーが決める。
+同じターンでレビュー確認の質問（選択肢に crit を含む AskUserQuestion）をすでに出していれば止めない。
 llm-wiki（~/Documents/llm-wiki）のページは判断の記録であり推敲対象ではないため、レビュー提案の対象外にする。
 スキル起動の強制（require-tech-writing-skill）は llm-wiki にも適用される。
 
@@ -116,7 +117,13 @@ def gate() -> int:
         state_module = load_state_module()
         state = state_module.read_state(payload) if state_module else None
         docs = [Path(p) for p in (state or {}).get("written", [])]
+        asked = bool((state or {}).get("asked"))
     except (OSError, TypeError):
+        return 0
+
+    # このターンですでにレビュー確認を出していれば、同じ確認を再要求しない。
+    # 5 人のレビュアーの経路は dig の採否確認でターンをまたぐため、mark は経路の終わりまで来ない。
+    if asked:
         return 0
 
     limit = threshold()
