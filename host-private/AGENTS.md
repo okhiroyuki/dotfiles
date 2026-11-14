@@ -35,6 +35,8 @@
 - 設定変更は起動時にロードされるため、反映には opencode 自体の再起動が必要
 - 新マシン構築時は `~/.config/opencode` に package.json(依存: `@opencode/plugin`)を作成し
   `npm install` を実行する。バージョンは brew でインストールした opencode に合わせる
+- `mise.toml` の `@opencode/plugin` の pin は renovate が自動更新する(okhiroyuki/renovate-config)。
+  runtime 側(`~/.config/opencode`)は本体更新後に `npm install` で手動合わせする
 - crit は private 専用。`crit install opencode` の出力を `config/opencode/commands/crit.md` に
   vendoring する（更新は一時dirで `crit install opencode` を実行し差分を反映、その後 dprint fmt）。
   CLIリファレンススキルは `agents/skills/crit-cli/`（`~/.agents/skills` に展開）。

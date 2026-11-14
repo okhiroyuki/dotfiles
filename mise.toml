@@ -74,7 +74,8 @@ dir = "host-private/config/opencode"
 run = '''
 # 開発マシンではランタイム側（~/.config/opencode）の node_modules への symlink を使う。
 # CI には symlink も OpenCode も無いため、無ければ npm から入手する。
-# バージョンは実行中の OpenCode（2.2.7）に合わせる。install scripts は実行しない。
+# バージョンは実行中の OpenCode に合わせる。pin の更新 PR は renovate が自動で出す
+# （okhiroyuki/renovate-config の customManager）。install scripts は実行しない。
 if [ ! -e node_modules/@opencode/plugin ]; then
   rm -f node_modules
   mkdir -p node_modules
