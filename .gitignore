@@ -162,5 +162,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+## Apple Python のバイトコードキャッシュ（HOME が誤って本リポジトリを指したときの生成物）
+/Library/
+
 # VSCode extension build artifacts
 tools/extensions/vscode/**/*.vsix
