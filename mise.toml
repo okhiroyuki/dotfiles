@@ -86,9 +86,24 @@ export DOC_REVIEW_GATE_SCRIPT="$PWD/../../../claude/hooks/doc-review.py"
 node --test tests/
 '''
 
+[tasks."test:claude-hooks"]
+description = "Claude Codeのフック（doc-review/confluence-write-guard）のテストを実行する"
+run = "python3 claude/hooks/test_doc_review.py && python3 claude/hooks/test_confluence_write_guard.py"
+
+[tasks."test:review-validator"]
+description = "レビュー結果検証スクリプト（validate-output.py）のテストを実行する"
+run = "python3 claude/review/doc/test_validate_output.py"
+
 [tasks.test]
 description = "全テストを実行する"
-depends = ["test:scapple", "test:llm-wiki", "test:github-html-viewer", "test:opencode-plugin"]
+depends = [
+  "test:scapple",
+  "test:llm-wiki",
+  "test:github-html-viewer",
+  "test:opencode-plugin",
+  "test:claude-hooks",
+  "test:review-validator",
+]
 
 [tasks."install:textlint"]
 description = "textlint環境を用意する（install:pnpmの別名。Claude Codeのhookが使う）"

@@ -57,7 +57,7 @@ mise run setup      # enable the git hooks (pre-commit: lint, pre-push: test)
 mise run check      # everything CI runs (lint + test)
 mise run lint       # dprint / yamllint / shellcheck / actionlint
 mise run fmt        # apply dprint formatting
-mise run test       # scapple: typecheck + tests
+mise run test       # 全テスト（scapple / llm-wiki / Chrome拡張 / OpenCodeプラグイン / Claudeフック）
 ```
 
 CI (`.github/workflows/check.yml`) simply runs `mise run check`.
