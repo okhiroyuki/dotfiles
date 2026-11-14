@@ -2,6 +2,10 @@
 
 全プロジェクト共通で適用するルール。各行は `rules/` 配下の個別ファイルへの `@import`。
 
+## 作業のライフサイクル
+
+@rules/workflow.md
+
 ## 思考プロセス
 
 @rules/thinking.md
@@ -13,11 +17,17 @@
 ## ツール利用
 
 @rules/semble.md
+
 @rules/zat.md
+
 @rules/rtk.md
+
 @rules/web-access.md
+
 @rules/llm-wiki.md
+
 @rules/review.md
+
 @rules/crit.md
 
 ## 文章作成
