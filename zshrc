@@ -40,3 +40,6 @@ _load_settings "$HOME/.zsh/configs"
 
 # aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
+
+# opencode
+export PATH="$HOME/.opencode/bin:$PATH"
