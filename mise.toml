@@ -18,8 +18,8 @@ uv = "0"
 # CI（.github/workflows/check.yml）も lefthook も同じ `mise run` を呼ぶ。
 
 [tasks.setup]
-description = "gitフックを有効化し、Claude Codeのhookが使うツールを用意する（初回のみ）"
-depends = ["install:pnpm"]
+description = "gitフックを有効化し、Claude Codeのhookとsemble(CLI+MCP登録)が使うツールを用意する（初回のみ）"
+depends = ["install:pnpm", "install:semble"]
 run = "lefthook install"
 
 [tasks."install:pnpm"]

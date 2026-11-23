@@ -32,6 +32,14 @@ env RCRC=$HOME/dotfiles/rcrc rcup -B private
 `env RCRC=...` tells `rcup` where the config file is on the first run.
 It then symlinks that `rcrc` to `~/.rcrc`, so later runs need only `rcup -B private`.
 
+Then install the pinned tools and run the first-time setup
+(git hooks, textlint, and semble — CLI plus MCP registration for Claude Code):
+
+```zsh
+mise install
+mise run setup
+```
+
 ## Update
 
 ```zsh
