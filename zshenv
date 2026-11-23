@@ -7,6 +7,13 @@
 # so this has to be re-applied there too (see homebrew.zsh).
 [[ -f ~/.zsh/configs/homebrew.zsh ]] && source ~/.zsh/configs/homebrew.zsh
 
+# ~/.local/bin には claude CLI と uv tool install で入るコマンド（semble など）が置かれる。
+# zshrc 側だけでなく zshenv で追加しないと、フック・エージェントが動かす非対話シェルで解決できない。
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 # ~/dotfiles/tools/cli/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
 # tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。
 if [ -d "$HOME/dotfiles/tools/cli/llm-wiki" ]; then
