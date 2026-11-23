@@ -18,7 +18,7 @@ model: opus
 ## skill eval
 
 1. `<name>` は小文字英数字で始まり、小文字英数字とハイフンだけで構成されるスキル名として扱う。`/`、`\`、`..`、絶対パスを含む値は拒否する。
-2. 対象スキルの `evals/evals.json` を読む。探索順は `~/.claude/skills/<name>`、`~/.agents/skills/<name>`、`~/.config/opencode/skills/<name>`、`.opencode/skills/<name>`。候補は解決後も各探索ルート配下にあること、`SKILL.md` と `evals/evals.json` が通常ファイルであることを確認する。
+2. 対象スキルの `evals/evals.json` を読む。探索順は `~/dotfiles/claude/skills/<name>`（正本）、`~/.claude/skills/<name>`、`~/.agents/skills/<name>`、`~/.config/opencode/skills/<name>`、`.opencode/skills/<name>`。`evals/` は rcup で配布されないため、dotfiles の配信元を先に見る。候補は解決後も各探索ルート配下にあること、`SKILL.md` と `evals/evals.json` が通常ファイルであることを確認する。
 3. 各ケースについて、対象スキルの `SKILL.md` を埋め込んだ subagent と、埋め込まない baseline subagent を同じメッセージ内で並列起動する。ファイルは変更させない。
 4. 両者を `expectations` と比較し、各項目を `pass`、`fail`、`区別不能` で判定する。スキルありの結果、baseline との差分、改善案を報告する。
 5. `evals.json` がない場合は、勝手に作成せずその旨を報告する。
