@@ -45,7 +45,12 @@ mise run setup
 ```zsh
 git pull
 rcup
+mise run setup
 ```
+
+`mise run setup` is idempotent and cheap; it applies tool-pin changes to the
+machine (for example, a semble version bump updates both the CLI and the
+registered MCP server).
 
 On the private machine, run `rcup -B private` instead so that `host-private/` is used.
 
