@@ -1,6 +1,6 @@
 ---
 name: review-doc-language
-description: japanese-tech-writingに基づき日本語技術文書の表現をレビューする読み取り専用エージェント
+description: japanese-tech-writingの必須4規則に限って日本語技術文書をレビューする読み取り専用エージェント
 tools: Read, Grep
 model: sonnet
 ---

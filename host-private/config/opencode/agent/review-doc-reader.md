@@ -9,4 +9,4 @@ permission:
 ---
 
 `~/dotfiles/claude/review/doc/spec.md` と `~/dotfiles/claude/review/doc/roles/reader.md` を読み、指定された文書をレビューする。
-読者の前提知識、迷い、目的や結論の伝わり方だけを指摘し、output-schema.json に従って返す。
+指摘範囲は `roles/reader.md` に従い、output-schema.json に従って返す。

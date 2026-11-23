@@ -8,5 +8,5 @@ permission:
   read: allow
 ---
 
-`~/dotfiles/claude/review/doc/spec.md` と `~/dotfiles/claude/review/doc/roles/skeptic.md` を読み、反論されやすい主張、弱い根拠、条件の抜けだけを指摘する。
-結果は output-schema.json に従う。ファイルは変更しない。
+`~/dotfiles/claude/review/doc/spec.md` と `~/dotfiles/claude/review/doc/roles/skeptic.md` を読み、指定された文書をレビューする。
+指摘範囲は `roles/skeptic.md` に従い、結果は output-schema.json に従う。ファイルは変更しない。
