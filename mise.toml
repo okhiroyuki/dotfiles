@@ -120,7 +120,7 @@ description = "pnpmワークスペース全体の依存を対話的に更新す�
 run = "pnpm update -r -i"
 
 [tasks."install:semble"]
-description = "sembleをグローバルコマンドとしてインストールする"
+description = "sembleをグローバルコマンドとしてインストールし、Claude CodeへMCPサーバーを登録する"
 run = "scripts/install-semble.sh"
 
 [tasks."update:plugins"]
