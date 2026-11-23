@@ -62,7 +62,7 @@ PDFの内容を要約する場合も、先に全ページをMarkdown化してか
 
 ## 3. その他のワークフロー
 
-**Query（質問に答える）**: `llm-wiki search` は JSON（`file_path`/`score`/`content` スニペット）を返す。スニペットだけで判断せず、有望な `file_path` を `llm-wiki read` で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
+**Query（質問に答える）**: `llm-wiki search` は JSON（`file_path`/`score`/`content` スニペット）を返す。検索語は、ユーザーの問いをページタイトルやサマリーの語彙（具体名・動作・対象）に翻訳して投げる。semble の類似度は語の一致に寄るため、抽象的な言い回しのままのクエリは、内容が合うページに負ける（`search_eval.py` の既知失敗3ケースが根拠）。top1 が無関係でも正解が top-k の中に入っていることがあるため、上位数件の `file_path` とスニペットを見てから判断する。top-k 全体が無関係なら、語彙を変えて 1 回だけ問い直してよい。有望な `file_path` は `llm-wiki read` で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
 
 **Spec（仕様・要件を作る）**: `wiki/_index.md` で関連把握 → `llm-wiki add --category decision` で ADR 作成、または既存 ADR を直接編集 → 実装前に MUST ユーザー承認
 
