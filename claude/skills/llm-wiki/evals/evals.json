@@ -1,27 +1,41 @@
 {
   "skill_name": "llm-wiki",
-  "note": "skill-management 4節の手順1の状態。expected_output のみで、expectations は「スキルあり/なし」の並行比較を実行してから追記する。評価対象は記録ではなく Query ワークフロー、とくに検索語の語彙翻訳と top-k 判断。",
+  "note": "skill-management 4節の比較を 2026-11-23 に実行済み（3ケース×スキルあり/なし、並行実行）。両アームとも正解ページに到達したが、スキルありは問い直し回数が少なく（case3: 2 vs 5）、関連ページと正本の区別が正確だった。expectations はその差分から抽出。限界: 各セル n=1、baseline もグローバル規律を継承するため差は小さめに出る。",
   "evals": [
     {
       "id": 1,
       "prompt": "wikiに、出力を節約するやつの導入判断あった？決め手も知りたい",
       "expected_output": "検索語を「rtk」「Bashフック」「透過的書き換え」などタイトル・サマリーの語彙に翻訳してから search する。top1 が無関係でも top-k を読み、ADR-001 に到達して決め手（カスタムツール登録でなくフック方式）を引用付きで答える。",
       "files": [],
-      "expectations": []
+      "expectations": [
+        "「rtk」「Bashフック」「透過的書き換え」など具体語を含む検索語で search する。抽象語だけのクエリで正解獲得を試みない",
+        "top1 が無関係でも、top-k の file_path とスニペットを見て判断する",
+        "ADR-001 に到達し、フック方式採用の決め手（カスタムツール登録ではモデルが内蔵ツールを優先する）を引用付きで述べる",
+        "同じ語彙の検索を繰り返さない"
+      ]
     },
     {
       "id": 2,
       "prompt": "PRDを書くときに注意することをwikiからまとめて",
       "expected_output": "「prd-writer」「依存スキル」「執筆前」など具体語に翻訳して search する。top1 が ADR-003（tanteki）でも ADR-002 に到達し、PRD に関する ADR-002 の要点だけを回答する。内容の近い別ページの記述を混同しない。",
       "files": [],
-      "expectations": []
+      "expectations": [
+        "正解 ADR-002 に到達する",
+        "ADR-003（tanteki の役割分担）を PRD の注意点として混同しない",
+        "「PRD 専用ページは wiki に存在しない」という判断を、捏造したページではなく既存ページの記述から行う",
+        "語彙を変えて問い直す。同じ語彙の再検索を繰り返さない"
+      ]
     },
     {
       "id": 3,
       "prompt": "日本語文章の推敲ってwikiに何か残ってる？",
       "expected_output": "top-k が決定ログや調剤資料など無関係に寄る場合、語彙を変えて1回だけ問い直すか、wiki に該当ページがないと判断する。ADR-002 に引っ張られず、japanese-tech-writing スキル（dotfiles 側）が正本であることを伝える。",
       "files": [],
-      "expectations": []
+      "expectations": [
+        "推敲規範の本文は wiki に存在しないことを、捏造せずに報告する",
+        "規範の正本（dotfiles 側の japanese-tech-writing スキル）と、wiki の決定記録（ADR-002/003）を区別して示す",
+        "検索回数を絞り、問い直しは語彙を変えて行う。同じ語彙の再検索を繰り返さない"
+      ]
     }
   ]
 }
