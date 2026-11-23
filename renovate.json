@@ -1,5 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>okhiroyuki/renovate-config"],
-  "forkProcessing": "enabled"
+  "forkProcessing": "enabled",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "install-semble.sh内のsembleバージョン固定を更新する(CLI と MCP 登録の2箇所を同一版に保つ)",
+      "fileMatch": ["^scripts/install-semble\\.sh$"],
+      "matchStrings": ["semble(?:\\[mcp\\])?==(?<currentValue>[0-9][0-9.]*)"],
+      "depNameTemplate": "semble",
+      "datasourceTemplate": "pypi"
+    }
+  ]
 }
