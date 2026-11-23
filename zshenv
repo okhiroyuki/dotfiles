@@ -14,6 +14,13 @@ case ":$PATH:" in
   *) export PATH="$HOME/.local/bin:$PATH" ;;
 esac
 
+# semble の埋め込みモデルを日本語対応の静的埋め込み(hotchpotch/bekko-static-embedding-v1)に
+# 差し替える(OpenCode・Claude Code 双方の CLI・フックは zsh 経由で起動されるため
+# zshenv の export で効く)。未設定だとデフォルトの英語・コード特化モデル
+# (minishlab/potion-code-16M-v2)になり日本語クエリが弱い。
+# bekko は多言語静的埋め込みで model2vec 互換、日本語+コード混合クエリで最良だった。
+export SEMBLE_MODEL_NAME="hotchpotch/bekko-static-embedding-v1"
+
 # ~/dotfiles/tools/cli/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
 # tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。
 if [ -d "$HOME/dotfiles/tools/cli/llm-wiki" ]; then
