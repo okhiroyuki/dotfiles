@@ -64,7 +64,9 @@ def main() -> int:
             })
             noise_cases.append(not flat)
         else:
-            ok = Path(top1["file_path"]) == Path(q["expected"])
+            # file_path は検索範囲起点（wiki/ のときは Decisions/... ）で返るため、
+            # root 相対の expected とは名前だけで比べる。ページ名はこの wiki 内で一意。
+            ok = Path(top1["file_path"]).name == Path(q["expected"]).name
             rows.append({
                 "query": q["query"], "status": "hit-check",
                 "expected": Path(q["expected"]).name,

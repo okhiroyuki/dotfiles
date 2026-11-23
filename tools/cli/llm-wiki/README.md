@@ -26,16 +26,16 @@ llm-wiki config set-root ~/Documents/llm-wiki
 
 ## コマンド
 
-| コマンド                                    | 役割                                                                        |
-| ------------------------------------------- | --------------------------------------------------------------------------- |
-| `llm-wiki config set-root <path>`           | 保存先(root)を設定する                                                      |
-| `llm-wiki config get`                       | 現在の root を表示する                                                      |
-| `llm-wiki config path`                      | 設定ファイルのパスを表示する                                                |
-| `llm-wiki search <query> [-- <semble引数>]` | `semble search --content docs` で意味検索する（root 配下・任意の cwd から） |
-| `llm-wiki read <relpath>`                   | root（または root/wiki）配下のページを表示する                              |
-| `llm-wiki list [--category <cat>]`          | カテゴリ別にページ（パスとタイトル）を一覧する                              |
-| `llm-wiki add ...`                          | ページを新規作成し、`_index.md`/`_log.md` を更新する                        |
-| `llm-wiki log "<msg>"`                      | `_log.md` に1行追記する                                                     |
+| コマンド                                                              | 役割                                                                                                                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `llm-wiki config set-root <path>`                                     | 保存先(root)を設定する                                                                                                                                 |
+| `llm-wiki config get`                                                 | 現在の root を表示する                                                                                                                                 |
+| `llm-wiki config path`                                                | 設定ファイルのパスを表示する                                                                                                                           |
+| `llm-wiki search [--scope wiki\|raw\|root] <query> [-- <semble引数>]` | `semble search --content docs` で意味検索する。既定の範囲は `wiki/`。`--scope raw` で raw/、`--scope root` で全体。`--scope` は query より前に指定する |
+| `llm-wiki read <relpath>`                                             | root（または root/wiki）配下のページを表示する                                                                                                         |
+| `llm-wiki list [--category <cat>]`                                    | カテゴリ別にページ（パスとタイトル）を一覧する                                                                                                         |
+| `llm-wiki add ...`                                                    | ページを新規作成し、`_index.md`/`_log.md` を更新する                                                                                                   |
+| `llm-wiki log "<msg>"`                                                | `_log.md` に1行追記する                                                                                                                                |
 
 ### `llm-wiki add`
 

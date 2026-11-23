@@ -219,7 +219,16 @@ def cmd_config(args) -> int:
 
 def cmd_search(args) -> int:
     root = get_root()
-    return run_semble(["search", args.query, str(root), "--content", "docs", *args.extra_args])
+    if args.scope == "root":
+        scope_path = root
+    else:
+        scope_path = root / args.scope
+        if not scope_path.is_dir():
+            eprint("エラー: 検索範囲 %s が存在しません。root 配下に %s/ ディレクトリが必要です。" % (scope_path, args.scope))
+            return 2
+    # 既定の範囲は wiki/。raw/ はページ数の多い不変資料のため含めると、
+    # 意味の近い wiki ページが raw のマニュアルに押しのけられる（search_eval で実測）。
+    return run_semble(["search", args.query, str(scope_path), "--content", "docs", *args.extra_args])
 
 
 def cmd_read(args) -> int:
@@ -394,8 +403,10 @@ def build_parser() -> argparse.ArgumentParser:
     pc.add_argument("path", nargs="?", help="set-root のときの保存先パス")
     pc.set_defaults(func=cmd_config)
 
-    ps = sub.add_parser("search", help="semble で意味検索する（root配下・任意のcwdから）")
+    ps = sub.add_parser("search", help="semble で意味検索する（任意のcwdから。既定の範囲は wiki/）")
     ps.add_argument("query")
+    ps.add_argument("--scope", choices=["wiki", "raw", "root"], default="wiki",
+                    help="検索範囲。wiki（既定）/ raw（raw/ の不変資料）/ root（全体）。query より前に指定する")
     ps.add_argument("extra_args", nargs=argparse.REMAINDER, help="semble search に渡す追加引数")
     ps.set_defaults(func=cmd_search)
 

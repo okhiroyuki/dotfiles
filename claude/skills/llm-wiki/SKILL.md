@@ -14,12 +14,12 @@ wiki の実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`�
 
 ## llm-wiki コマンド（詳細: `~/dotfiles/tools/cli/llm-wiki/README.md`）
 
-| コマンド                                                                        | 用途                                                                 |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `llm-wiki search "<query>"`                                                     | 意味検索（semble委譲、`--content docs`）。作業前・記録前の確認に使う |
-| `llm-wiki read <relpath>`                                                       | ページ表示                                                           |
-| `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新まで一括                                    |
-| `llm-wiki log "<msg>"`                                                          | `_log.md` に追記（lint等、add以外の操作の記録用）                    |
+| コマンド                                                                        | 用途                                                                                                                                                  |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `llm-wiki search "<query>"`                                                     | 意味検索（semble委譲、`--content docs`）。作業前・記録前の確認に使う。既定の範囲は wiki/。raw/ の資料を探すときは `--scope raw` を query の前に付ける |
+| `llm-wiki read <relpath>`                                                       | ページ表示                                                                                                                                            |
+| `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新まで一括                                                                                                                     |
+| `llm-wiki log "<msg>"`                                                          | `_log.md` に追記（lint等、add以外の操作の記録用）                                                                                                     |
 
 `--category`: `decision` / `prd` / `concept` / `research` / `session`。本文は `--stdin` か `--body-file` で渡す。**titleが非ASCII（日本語等）の場合は `--slug`（英小文字）を必ず指定する**。`decision` は ADR 番号を自動採番し frontmatter も付与する。**`--slug` に日付を含めない**（`session` 等は日付を自動で前置するため、slug 側にも日付を入れると `2026-07-24-2026-07-24-...` のように重複する）。
 
