@@ -58,7 +58,7 @@ model は MUST で明示する。未指定のまま放置しないこと。
 
 自作のテスト手順を組まず、`skill-creator` プラグインの eval 機構を使う。
 
-1. スキル直下に `evals/evals.json` を作り、実際のユーザーが言いそうなプロンプトを 2〜3 件書く（`expected_output` のみ。`expectations` はまだ書かない）。スキーマは `skill-creator` の `references/schemas.md` を参照
+1. スキルの配信元（dotfiles 側、例: `~/dotfiles/claude/skills/<name>`）直下に `evals/evals.json` を作り（`evals/` は rcup 配布外のため、`~/.claude/skills` 配下には作らない）、実際のユーザーが言いそうなプロンプトを 2〜3 件書く（`expected_output` のみ。`expectations` はまだ書かない）。スキーマは `skill-creator` の `references/schemas.md` を参照
 2. 同じプロンプトを「スキルあり」「スキルなし（baseline）」で同一ターン中に並行実行する
 3. 結果を比較し、`evals.json` に `expectations`（検証可能な条件のリスト）を追記する
 4. スキル本文を改訂し、2〜3 を繰り返す
