@@ -76,20 +76,33 @@ llm-wiki add --category session --title "設計レビュー 議事メモ" --slug
 
 ## 検索品質のeval
 
-`search_eval.py` は `search_evals.json`（クエリと正解ページの対）について
-実際の `llm-wiki search` を実行して、top-1 的中率を報告します。
+`search_eval.py` は評価セット（クエリと正解ページの対）について
+実際の `llm-wiki search` を実行して、top-1 的中率と top-10 内の到達率を報告する。
 あわせてノイズケース（どのページも正解でないクエリ）について
-スコアの平たさを報告します。
-プロンプトの言い換えで正解ページに辿り着けるかを確認する回帰テストです。
+スコアの平たさを報告する。
+プロンプトの言い換えで正解ページに辿り着けるかを確認する回帰テストである。
 
 ```sh
 # 文書が20件程度に増えた時点・検索まわりを変更した時 恒例
-python3 tools/cli/llm-wiki/search_eval.py          # 人間可読
-python3 tools/cli/llm-wiki/search_eval.py --json   # 機械可読
+python3 tools/cli/llm-wiki/search_eval.py                 # 人間可読
+python3 tools/cli/llm-wiki/search_eval.py --json          # 機械可読
+python3 tools/cli/llm-wiki/search_eval.py --gold <path>   # 評価セットを指定
 ```
 
-クエリ追加は `search_evals.json` に `"query"` と `"expected"`（root 相対パス。
+wiki の中身はマシンごとに違うため、評価セットは次の順で探す。
+
+1. `--gold` で指定したファイル
+2. `<root>/search_evals.json`（wiki 側。dotfiles の管理外）
+3. このディレクトリの `search_evals.json`（私用マシンの wiki 向け）
+
+業務の語を含む評価セットは 2 に置き、dotfiles にコミットしない。
+正解ページが root 配下にないケースは「対象外」として的中率に数えない。
+正解ケースがすべて対象外なら、評価セットがその wiki に合っていないので、
+警告を出して終了コード 1 で終わる。
+
+クエリ追加は評価セットに `"query"` と `"expected"`（root 相対パス。
 正解なしのノイズ計測なら `null`）を追記するだけ。
+任意で `"kind"`（例: `具体` / `言い換え`）を付けると、kind ごとの内訳も出る。
 
 ## 設計メモ
 
