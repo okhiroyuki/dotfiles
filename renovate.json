@@ -6,7 +6,9 @@
     {
       "customType": "regex",
       "description": "install-semble.sh内のsembleバージョン固定を更新する(CLI と MCP 登録の2箇所を同一版に保つ)",
-      "fileMatch": ["^scripts/install-semble\\.sh$"],
+      "managerFilePatterns": [
+        "/^scripts/install-semble\\.sh$/"
+      ],
       "matchStrings": ["semble(?:\\[mcp\\])?==(?<currentValue>[0-9][0-9.]*)"],
       "depNameTemplate": "semble",
       "datasourceTemplate": "pypi"
