@@ -91,6 +91,10 @@ node --test tests/
 description = "Claude Codeのフック（doc-review/confluence-write-guard）のテストを実行する"
 run = "python3 claude/hooks/test_doc_review.py && python3 claude/hooks/test_confluence_write_guard.py"
 
+[tasks."test:install-semble"]
+description = "install-sembleスクリプトの分岐をスタブで検証する"
+run = "bash scripts/test_install-semble.sh"
+
 [tasks."test:review-validator"]
 description = "レビュー結果検証スクリプト（validate-output.py）のテストを実行する"
 run = "python3 claude/review/doc/test_validate_output.py"
@@ -104,6 +108,7 @@ depends = [
   "test:opencode-plugin",
   "test:claude-hooks",
   "test:review-validator",
+  "test:install-semble",
 ]
 
 [tasks."install:textlint"]

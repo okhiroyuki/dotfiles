@@ -7,15 +7,19 @@ if ! command -v uv >/dev/null 2>&1; then
     exit 1
 fi
 
-uv tool install semble
+# バージョンは dotfiles にピン留めし、renovate が pypi datasource で自動更新する。
+# CLI と MCP サーバーは同じ版を使う。pin を上げた反映はこのスクリプトの再実行
+# (MCP 登録の remove+add)まで自動で行われる。
+uv tool install "semble==0.7.3"
 
 # Claude Code の user スコープに semble MCP サーバーを登録する。
 # 登録先の ~/.claude.json は Claude Code が自分で書き換えるファイルで dotfiles 管理外のため、
 # 設定はここでコード化し、新マシンでは install:semble タスクの再実行で登録し直す。
+# 既存登録があっても remove してから登録し直す(user スコープを明示)。pin の変更も
+# 再実行で実体に届く。claude mcp add は既存登録があると失敗するためスキップ判定はしない。
 if ! command -v claude >/dev/null 2>&1; then
     echo "claude not found (Claude CodeへのMCP登録をスキップしました)" >&2
-elif claude mcp get semble >/dev/null 2>&1; then
-    echo "semble MCP server is already registered"
 else
-    claude mcp add semble -s user -- uvx --from "semble[mcp]" semble
+    claude mcp remove semble -s user >/dev/null 2>&1 || true
+    claude mcp add semble -s user -- uvx --from "semble[mcp]==0.7.3" semble
 fi
