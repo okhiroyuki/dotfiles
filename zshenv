@@ -21,6 +21,7 @@ esac
 # bekko は多言語静的埋め込みで model2vec 互換、日本語+コード混合クエリで最良だった。
 # 元の bekko は短いクエリで float16 のオーバーフローを起こし意味検索が効かなくなるため、
 # scripts/install-semble.sh が作る正規化を有効にした版があればそちらを使う。
+# モデルや semble の版を変えたら `mise run eval:semble-model -- --baseline` で精度と警告を確かめる。
 _semble_bekko_normalized="$HOME/.local/share/semble/models/bekko-static-embedding-v1-normalized"
 if [[ -f "$_semble_bekko_normalized/config.json" ]]; then
   export SEMBLE_MODEL_NAME="$_semble_bekko_normalized"

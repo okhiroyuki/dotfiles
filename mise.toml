@@ -124,6 +124,14 @@ run = "./node_modules/.bin/textlint --config .textlintrc.json '../../claude/**/*
 description = "pnpmワークスペース全体の依存を対話的に更新する"
 run = "pnpm update -r -i"
 
+[tasks."eval:semble-model"]
+description = "sembleの埋め込みモデルの検索精度とオーバーフローを手元で確かめる（CIでは実行しない）"
+# MCP 登録と同じ版で測るため、install-semble.sh の pin を読んでその環境で実行する。
+run = '''
+pin=$(sed -n 's/.*semble==\([0-9.]*\).*/\1/p' scripts/install-semble.sh | head -1)
+uv run --no-project --with "semble==$pin" python scripts/eval-semble-model.py "$@"
+'''
+
 [tasks."install:semble"]
 description = "sembleをグローバルコマンドとしてインストールし、Claude CodeへMCPサーバーを登録する"
 run = "scripts/install-semble.sh"
