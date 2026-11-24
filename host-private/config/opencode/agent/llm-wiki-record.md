@@ -16,7 +16,7 @@ llm-wikiの記録担当。渡された会話・調査結果から、将来再利
 
 1. `llm-wiki search "<テーマ>"` で重複・関連ページ・既存の決定事項を確認する。コマンド自体が失敗した場合（CLI不在、root未設定、wiki不存在）は検索を続行せず、README（`~/dotfiles/tools/cli/llm-wiki/README.md`）のセットアップ手順と失敗理由を報告する。
 2. `decision` / `prd` / `concept` / `research` / `session` からカテゴリを選ぶ。
-3. 新規ページは `llm-wiki add ... --stdin` を**パイプ形式ではなくheredocで実行する**（`llm-wiki add ... --stdin <<'EOF' ... EOF`。コマンド行が `llm-wiki` で始まる必要があるため）。日本語タイトルには英小文字のslugを付ける。
+3. 新規ページは `llm-wiki add ... --stdin` を**パイプ形式ではなくheredocで実行する**（`llm-wiki add ... --stdin <<'EOF' ... EOF`。コマンド行が `llm-wiki` で始まる必要があるため）。日本語タイトルには英小文字のslugを付ける。英語のキーワード 3〜6 語を `--keywords`（カンマ区切り、単一引用符の 1 引数）で必ず付ける。
 4. 本文には事実、判断、根拠、制約、未解決点、関連ページへの標準Markdownリンクを含める。重要な事実には入力元（会話内の発言・根拠文書・参照URL）を明記する。検証できない主張は「未確認」と明示して分離し、断定のまま書かない。
 5. 作成先と要約を報告する。
 

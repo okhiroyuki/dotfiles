@@ -169,6 +169,25 @@ class LwikiTest(WikiFixture):
         self.assertTrue((self.root / "wiki" / "Concepts" / "rag.md").exists())
         self.assertIn("概念・用語集\n\n- [RAG](Concepts/rag.md)", self.index_text())
 
+    # ---- add: --keywords は見出し直後に Keywords 行を入れる ----
+    def test_add_keywords_line_after_heading(self):
+        r = self.run_cli(
+            "add", "--category", "concept", "--title", "ラック", "--slug", "rack",
+            "--summary", "s", "--keywords", " rack, shelf layout ,,", "--stdin", stdin="本文\n",
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        text = (self.root / "wiki" / "Concepts" / "rack.md").read_text(encoding="utf-8")
+        self.assertEqual(text, "# ラック\n\nKeywords: rack, shelf layout\n\n本文\n")
+
+    def test_add_keywords_after_decision_frontmatter(self):
+        r = self.run_cli(
+            "add", "--category", "decision", "--title", "X", "--slug", "x2",
+            "--summary", "s", "--keywords", "rack",
+        )
+        self.assertEqual(r.returncode, 0, r.stderr)
+        text = (self.root / "wiki" / "Decisions" / "ADR-004-x2.md").read_text(encoding="utf-8")
+        self.assertIn("---\n\n# X\n\nKeywords: rack\n\n", text)
+
     # ---- add: session は日付ファイル名 ----
     def test_add_session_dated_filename(self):
         r = self.run_cli(

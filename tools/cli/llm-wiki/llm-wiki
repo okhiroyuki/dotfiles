@@ -389,6 +389,14 @@ def read_body(args) -> str:
     return ""
 
 
+def format_keywords(raw) -> str:
+    """カンマ区切りの英語キーワードを `Keywords: a, b` の 1 行にする。空なら空文字。"""
+    if not raw:
+        return ""
+    words = [w.strip() for w in raw.split(",") if w.strip()]
+    return "Keywords: %s" % ", ".join(words) if words else ""
+
+
 def cmd_add(args) -> int:
     wiki = get_wiki_root()
     dir_name, section = CATEGORIES[args.category]
@@ -430,12 +438,19 @@ def cmd_add(args) -> int:
         eprint("警告: --status は decision 以外では無視されます。")
     status = args.status or "draft"
 
+    # 英語のキーワード行。semble の BM25 は英数字しか索引しないため、日本語のページにも
+    # 英語の語を置いて英語の検索語で当たるようにする。見出しの直後に置く。
+    head = "# %s\n\n" % args.title
+    keywords = format_keywords(args.keywords)
+    if keywords:
+        head += keywords + "\n\n"
+
     # frontmatter は Decisions のみ（SKILL.md仕様）
     if args.category == "decision":
         fm = "---\ndate: %s\nstatus: %s\ntags: []\nmodels_considered: []\n---\n\n" % (today(), status)
-        content = fm + "# %s\n\n%s\n" % (args.title, body)
+        content = fm + head + "%s\n" % body
     else:
-        content = "# %s\n\n%s\n" % (args.title, body)
+        content = head + "%s\n" % body
 
     if args.dry_run:
         print("[dry-run] 実際には書き込みません。次を行う予定です:")
@@ -534,6 +549,7 @@ def build_parser() -> argparse.ArgumentParser:
     pa.add_argument("--title", required=True)
     pa.add_argument("--summary", default="", help="_index.md の1行要約")
     pa.add_argument("--slug", help="ファイル名のslug（省略時はtitleから自動生成、非ASCIIなら必須）")
+    pa.add_argument("--keywords", help="英語のキーワード（カンマ区切り）。見出し直後に `Keywords:` 行として入れる")
     pa.add_argument("--status", help="decision の frontmatter status（既定: draft。例: accepted）")
     body_src = pa.add_mutually_exclusive_group()
     body_src.add_argument("--body-file", help="本文を読み込むファイル")

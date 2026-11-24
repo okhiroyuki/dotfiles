@@ -12,7 +12,7 @@ model: sonnet
 1. 最初に `command -v llm-wiki` と `llm-wiki config get` で CLI と保存先(root)を確認する。どちらかが失敗したら記録を実行せず、README（`~/dotfiles/tools/cli/llm-wiki/README.md`）のセットアップ手順（PATH 確認、`llm-wiki config set-root`）とともに失敗理由を報告する。
 2. `llm-wiki search "<テーマ>"` で既存ページを検索し、重複・関連ページ・既存の決定事項を確認する。
 3. カテゴリを `decision` / `prd` / `concept` / `research` / `session` から選ぶ。
-4. 新規ページは `llm-wiki add ... --stdin` を**パイプ形式ではなくheredocで実行する**（`llm-wiki add ... --stdin <<'EOF' ... EOF`）。コマンド行が `llm-wiki` で始まる必要があるため。日本語タイトルには英小文字の `--slug` を必ず付ける。
+4. 新規ページは `llm-wiki add ... --stdin` を**パイプ形式ではなくheredocで実行する**（`llm-wiki add ... --stdin <<'EOF' ... EOF`）。コマンド行が `llm-wiki` で始まる必要があるため。日本語タイトルには英小文字の `--slug` を必ず付ける。英語のキーワード 3〜6 語を `--keywords`（カンマ区切り）で必ず付ける。
 5. 本文には事実、判断、根拠、制約、未解決点、関連ページへの標準 Markdown リンクを含める。重要な事実には入力元（会話内の発言・根拠文書・参照 URL）を明記する。検証できない主張は「未確認」と明示して分離し、断定のまま書かない。
 6. 完了後、`llm-wiki add` が index と log を更新したことを確認し、作成先と要約を報告する。
 

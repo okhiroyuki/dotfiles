@@ -66,15 +66,16 @@ llm-wiki add --category session --title "設計レビュー 議事メモ" --slug
   --summary "論点整理" --stdin < notes.md
 ```
 
-| オプション                | 説明                                                                    |
-| ------------------------- | ----------------------------------------------------------------------- |
-| `--category`              | `decision` / `prd` / `concept` / `research` / `session`                 |
-| `--title`                 | ページタイトル（`# 見出し` と `_index.md` のリンク文言になる）          |
-| `--summary`               | `_index.md` の1行要約                                                   |
-| `--slug`                  | ファイル名の slug。省略時は title から自動生成。title が非ASCIIなら必須 |
-| `--status`                | `decision` の frontmatter `status`（既定: `draft`。例: `accepted`）     |
-| `--body-file` / `--stdin` | 本文の入力元（排他）。省略時は見出しだけのスタブ                        |
-| `--dry-run`               | 書き込まず、作成予定のファイル・index/log 更新内容だけ表示する          |
+| オプション                | 説明                                                                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--category`              | `decision` / `prd` / `concept` / `research` / `session`                                                                                                |
+| `--title`                 | ページタイトル（`# 見出し` と `_index.md` のリンク文言になる）                                                                                         |
+| `--summary`               | `_index.md` の1行要約                                                                                                                                  |
+| `--slug`                  | ファイル名の slug。省略時は title から自動生成。title が非ASCIIなら必須                                                                                |
+| `--keywords`              | 英語のキーワード（カンマ区切り）。見出しの直後に `Keywords:` 行として入れる。semble の BM25 は英数字しか索引しないため、英語の検索語で当たるようにする |
+| `--status`                | `decision` の frontmatter `status`（既定: `draft`。例: `accepted`）                                                                                    |
+| `--body-file` / `--stdin` | 本文の入力元（排他）。省略時は見出しだけのスタブ                                                                                                       |
+| `--dry-run`               | 書き込まず、作成予定のファイル・index/log 更新内容だけ表示する                                                                                         |
 
 カテゴリと配置・ファイル名・frontmatter の対応:
 
