@@ -157,6 +157,14 @@ out = subprocess.run([sys.executable, str(HOOK)], input=json.dumps({"transcript_
 ok = not out.stdout.strip()
 failed += not ok
 print(("✓ " if ok else "✗ ") + "JAPANESE_GUARD_DISABLE=1 なら英語でも通す")
+# 無効化判定は PreToolUse 分岐より前にある。判定位置のリファクタリング後も、無効化時には
+# 英語の箱を deny しないことを両経路で検証する
+out = subprocess.run([sys.executable, str(HOOK)], input=json.dumps({
+    "hook_event_name": "PreToolUse", "tool_name": "mcp__ccd_turn__wrap_up",
+    "tool_input": {"recap": EN, "ask": "Publish now?"}}), capture_output=True, text=True, check=True, env=env)
+ok = not out.stdout.strip()
+failed += not ok
+print(("✓ " if ok else "✗ ") + "JAPANESE_GUARD_DISABLE=1 なら英語の箱も deny しない")
 # PreToolUse：次の一手の箱は、画面に出る前に止める
 checks = [
     ("PreToolUse：英語の箱は deny する", "mcp__ccd_turn__wrap_up",
@@ -173,4 +181,22 @@ for name, tool, inp, expect_deny in checks:
     ok = denied == expect_deny
     failed += not ok
     print(("✓ " if ok else "✗ ") + name)
+# settings.json への登録を確認する。upstream にはない、このリポジトリ固有の確認。
+# 先例: test_confluence_write_guard.py の test_registered_in_settings
+SETTINGS = Path(__file__).resolve().parent.parent.parent / "host-private" / "claude" / "settings.json"
+EXPECTED = "python3 ~/.claude/hooks/japanese-guard.py"
+
+
+def has_hook(event, matcher=None):
+    for entry in json.loads(SETTINGS.read_text())["hooks"].get(event, []):
+        if matcher is not None and entry.get("matcher") != matcher:
+            continue
+        if any(hook.get("command") == EXPECTED for hook in entry.get("hooks", [])):
+            return True
+    return False
+
+
+ok = has_hook("Stop") and has_hook("PreToolUse", "mcp__.*__wrap_up")
+failed += not ok
+print(("✓ " if ok else "✗ ") + "settings.json に Stop と wrap_up 用 PreToolUse の両方が登録されている")
 sys.exit(1 if failed else 0)
