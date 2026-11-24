@@ -88,8 +88,10 @@ node --test tests/
 '''
 
 [tasks."test:claude-hooks"]
-description = "Claude Codeのフック（doc-review/confluence-write-guard）のテストを実行する"
-run = "python3 claude/hooks/test_doc_review.py && python3 claude/hooks/test_confluence_write_guard.py"
+description = "Claude Codeのフック（doc-review/confluence-write-guard/japanese-guard）のテストを実行する"
+run = '''
+python3 claude/hooks/test_doc_review.py && python3 claude/hooks/test_confluence_write_guard.py && python3 claude/hooks/test_japanese_guard.py
+'''
 
 [tasks."test:install-semble"]
 description = "install-sembleスクリプトの分岐をスタブで検証する"
