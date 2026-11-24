@@ -12,6 +12,12 @@ fi
 # (MCP 登録の remove+add)まで自動で行われる。
 uv tool install "semble==0.7.3"
 
+# semble 用の bekko モデル(埋め込み行列を 1/16 にしたもの)を作る。zshenv はこれがあれば
+# SEMBLE_MODEL_NAME に使う。理由は build-semble-model.py の冒頭を参照。作成済みなら何もしない。
+# model2vec の版を semble に揃えるため、semble と同じ pin の環境で実行する。
+uv run --no-project --with "semble==0.7.3" python "${BASH_SOURCE[0]%/*}/build-semble-model.py" \
+    "$HOME/.local/share/semble/models/bekko-static-embedding-v1-scaled16"
+
 # Claude Code の user スコープに semble MCP サーバーを登録する。
 # 登録先の ~/.claude.json は Claude Code が自分で書き換えるファイルで dotfiles 管理外のため、
 # 設定はここでコード化し、新マシンでは install:semble タスクの再実行で登録し直す。
