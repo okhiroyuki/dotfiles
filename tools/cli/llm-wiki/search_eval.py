@@ -65,7 +65,14 @@ def main() -> int:
 
     root = get_root()
     gold_path = resolve_gold(args.gold, root)
-    gold = json.loads(gold_path.read_text(encoding="utf-8"))
+    try:
+        gold = json.loads(gold_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        sys.stderr.write("エラー: 評価セットが見つかりません: %s\n" % gold_path)
+        return 2
+    except json.JSONDecodeError as e:
+        sys.stderr.write("エラー: 評価セットが JSON として読めません: %s (%s)\n" % (gold_path, e))
+        return 2
     hits, in_topk, noise_cases = [], [], []
     rows, skipped = [], []
     by_kind = {}  # kind -> [(top1 的中, top-k 到達)]
@@ -145,10 +152,19 @@ def main() -> int:
             print("対象外（正解ページがこの wiki にない）: %d 件" % len(skipped))
     sys.stdout.flush()
     if skipped and not hits:
-        sys.stderr.write("警告: 正解ケースがすべて対象外です。評価セットがこの wiki に合っていません。"
-                         "%s を作ってください。\n" % (root / GOLD_NAME))
+        sys.stderr.write("警告: 正解ケースがすべて対象外です。評価セット %s はこの wiki に合っていません。%s\n"
+                         % (gold_path, next_step_hint(gold_path, root)))
         return 1
     return 0
+
+
+def next_step_hint(gold_path: Path, root: Path) -> str:
+    local = root / GOLD_NAME
+    if not local.is_file():
+        return "%s を作ってください。" % local
+    if gold_path.resolve() == local.resolve():
+        return "expected のパスが root 相対で実在するページを指しているか見直してください。"
+    return "この wiki 用の評価セット %s があります。--gold を外して実行してください。" % local
 
 
 def fmt_rate(rate: float) -> str:
