@@ -2,11 +2,12 @@
 """llm-wiki のブラックボックステスト（標準ライブラリのみ）。
 
 CLI を一時 root に対して実行し、ファイル配置・_index.md/_log.md 更新・
-命名規則・エラー処理を検証する。semble には依存しない（検索系コマンドは呼ばない）。
+命名規則・エラー処理を検証する。semble には依存しない（search は偽の semble で検証する）。
 
 実行: python3 tools/cli/llm-wiki/test_llm-wiki.py
 """
 
+import json
 import os
 import subprocess
 import sys
@@ -41,7 +42,9 @@ AI-managed knowledge base. Last updated: 2020-01-01
 """
 
 
-class LwikiTest(unittest.TestCase):
+class WikiFixture(unittest.TestCase):
+    """一時 root と XDG 設定を用意する共通の土台。"""
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.base = Path(self.tmp.name)
@@ -76,6 +79,8 @@ class LwikiTest(unittest.TestCase):
     def log_text(self):
         return (self.root / "wiki" / "_log.md").read_text(encoding="utf-8")
 
+
+class LwikiTest(WikiFixture):
     # ---- config ----
     def test_config_roundtrip(self):
         got = self.run_cli("config", "get")
@@ -308,6 +313,76 @@ class LwikiTest(unittest.TestCase):
         )
         self.assertEqual(r.returncode, 2)
         self.assertIn("root", r.stderr)
+
+
+FAKE_SEMBLE = """#!/usr/bin/env python3
+import os, sys
+sys.stdout.write(os.environ["FAKE_SEMBLE_OUT"])
+"""
+
+
+class SearchLiteralTest(WikiFixture):
+    """search の完全一致併用を、固定の JSON を返す偽の semble で検証する。"""
+
+    def setUp(self):
+        super().setUp()
+        wiki = self.root / "wiki"
+        (wiki / "Concepts" / "a.md").write_text("# A\n無関係\n", encoding="utf-8")
+        (wiki / "Concepts" / "b.md").write_text("# B\n本文にラックがある\n", encoding="utf-8")
+        (wiki / "Decisions" / "ADR-005-rack.md").write_text(
+            "---\ndate: x\n---\n# 検証用ラックの段設計\n", encoding="utf-8")
+        (wiki / "_log.md").write_text("# Log\nラック\n", encoding="utf-8")
+        bindir = self.base / "bin"
+        bindir.mkdir()
+        fake = bindir / "semble"
+        fake.write_text(FAKE_SEMBLE, encoding="utf-8")
+        fake.chmod(0o755)
+        self.bindir = bindir
+
+    def search(self, *args, semble_results):
+        out = json.dumps({"query": "q", "results": semble_results})
+        env = dict(os.environ, XDG_CONFIG_HOME=str(self.xdg), FAKE_SEMBLE_OUT=out,
+                   PATH="%s%s%s" % (self.bindir, os.pathsep, os.environ.get("PATH", "")))
+        return subprocess.run([sys.executable, str(SCRIPT), "search", *args],
+                              capture_output=True, text=True, env=env)
+
+    @staticmethod
+    def hit(path, score=0.01):
+        return {"file_path": path, "start_line": 1, "end_line": 2, "score": score, "content": "c"}
+
+    def test_literal_hits_move_to_top(self):
+        r = self.search("ラック", semble_results=[self.hit("Concepts/a.md"), self.hit("Concepts/b.md")])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        paths = [x["file_path"] for x in json.loads(r.stdout)["results"]]
+        # 語を含む semble の結果 → 補った一致（見出し一致） → 語を含まない結果。_log.md は数えない
+        self.assertEqual(paths, ["Concepts/b.md", "Decisions/ADR-005-rack.md", "Concepts/a.md"])
+        extra = json.loads(r.stdout)["results"][1]
+        self.assertEqual(extra["match"], "literal")
+        self.assertEqual(extra["start_line"], 4)
+
+    def test_top_k_is_respected(self):
+        r = self.search("ラック", "--", "-k", "1",
+                        semble_results=[self.hit("Concepts/a.md")])
+        paths = [x["file_path"] for x in json.loads(r.stdout)["results"]]
+        self.assertEqual(paths, ["Decisions/ADR-005-rack.md"])
+
+    def test_multi_word_query_keeps_semble_order(self):
+        results = [self.hit("Concepts/a.md"), self.hit("Concepts/b.md")]
+        r = self.search("ラック 段", semble_results=results)
+        self.assertEqual(json.loads(r.stdout)["results"], results)
+
+    def test_meta_pages_are_excluded(self):
+        results = [self.hit("_index.md"), self.hit("Concepts/a.md"), self.hit("_log.md"),
+                   self.hit("Concepts/b.md")]
+        r = self.search("rack shelf", "--", "-k", "1", semble_results=results)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        paths = [x["file_path"] for x in json.loads(r.stdout)["results"]]
+        self.assertEqual(paths, ["Concepts/a.md"])
+
+    def test_text_format_is_passed_through(self):
+        r = self.search("ラック", "--", "--format", "text", semble_results=[self.hit("Concepts/a.md")])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("ADR-005", r.stdout)
 
 
 if __name__ == "__main__":

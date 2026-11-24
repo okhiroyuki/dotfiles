@@ -6,7 +6,7 @@ model: opus
 
 wiki の実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`）にある。検索インデックスは `semble` 側のグローバルキャッシュ（`~/Library/Caches/semble`）にあり、ファイル変更を自動検知するため明示的な再インデックスは不要。
 
-ファイル配置・`_index.md`/`_log.md` 更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/cli/llm-wiki`、PATH 済み・任意の cwd から動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki` が扱わない `raw/`・画像の取り回しに集中する。`cd` や semble CLI の直接実行、`_index.md`/`_log.md` の手編集はしない。検索だけは、`llm-wiki search` より `mcp__semble__search`（`repo` に `<root>/wiki`、`content` に `docs`）を優先する。root は `llm-wiki config get` で取得する。
+ファイル配置・`_index.md`/`_log.md` 更新・検索といった**機械的な配管はすべて `llm-wiki` CLIに委譲する**（`~/dotfiles/tools/cli/llm-wiki`、PATH 済み・任意の cwd から動く）。このスキルの役割は、**何を・どのカテゴリに・どう相互リンクして書くかの判断**と、`llm-wiki` が扱わない `raw/`・画像の取り回しに集中する。`cd` や semble の直接実行、`_index.md`/`_log.md` の手編集はしない。
 
 `~/Documents/llm-wiki/` は git リポジトリだが今後コミットは行わない（履歴は残すが更新しない。必要な場合はユーザー自身が行う）。
 
@@ -14,12 +14,12 @@ wiki の実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`�
 
 ## llm-wiki コマンド（詳細: `~/dotfiles/tools/cli/llm-wiki/README.md`）
 
-| コマンド                                                                        | 用途                                                                                                                                                                    |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `llm-wiki search "<query>"`                                                     | 意味検索（semble委譲、`--content docs`）。`mcp__semble__search` が使えないときの代わり。既定の範囲は wiki/。raw/ の資料を探すときは `--scope raw` を query の前に付ける |
-| `llm-wiki read <relpath>`                                                       | ページ表示                                                                                                                                                              |
-| `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新まで一括                                                                                                                                       |
-| `llm-wiki log "<msg>"`                                                          | `_log.md` に追記（lint等、add以外の操作の記録用）                                                                                                                       |
+| コマンド                                                                        | 用途                                                                                                                                                  |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `llm-wiki search "<query>"`                                                     | 意味検索（semble委譲、`--content docs`）。作業前・記録前の確認に使う。既定の範囲は wiki/。raw/ の資料を探すときは `--scope raw` を query の前に付ける |
+| `llm-wiki read <relpath>`                                                       | ページ表示                                                                                                                                            |
+| `llm-wiki add --category <c> --title "..." --summary "..." [--slug ..] --stdin` | ページ作成＋index/log更新まで一括                                                                                                                     |
+| `llm-wiki log "<msg>"`                                                          | `_log.md` に追記（lint等、add以外の操作の記録用）                                                                                                     |
 
 `--category`: `decision` / `prd` / `concept` / `research` / `session`。本文は `--stdin` か `--body-file` で渡す。**titleが非ASCII（日本語等）の場合は `--slug`（英小文字）を必ず指定する**。`decision` は ADR 番号を自動採番し frontmatter も付与する。**`--slug` に日付を含めない**（`session` 等は日付を自動で前置するため、slug 側にも日付を入れると `2026-07-24-2026-07-24-...` のように重複する）。
 
@@ -62,7 +62,7 @@ PDFの内容を要約する場合も、先に全ページをMarkdown化してか
 
 ## 3. その他のワークフロー
 
-**Query（質問に答える）**: `llm-wiki search` は JSON（`file_path`/`score`/`content` スニペット）を返す。検索語は、ユーザーの問いをページタイトルやサマリーの語彙（具体名・動作・対象）に翻訳して投げる。semble の類似度は語の一致に寄るため、抽象的な言い回しのままのクエリは、内容が合うページに負ける（`search_eval.py` の既知失敗3ケースが根拠）。top1 が無関係でも正解が top-k の中に入っていることがあるため、上位数件の `file_path` とスニペットを見てから判断する。top-k 全体が無関係なら、語彙を変えて 1 回だけ問い直してよい。有望な `file_path` は `llm-wiki read` で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
+**Query（質問に答える）**: `llm-wiki search` は JSON（`file_path`/`score`/`content` スニペット）を返す。検索語は、ユーザーの問いをページタイトルやサマリーの語彙（具体名・動作・対象）に翻訳して投げる。semble の類似度は語の一致に寄るため、抽象的な言い回しのままのクエリは、内容が合うページに負ける（`search_eval.py` の既知失敗3ケースが根拠）。top1 が無関係でも正解が top-k の中に入っていることがあるため、上位数件の `file_path` とスニペットを見てから判断する。top-k 全体が無関係なら、語彙を変えて 1 回だけ問い直してよい。日本語の検索語に加えて英語の検索語でも 1 回検索する（英語のファイル名には英語でしか当たらない）。有望な `file_path` は `llm-wiki read` で全文取得し、本文中の関連リンクもたどってから回答する → 回答に `[表示テキスト](相対パス.md)` で引用を入れる
 
 **Spec（仕様・要件を作る）**: `wiki/_index.md` で関連把握 → `llm-wiki add --category decision` で ADR 作成、または既存 ADR を直接編集 → 実装前に MUST ユーザー承認
 
@@ -81,7 +81,7 @@ raw/ に Markdown を新規作成する際、画像は必ずその場でイン�
 
 - MUST NOT: Markdown化済みの `raw/` 内資料を変更・削除する（PDFからMarkdownへの初回変換と変換元PDFの削除は例外）
 - MUST NOT: 承認なしに `decided` ステータスのページを大きく書き換える
-- MUST NOT: `cd` や semble CLI の直接実行、`_index.md`/`_log.md` の手編集（検索の `mcp__semble__search` を除き、すべて `llm-wiki` 経由）
+- MUST NOT: `cd` や semble の直接実行、`_index.md`/`_log.md` の手編集（すべて `llm-wiki` 経由）
 - 追加内容が不明確なときは、先に何を追加するか確認する
 
 ## 成功基準
