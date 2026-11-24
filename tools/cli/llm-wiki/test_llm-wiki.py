@@ -385,10 +385,18 @@ class SearchLiteralTest(WikiFixture):
         paths = [x["file_path"] for x in json.loads(r.stdout)["results"]]
         self.assertEqual(paths, ["Decisions/ADR-005-rack.md"])
 
-    def test_multi_word_query_is_passed_through(self):
+    def test_multi_word_query_keeps_semble_order(self):
         results = [self.hit("Concepts/a.md"), self.hit("Concepts/b.md")]
         r = self.search("ラック 段", semble_results=results)
         self.assertEqual(json.loads(r.stdout)["results"], results)
+
+    def test_meta_pages_are_excluded(self):
+        results = [self.hit("_index.md"), self.hit("Concepts/a.md"), self.hit("_log.md"),
+                   self.hit("Concepts/b.md")]
+        r = self.search("rack shelf", "--", "-k", "1", semble_results=results)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        paths = [x["file_path"] for x in json.loads(r.stdout)["results"]]
+        self.assertEqual(paths, ["Concepts/a.md"])
 
     def test_text_format_is_passed_through(self):
         r = self.search("ラック", "--", "--format", "text", semble_results=[self.hit("Concepts/a.md")])

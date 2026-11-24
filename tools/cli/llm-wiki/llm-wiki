@@ -246,7 +246,7 @@ def literal_matches(scope_path: Path, needle: str) -> dict:
             continue
         rel = p.relative_to(scope_path)
         # _index.md / _log.md は全ページの語を含むため、一致として数えない
-        if any(part.startswith((".", "_")) for part in rel.parts):
+        if is_meta_page(str(rel)) or any(part.startswith(".") for part in rel.parts):
             continue
         try:
             text = p.read_text(encoding="utf-8", errors="replace")
@@ -301,6 +301,30 @@ def _opt_value(extra_args, names, default):
     return val
 
 
+def _strip_opt(extra_args, names):
+    """追加引数から、指定オプションとその値を取り除いた列を返す。"""
+    out, skip = [], False
+    for a in extra_args:
+        if skip:
+            skip = False
+            continue
+        if a in names:
+            skip = True
+            continue
+        if any(a.startswith(n + "=") for n in names):
+            continue
+        out.append(a)
+    return out
+
+
+META_MARGIN = 5
+
+
+def is_meta_page(file_path: str) -> bool:
+    """_index.md / _log.md のような、名前が _ で始まるメタページかを返す。"""
+    return any(part.startswith("_") for part in Path(file_path).parts)
+
+
 def cmd_search(args) -> int:
     root = get_root()
     if args.scope == "root":
@@ -313,8 +337,7 @@ def cmd_search(args) -> int:
     # 既定の範囲は wiki/。raw/ はページ数の多い不変資料のため含めると、
     # 意味の近い wiki ページが raw のマニュアルに押しのけられる（search_eval で実測）。
     semble_args = ["search", args.query, str(scope_path), "--content", "docs", *args.extra_args]
-    needle = literal_query(args.query)
-    if needle is None or _opt_value(args.extra_args, ["--format"], "json") != "json":
+    if _opt_value(args.extra_args, ["--format"], "json") != "json":
         return run_semble(semble_args)
     try:
         top_k = int(_opt_value(args.extra_args, ["-k", "--top-k"], "5"))
@@ -325,8 +348,13 @@ def cmd_search(args) -> int:
     if shutil.which("semble") is None:
         eprint("警告: semble が見つかりません。検索をスキップしました。")
         return 127
+    # _index.md / _log.md は全ページの題名や英語の slug を含み、どの検索語でも上位に来て
+    # 本来のページを押し下げる。除いた分を補えるよう、semble には多めに返させる。
+    rest = _strip_opt(args.extra_args, ["-k", "--top-k"])
+    fetch = ["search", args.query, str(scope_path), "--content", "docs", *rest,
+             "--top-k", str(top_k + META_MARGIN)]
     try:
-        proc = subprocess.run(["semble", *semble_args], stdout=subprocess.PIPE, text=True)
+        proc = subprocess.run(["semble", *fetch], stdout=subprocess.PIPE, text=True)
     except OSError as e:
         eprint("警告: semble の実行に失敗しました: %s" % e)
         return 1
@@ -336,8 +364,11 @@ def cmd_search(args) -> int:
         # 想定外の出力は手を加えずに返す
         sys.stdout.write(proc.stdout)
         return proc.returncode
-    data["results"] = merge_literal(
-        data.get("results", []), literal_matches(scope_path, needle), top_k, snippet_lines)
+    results = [r for r in data.get("results", []) if not is_meta_page(r.get("file_path", ""))]
+    needle = literal_query(args.query)
+    if needle is not None:
+        results = merge_literal(results, literal_matches(scope_path, needle), top_k, snippet_lines)
+    data["results"] = results[:top_k]
     print(json.dumps(data, ensure_ascii=False))
     return proc.returncode
 
