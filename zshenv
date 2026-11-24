@@ -19,7 +19,15 @@ esac
 # zshenv の export で効く)。未設定だとデフォルトの英語・コード特化モデル
 # (minishlab/potion-code-16M-v2)になり日本語クエリが弱い。
 # bekko は多言語静的埋め込みで model2vec 互換、日本語+コード混合クエリで最良だった。
-export SEMBLE_MODEL_NAME="hotchpotch/bekko-static-embedding-v1"
+# 元の bekko は短いクエリで float16 のオーバーフローを起こし意味検索が効かなくなるため、
+# scripts/install-semble.sh が作る正規化を有効にした版があればそちらを使う。
+_semble_bekko_normalized="$HOME/.local/share/semble/models/bekko-static-embedding-v1-normalized"
+if [[ -f "$_semble_bekko_normalized/config.json" ]]; then
+  export SEMBLE_MODEL_NAME="$_semble_bekko_normalized"
+else
+  export SEMBLE_MODEL_NAME="hotchpotch/bekko-static-embedding-v1"
+fi
+unset _semble_bekko_normalized
 
 # ~/dotfiles/tools/cli/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
 # tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。

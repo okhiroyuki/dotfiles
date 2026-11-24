@@ -72,6 +72,7 @@ out=$(run_install no-claude 2>&1)
 rc=$?
 [ "$rc" -eq 0 ] || fail "claude不在: 終了コードが0ではない ($rc)"
 expect_log "claude不在" "uv tool install semble==0.7.3"
+expect_log "claude不在" "uv run --no-project --with semble==0.7.3 python $SCRIPT_DIR/build-semble-model.py"
 if grep -q "claude mcp add" "$STUB_LOG"; then
     fail "claude不在: add が呼ばれた"
 fi
