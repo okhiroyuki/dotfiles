@@ -15,6 +15,7 @@ semble はファイル変更を自動検知してインデックスを無効化�
 
 import argparse
 import datetime
+import json
 import os
 import re
 import shutil
@@ -217,6 +218,89 @@ def cmd_config(args) -> int:
     return 0
 
 
+# ---- 完全一致の併用 ----------------------------------------------------------
+# semble の BM25 は英数字の識別子しか索引しないため、日本語の短い語（例:「ラック」）は
+# 意味検索だけで探すことになり、正解ページが下位に沈む。空白を含まない短いクエリに限り、
+# 語をそのまま含むファイルを上位に寄せる。複数語のクエリは語ごとの一致が広く当たり、
+# 意味検索の順位を崩すため対象にしない。
+DOC_SUFFIXES = {".md", ".markdown"}
+LITERAL_MAX_LEN = 20
+
+
+def literal_query(query: str):
+    q = query.strip()
+    if not q or len(q) > LITERAL_MAX_LEN or re.search(r"\s", q):
+        return None
+    return q
+
+
+def literal_matches(scope_path: Path, needle: str) -> dict:
+    """needle を含む文書ファイルを {相対パス: (優先度, 最初の一致行番号, 行)} で返す。
+
+    優先度は ファイル名に一致=2 / 見出し行に一致=1 / 本文のみ=0。大文字小文字は区別しない。
+    """
+    low = needle.lower()
+    found = {}
+    for p in sorted(scope_path.rglob("*")):
+        if p.suffix.lower() not in DOC_SUFFIXES or not p.is_file():
+            continue
+        rel = p.relative_to(scope_path)
+        # _index.md / _log.md は全ページの語を含むため、一致として数えない
+        if any(part.startswith((".", "_")) for part in rel.parts):
+            continue
+        try:
+            text = p.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if low not in text.lower() and low not in p.stem.lower():
+            continue
+        first, heading = None, False
+        for i, line in enumerate(text.splitlines(), 1):
+            if low in line.lower():
+                if first is None:
+                    first = (i, line)
+                if line.lstrip().startswith("#"):
+                    heading = True
+                    break
+        rank = 2 if low in p.stem.lower() else (1 if heading else 0)
+        found[rel.as_posix()] = (rank, first or (1, ""))
+    return found
+
+
+def merge_literal(results: list, found: dict, top_k: int, snippet_lines) -> list:
+    """語を含む結果を先頭に寄せ、semble が拾わなかった一致ファイルを補う。
+
+    語を含む semble の結果は semble の順位のまま先頭に置く。次に semble が返さなかった
+    一致ファイルを優先度順に置き、語を含まない semble の結果をその後ろに回す。
+    補ったファイルは score=0.0 とし、match="literal" で区別できるようにする。
+    """
+    hit, miss = [], []
+    for r in results:
+        (hit if r.get("file_path") in found else miss).append(r)
+    seen = {r["file_path"] for r in hit}
+    extra = []
+    for rel, (rank, (lineno, line)) in sorted(found.items(), key=lambda kv: -kv[1][0]):
+        if rel in seen:
+            continue
+        extra.append({
+            "file_path": rel, "start_line": lineno, "end_line": lineno, "score": 0.0,
+            "content": "" if snippet_lines == 0 else line, "match": "literal",
+        })
+    return (hit + extra + miss)[:top_k]
+
+
+def _opt_value(extra_args, names, default):
+    """semble に渡す追加引数から、指定オプションの値を取り出す（--k=v と --k v の両方）。"""
+    val = default
+    for i, a in enumerate(extra_args):
+        for n in names:
+            if a == n and i + 1 < len(extra_args):
+                val = extra_args[i + 1]
+            elif a.startswith(n + "="):
+                val = a.split("=", 1)[1]
+    return val
+
+
 def cmd_search(args) -> int:
     root = get_root()
     if args.scope == "root":
@@ -228,7 +312,34 @@ def cmd_search(args) -> int:
             return 2
     # 既定の範囲は wiki/。raw/ はページ数の多い不変資料のため含めると、
     # 意味の近い wiki ページが raw のマニュアルに押しのけられる（search_eval で実測）。
-    return run_semble(["search", args.query, str(scope_path), "--content", "docs", *args.extra_args])
+    semble_args = ["search", args.query, str(scope_path), "--content", "docs", *args.extra_args]
+    needle = literal_query(args.query)
+    if needle is None or _opt_value(args.extra_args, ["--format"], "json") != "json":
+        return run_semble(semble_args)
+    try:
+        top_k = int(_opt_value(args.extra_args, ["-k", "--top-k"], "5"))
+        snip = _opt_value(args.extra_args, ["--max-snippet-lines"], None)
+        snippet_lines = int(snip) if snip is not None else None
+    except ValueError:
+        return run_semble(semble_args)
+    if shutil.which("semble") is None:
+        eprint("警告: semble が見つかりません。検索をスキップしました。")
+        return 127
+    try:
+        proc = subprocess.run(["semble", *semble_args], stdout=subprocess.PIPE, text=True)
+    except OSError as e:
+        eprint("警告: semble の実行に失敗しました: %s" % e)
+        return 1
+    try:
+        data = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        # 想定外の出力は手を加えずに返す
+        sys.stdout.write(proc.stdout)
+        return proc.returncode
+    data["results"] = merge_literal(
+        data.get("results", []), literal_matches(scope_path, needle), top_k, snippet_lines)
+    print(json.dumps(data, ensure_ascii=False))
+    return proc.returncode
 
 
 def cmd_read(args) -> int:
