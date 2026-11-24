@@ -247,6 +247,15 @@
             "command": "python3 ~/.claude/hooks/require-tech-writing-skill.py"
           }
         ]
+      },
+      {
+        "matcher": "mcp__.*__wrap_up",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/japanese-guard.py"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -293,6 +302,14 @@
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/doc-review.py gate"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/japanese-guard.py"
           }
         ]
       }
