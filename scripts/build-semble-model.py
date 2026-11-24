@@ -1,14 +1,18 @@
-"""semble 用に bekko の埋め込み行列を定数倍で縮めたモデルを作る。
+"""semble 用に、正規化を有効にした bekko モデルを作る。
 
-bekko(hotchpotch/bekko-static-embedding-v1)の埋め込みは float16 で、正規化されていない。
+bekko(hotchpotch/bekko-static-embedding-v1)の埋め込みは float16 で、設定は normalize=false。
 semble はクエリの埋め込みを float16 のまま vicinity の normalize に渡すため、ノルムが 256 を
 超えるクエリ(1〜4 トークンの短い検索語の多く)で二乗和が float16 の上限 65504 を超えて inf になる。
 inf で割ったクエリベクトルは全要素 0 になり、意味検索の類似度が全文書で 0 になる
 (numpy の "overflow encountered in reduce" 警告はこのとき出る)。
 
-行列全体を 2 の累乗で割っても、コサイン類似度と検索順位は変わらない。16 で割ると行ノルムの
-最大が約 182 になり、行の平均であるクエリベクトルのノルムも 256 を超えない。
-float16 のまま保存するのでサイズは元と同じ(float32 化すると倍になる)。
+semble は encode に normalize を渡さないため、model2vec はモデル設定の normalize に従う。
+normalize=true で保存し直すと、model2vec が float32 で正規化してから返すので、semble 側の
+計算は単位ベクトルに対して行われ、オーバーフローしない。重みの値は変えない。
+モデルカードが推奨する使い方(normalize_embeddings=True)とも一致する。
+
+元のファイルとは重みの名前が違うため、config.json の書き換えだけでは読み込めない。
+model2vec で読み込んで保存し直す。
 
 使い方: uv run --no-project --with semble==<pin> python build-semble-model.py <出力ディレクトリ>
 出力先にモデルがあれば何もしない。
@@ -16,13 +20,11 @@ float16 のまま保存するのでサイズは元と同じ(float32 化すると
 
 from __future__ import annotations
 
+import shutil
 import sys
 from pathlib import Path
 
 SOURCE_MODEL = "hotchpotch/bekko-static-embedding-v1"
-SCALE = 16
-# float16 の二乗和が上限を超えない行ノルムの上限(sqrt(65504) ≈ 255.9)。
-NORM_LIMIT = 255.0
 
 
 def main() -> int:
@@ -33,22 +35,16 @@ def main() -> int:
     if (out / "config.json").exists():
         return 0
 
-    import numpy as np
     from model2vec import StaticModel
 
-    model = StaticModel.from_pretrained(SOURCE_MODEL, force_download=False)
-    scaled = model.embedding / np.asarray(SCALE, dtype=model.embedding.dtype)
-    max_norm = float(np.linalg.norm(scaled.astype(np.float32), axis=1).max())
-    if max_norm >= NORM_LIMIT:
-        print(f"縮めた後も行ノルムの最大が {max_norm:.1f} あり、オーバーフローを防げない", file=sys.stderr)
-        return 1
-    model.embedding = scaled
+    model = StaticModel.from_pretrained(SOURCE_MODEL, normalize=True, force_download=False)
 
     # 途中で失敗しても半端な出力を残さないよう、一時ディレクトリに保存してから置き換える。
     tmp = out.with_name(out.name + ".tmp")
+    shutil.rmtree(tmp, ignore_errors=True)
     model.save_pretrained(tmp, model_name=SOURCE_MODEL)
     tmp.rename(out)
-    print(f"{out} に作成しました(行ノルムの最大 {max_norm:.1f})", file=sys.stderr)
+    print(f"{out} に作成しました", file=sys.stderr)
     return 0
 
 

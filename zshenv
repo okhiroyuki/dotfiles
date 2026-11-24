@@ -20,14 +20,14 @@ esac
 # (minishlab/potion-code-16M-v2)になり日本語クエリが弱い。
 # bekko は多言語静的埋め込みで model2vec 互換、日本語+コード混合クエリで最良だった。
 # 元の bekko は短いクエリで float16 のオーバーフローを起こし意味検索が効かなくなるため、
-# scripts/install-semble.sh が作る 1/16 版があればそちらを使う(コサイン類似度は定数倍で変わらない)。
-_semble_bekko_scaled="$HOME/.local/share/semble/models/bekko-static-embedding-v1-scaled16"
-if [[ -f "$_semble_bekko_scaled/config.json" ]]; then
-  export SEMBLE_MODEL_NAME="$_semble_bekko_scaled"
+# scripts/install-semble.sh が作る正規化を有効にした版があればそちらを使う。
+_semble_bekko_normalized="$HOME/.local/share/semble/models/bekko-static-embedding-v1-normalized"
+if [[ -f "$_semble_bekko_normalized/config.json" ]]; then
+  export SEMBLE_MODEL_NAME="$_semble_bekko_normalized"
 else
   export SEMBLE_MODEL_NAME="hotchpotch/bekko-static-embedding-v1"
 fi
-unset _semble_bekko_scaled
+unset _semble_bekko_normalized
 
 # ~/dotfiles/tools/cli/llm-wiki の llm-wiki CLI をどのディレクトリからでも使えるようにする。
 # tools/ は rcm 管理外なのでリポジトリ内のパスを直接 PATH に載せる。
