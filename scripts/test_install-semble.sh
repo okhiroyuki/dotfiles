@@ -5,7 +5,8 @@
 # 検証する分岐:
 #   1. uv 不在 → スクリプトが失敗する
 #   2. claude 不在 → MCP 登録をスキップして成功する
-#   3. remove 失敗(未登録相当)→ 無視して期待する引数で add する
+#   3. remove 失敗(未登録相当)→ 無視して期待する引数で add する。モデル名は
+#      正規化版がなければ HF のモデル名、あればそのパスを env で渡す
 #   4. add 失敗 → スクリプトも失敗する
 set -u
 
@@ -47,14 +48,19 @@ STUB
 
 chmod +x "$TMP/uv-only/uv" "$TMP/uv-claude/uv" "$TMP/uv-claude/claude"
 
+# HOME も一時ディレクトリに差し替え、実マシンのモデル有無に結果が左右されないようにする。
+FAKE_HOME="$TMP/home"
+NORMALIZED="$FAKE_HOME/.local/share/semble/models/bekko-static-embedding-v1-normalized"
+mkdir -p "$FAKE_HOME"
+
 run_install() {
     # $1: "no-claude" なら claude を PATH から外して実行する
     : > "$STUB_LOG"
     if [ "${1:-}" = "no-claude" ]; then
-        PATH="$TMP/uv-only" "$INSTALL_SCRIPT"
+        HOME="$FAKE_HOME" PATH="$TMP/uv-only" "$INSTALL_SCRIPT"
     else
         STUB_REMOVE_EXIT="${STUB_REMOVE_EXIT:-0}" STUB_ADD_EXIT="${STUB_ADD_EXIT:-0}" \
-            PATH="$TMP/uv-claude" "$INSTALL_SCRIPT"
+            HOME="$FAKE_HOME" PATH="$TMP/uv-claude" "$INSTALL_SCRIPT"
     fi
 }
 
@@ -77,12 +83,21 @@ if grep -q "claude mcp add" "$STUB_LOG"; then
     fail "claude不在: add が呼ばれた"
 fi
 
-# 3. remove 失敗を無視して add が期待する引数で呼ばれる
+# 3. remove 失敗を無視して add が期待する引数で呼ばれる(正規化版モデルがない → HF のモデル名を渡す)
 out=$(STUB_REMOVE_EXIT=1 run_install 2>&1)
 rc=$?
 [ "$rc" -eq 0 ] || fail "remove失敗無視: 終了コードが0ではない ($rc)"
 expect_log "remove失敗無視" "claude mcp remove semble -s user"
-expect_log "remove失敗無視" "claude mcp add semble -s user -- uvx --from semble[mcp]==0.7.3 semble"
+expect_log "remove失敗無視" "claude mcp add semble -s user -e SEMBLE_MODEL_NAME=hotchpotch/bekko-static-embedding-v1 -- uvx --from semble[mcp]==0.7.3 semble"
+
+# 3b. 正規化版モデルがある → そのパスを MCP に渡す
+mkdir -p "$NORMALIZED"
+: > "$NORMALIZED/config.json"
+out=$(run_install 2>&1)
+rc=$?
+[ "$rc" -eq 0 ] || fail "正規化版あり: 終了コードが0ではない ($rc)"
+expect_log "正規化版あり" "claude mcp add semble -s user -e SEMBLE_MODEL_NAME=$NORMALIZED -- uvx --from semble[mcp]==0.7.3 semble"
+rm -rf "$NORMALIZED"
 
 # 4. add 失敗 → スクリプトも失敗
 out=$(STUB_ADD_EXIT=1 run_install 2>&1)
