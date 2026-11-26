@@ -10,13 +10,13 @@ fi
 # バージョンは dotfiles にピン留めし、renovate が pypi datasource で自動更新する。
 # CLI と MCP サーバーは同じ版を使う。pin を上げた反映はこのスクリプトの再実行
 # (MCP 登録の remove+add)まで自動で行われる。
-uv tool install "semble==0.7.3"
+uv tool install "semble==0.7.4"
 
 # semble 用の bekko モデル(正規化を有効にしたもの)を作る。zshenv はこれがあれば
 # SEMBLE_MODEL_NAME に使う。理由は build-semble-model.py の冒頭を参照。作成済みなら何もしない。
 # model2vec の版を semble に揃えるため、semble と同じ pin の環境で実行する。
 bekko_normalized="$HOME/.local/share/semble/models/bekko-static-embedding-v1-normalized"
-uv run --no-project --with "semble==0.7.3" python "${BASH_SOURCE[0]%/*}/build-semble-model.py" \
+uv run --no-project --with "semble==0.7.4" python "${BASH_SOURCE[0]%/*}/build-semble-model.py" \
     "$bekko_normalized"
 
 # MCP サーバーは Claude Code が zsh を通さずに起動するため、zshenv の SEMBLE_MODEL_NAME が
@@ -38,5 +38,5 @@ if ! command -v claude >/dev/null 2>&1; then
 else
     claude mcp remove semble -s user >/dev/null 2>&1 || true
     # -e は可変長引数なので、-- で区切ってから起動コマンドを書く。
-    claude mcp add semble -s user -e "SEMBLE_MODEL_NAME=$semble_model" -- uvx --from "semble[mcp]==0.7.3" semble
+    claude mcp add semble -s user -e "SEMBLE_MODEL_NAME=$semble_model" -- uvx --from "semble[mcp]==0.7.4" semble
 fi
