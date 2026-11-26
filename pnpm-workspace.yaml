@@ -1,5 +1,6 @@
 packages:
   - tools/textlint
   - tools/cli/scapple
+  - tools/cli/bpmn-open
 allowBuilds:
   esbuild: true

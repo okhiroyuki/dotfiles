@@ -1,0 +1,19 @@
+{
+  "name": "bpmn-open",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BPMNファイルをブラウザの編集画面で開き、同じファイルへ保存するCLI",
+  "license": "ISC",
+  "type": "module",
+  "bin": {
+    "bpmn-open": "./bin/bpmn-open.mjs"
+  },
+  "scripts": {
+    "test": "node --test lib/*.test.mjs"
+  },
+  "dependencies": {
+    "bpmn-auto-layout": "1.3.0",
+    "bpmn-js": "18.33.1",
+    "bpmn-moddle": "10.3.1"
+  }
+}

@@ -12,10 +12,11 @@ dotfiles 管理下に置く、自作の CLI ツール・エディタ/ブラウ�
 
 各ディレクトリ内で個別にビルド・グローバルインストールして使います。
 
-| ツール                               | 役割                                                                     |
-| ------------------------------------ | ------------------------------------------------------------------------ |
-| [`scapple`](cli/scapple/README.md)   | Scapple の `.scap` ファイルを構造化 JSON に変換する CLI                  |
-| [`llm-wiki`](cli/llm-wiki/README.md) | LLM-wiki（`~/Documents/llm-wiki`）の配管 CLI。蓄積・検索・再インデックス |
+| ツール                                 | 役割                                                                                      |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`scapple`](cli/scapple/README.md)     | Scapple の `.scap` ファイルを構造化 JSON に変換する CLI                                   |
+| [`llm-wiki`](cli/llm-wiki/README.md)   | LLM-wiki（`~/Documents/llm-wiki`）の配管 CLI。蓄積・検索・再インデックス                  |
+| [`bpmn-open`](cli/bpmn-open/README.md) | BPMN ファイルをブラウザの編集画面で開き、同じファイルへ保存する CLI。Zed のタスクから使う |
 
 ### 新しいCLIツールを追加する場合
 

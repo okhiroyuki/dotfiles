@@ -59,6 +59,15 @@ description = "scappleをグローバルコマンドとしてインストール�
 dir = "tools/cli/scapple"
 run = "pnpm install && pnpm run build && pnpm add -g ."
 
+[tasks."test:bpmn-open"]
+description = "bpmn-openのテストを実行する"
+run = "pnpm --filter bpmn-open test"
+
+[tasks."install:bpmn-open"]
+description = "bpmn-openをグローバルコマンドとしてインストールする"
+dir = "tools/cli/bpmn-open"
+run = "pnpm install && pnpm add -g ."
+
 [tasks."test:llm-wiki"]
 description = "llm-wiki CLIのテストを実行する"
 run = "python3 tools/cli/llm-wiki/test_llm-wiki.py"
