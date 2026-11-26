@@ -77,8 +77,8 @@ esac
 out=$(run_install no-claude 2>&1)
 rc=$?
 [ "$rc" -eq 0 ] || fail "claude不在: 終了コードが0ではない ($rc)"
-expect_log "claude不在" "uv tool install semble==0.7.3"
-expect_log "claude不在" "uv run --no-project --with semble==0.7.3 python $SCRIPT_DIR/build-semble-model.py"
+expect_log "claude不在" "uv tool install semble==0.7.4"
+expect_log "claude不在" "uv run --no-project --with semble==0.7.4 python $SCRIPT_DIR/build-semble-model.py"
 if grep -q "claude mcp add" "$STUB_LOG"; then
     fail "claude不在: add が呼ばれた"
 fi
@@ -88,7 +88,7 @@ out=$(STUB_REMOVE_EXIT=1 run_install 2>&1)
 rc=$?
 [ "$rc" -eq 0 ] || fail "remove失敗無視: 終了コードが0ではない ($rc)"
 expect_log "remove失敗無視" "claude mcp remove semble -s user"
-expect_log "remove失敗無視" "claude mcp add semble -s user -e SEMBLE_MODEL_NAME=hotchpotch/bekko-static-embedding-v1 -- uvx --from semble[mcp]==0.7.3 semble"
+expect_log "remove失敗無視" "claude mcp add semble -s user -e SEMBLE_MODEL_NAME=hotchpotch/bekko-static-embedding-v1 -- uvx --from semble[mcp]==0.7.4 semble"
 
 # 3b. 正規化版モデルがある → そのパスを MCP に渡す
 mkdir -p "$NORMALIZED"
@@ -96,7 +96,7 @@ mkdir -p "$NORMALIZED"
 out=$(run_install 2>&1)
 rc=$?
 [ "$rc" -eq 0 ] || fail "正規化版あり: 終了コードが0ではない ($rc)"
-expect_log "正規化版あり" "claude mcp add semble -s user -e SEMBLE_MODEL_NAME=$NORMALIZED -- uvx --from semble[mcp]==0.7.3 semble"
+expect_log "正規化版あり" "claude mcp add semble -s user -e SEMBLE_MODEL_NAME=$NORMALIZED -- uvx --from semble[mcp]==0.7.4 semble"
 rm -rf "$NORMALIZED"
 
 # 4. add 失敗 → スクリプトも失敗
