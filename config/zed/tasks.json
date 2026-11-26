@@ -1,0 +1,16 @@
+// Zed のグローバルタスク。rcup で ~/.config/zed/tasks.json にリンクされる。
+// 実行はコマンドパレットの「task: spawn」から。
+[
+  {
+    "label": "BPMN を編集画面で開く",
+    // tools/cli/bpmn-open（mise run install:bpmn-open で入れる）
+    "command": "bpmn-open",
+    // ZED_FILE が取れない状態（エディタ以外にフォーカスがあるなど）だと、Zed はタスクを一覧から消す。
+    // 既定値を与えて常に表示し、ファイルが無いときは bpmn-open が理由を表示する。
+    "args": ["${ZED_FILE:__no_file__}"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": true,
+    // サーバーは Ctrl+C で止めるまで動く。止めるためのタブは表示するが、フォーカスは移さない
+    "reveal": "no_focus"
+  }
+]
