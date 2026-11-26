@@ -519,11 +519,13 @@ class CritReviewGateTest(unittest.TestCase):
         self.other.write_text("あいうえおかきくけこ" * 10, encoding="utf-8")
         self.crit = root / "crit-data"
         (self.crit / "sessions").mkdir(parents=True)
-        # ps に crit と見える長命プロセスを、sleep へのシンボリックリンク経由で起動する。
-        fake = root / "bin" / "crit"
-        fake.parent.mkdir()
-        fake.symlink_to("/bin/sleep")
-        self.proc = subprocess.Popen([str(fake), "60"])
+        # ps に crit と見える長命プロセスを、argv[0] を crit にした Python で起動する。
+        # sleep へのリンクは、呼び出し名で動作を変える coreutils（Linux）ではすぐ終了する。
+        self.proc = subprocess.Popen(
+            [str(root / "bin" / "crit"), "-c", "import time; time.sleep(60)"],
+            executable=sys.executable,
+        )
+        self.assertTrue(gate_mod.crit_process_alive(self.proc.pid))
         self.base = {"session_id": f"s-{uuid.uuid4()}", "prompt_id": f"p-{uuid.uuid4()}"}
 
     def tearDown(self) -> None:
