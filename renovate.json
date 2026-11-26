@@ -5,13 +5,21 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "install-semble.sh内のsembleバージョン固定を更新する(CLI と MCP 登録の2箇所を同一版に保つ)",
+      "description": "sembleバージョン固定を更新する(install-semble.sh の CLI・モデル・MCP 登録と test_install-semble.sh の期待値を同一版に保つ)",
       "managerFilePatterns": [
-        "/^scripts/install-semble\\.sh$/"
+        "/^scripts/install-semble\\.sh$/",
+        "/^scripts/test_install-semble\\.sh$/"
       ],
       "matchStrings": ["semble(?:\\[mcp\\])?==(?<currentValue>[0-9][0-9.]*)"],
       "depNameTemplate": "semble",
       "datasourceTemplate": "pypi"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "semble の pin 更新を1つのPRにまとめる",
+      "matchPackageNames": ["semble"],
+      "groupName": "semble"
     }
   ]
 }
