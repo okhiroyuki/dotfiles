@@ -505,6 +505,81 @@ class DocGateTest(unittest.TestCase):
         self.assertEqual(self.gate(self.base), 2)
 
 
+class CritReviewGateTest(unittest.TestCase):
+    """crit でレビュー中の文書は、修正のたびに確認を出さない。"""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.work = root / "repo" / "workspace"
+        self.work.mkdir(parents=True)
+        self.doc = self.work / "draft.md"
+        self.doc.write_text("あいうえおかきくけこ" * 10, encoding="utf-8")
+        self.other = self.work / "other.md"
+        self.other.write_text("あいうえおかきくけこ" * 10, encoding="utf-8")
+        self.crit = root / "crit-data"
+        (self.crit / "sessions").mkdir(parents=True)
+        # ps に crit と見える長命プロセスを、sleep へのシンボリックリンク経由で起動する。
+        fake = root / "bin" / "crit"
+        fake.parent.mkdir()
+        fake.symlink_to("/bin/sleep")
+        self.proc = subprocess.Popen([str(fake), "60"])
+        self.base = {"session_id": f"s-{uuid.uuid4()}", "prompt_id": f"p-{uuid.uuid4()}"}
+
+    def tearDown(self) -> None:
+        self.proc.kill()
+        self.proc.wait()
+        self.tmp.cleanup()
+
+    def session(self, pid: int, args: list[str], files: list[str] | None = None) -> None:
+        review = self.crit / "reviews" / "r1"
+        review.mkdir(parents=True, exist_ok=True)
+        (review / "review.json").write_text(
+            json.dumps({"files": {f: {} for f in (files or [])}}), encoding="utf-8")
+        (self.crit / "sessions" / "r1.json").write_text(json.dumps({
+            "pid": pid, "cwd": str(self.work), "args": args, "review_path": str(review),
+        }), encoding="utf-8")
+
+    def gate(self, doc: Path) -> int:
+        record("write", {**self.base, "tool_name": "Edit",
+                         "tool_input": {"file_path": str(doc)}})
+        return subprocess.run(
+            [sys.executable, str(GATE), "gate"], input=json.dumps(self.base),
+            capture_output=True, text=True, check=False,
+            env={**os.environ, "DOC_REVIEW_THRESHOLD": "10",
+                 "DOC_REVIEW_CRIT_DIR": str(self.crit)},
+        ).returncode
+
+    def test_passes_while_crit_reviews_the_doc(self) -> None:
+        self.session(self.proc.pid, ["draft.md"])
+        self.assertEqual(self.gate(self.doc), 0)
+        # 確認済みとして本文を記録し、crit を閉じたあとはそれ以降の変更だけを数える
+        self.assertTrue(gate_mod.snapshot_path(self.doc).exists())
+
+    def test_matches_review_file_paths_when_started_without_args(self) -> None:
+        self.session(self.proc.pid, [], files=["workspace/draft.md"])
+        self.assertEqual(self.gate(self.doc), 0)
+
+    def test_matches_directory_argument(self) -> None:
+        self.session(self.proc.pid, ["."])
+        self.assertEqual(self.gate(self.doc), 0)
+
+    def test_doc_outside_crit_review_still_blocks(self) -> None:
+        self.session(self.proc.pid, ["draft.md"])
+        self.assertEqual(self.gate(self.other), 2)
+
+    def test_dead_crit_session_still_blocks(self) -> None:
+        self.proc.kill()
+        self.proc.wait()
+        self.session(self.proc.pid, ["draft.md"])
+        self.assertEqual(self.gate(self.doc), 2)
+
+    def test_non_crit_process_is_not_trusted(self) -> None:
+        # pid が再利用されて別のプロセスになっていれば、crit のレビュー中とみなさない
+        self.session(os.getpid(), ["draft.md"])
+        self.assertEqual(self.gate(self.doc), 2)
+
+
 class MarkTest(unittest.TestCase):
     def setUp(self) -> None:
         self.turn = tempfile.TemporaryDirectory()

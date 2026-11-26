@@ -15,6 +15,9 @@ gate は、このターンで書き込んだ `.md` ごとに記録との差分�
 変更した日本語が閾値を超える文書があれば、ターンの終了を止め、レビューするかをユーザーに確認させる。
 実行するか、指摘を採用するかは常にユーザーが決める。
 同じターンでレビュー確認の質問（選択肢に crit を含む AskUserQuestion）をすでに出していれば止めない。
+crit のデーモンが動いていて、その文書をレビュー中であれば止めない。crit はラウンドごとに
+差分をユーザーに見せるため、修正のたびに確認を出すと同じ質問のくり返しになる。
+このとき本文を記録として保存し、crit を閉じたあとはそれ以降の変更だけを数える。
 llm-wiki（~/Documents/llm-wiki）のページは判断の記録であり推敲対象ではないため、レビュー提案の対象外にする。
 スキル起動の強制（require-tech-writing-skill）は llm-wiki にも適用される。
 
@@ -29,6 +32,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -40,6 +44,8 @@ STATE_DIR = ".doc-review"
 # 5 レビュアーによる推敲対象の文書ではない。
 LLM_WIKI_ROOT = Path("~/Documents/llm-wiki").expanduser().resolve()
 STATE_HOOK = Path(__file__).with_name("doc-review-state.py")
+# crit のデータ置き場（crit の -o の既定値）。テストでは環境変数で差し替える。
+DEFAULT_CRIT_DIR = "~/.crit"
 
 
 def load_state_module():
@@ -95,6 +101,84 @@ def threshold() -> int:
         return DEFAULT_THRESHOLD
 
 
+def crit_dir() -> Path:
+    return Path(os.environ.get("DOC_REVIEW_CRIT_DIR", DEFAULT_CRIT_DIR)).expanduser()
+
+
+def crit_process_alive(pid: object) -> bool:
+    """pid のプロセスが生きていて、crit であるかを返す。pid の再利用で誤判定しないよう名前も見る。"""
+    if not isinstance(pid, int) or pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        pass
+    except OSError:
+        return False
+    try:
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "command="],
+            capture_output=True, text=True, timeout=2, check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    command = result.stdout.strip().split(" ", 1)[0]
+    return Path(command).name == "crit"
+
+
+def _read_json_dict(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def crit_review_docs() -> tuple[set[Path], set[str]]:
+    """動いている crit セッションのレビュー対象を返す。
+
+    `<crit>/sessions/<id>.json` はデーモンごとに pid・cwd・起動時の引数を持つ。
+    引数はファイルかディレクトリで、cwd からの相対パスになりうる。
+    引数なしで起動すると git の変更から対象を決めるため、`review.json` の `files`
+    （リポジトリのルートからの相対パス）も集め、末尾一致で照合する。
+    返り値は（引数から解決した絶対パス、review.json の相対パス）の組。
+    """
+    paths: set[Path] = set()
+    relatives: set[str] = set()
+    try:
+        sessions = list((crit_dir() / "sessions").glob("*.json"))
+    except OSError:
+        return paths, relatives
+    for session_file in sessions:
+        session = _read_json_dict(session_file)
+        if not crit_process_alive(session.get("pid")):
+            continue
+        cwd = Path(str(session.get("cwd") or "/"))
+        for arg in session.get("args") or []:
+            if isinstance(arg, str) and not arg.startswith("-"):
+                try:
+                    paths.add((cwd / arg).resolve())
+                except (OSError, ValueError):
+                    continue
+        review_path = session.get("review_path")
+        if isinstance(review_path, str):
+            files = _read_json_dict(Path(review_path) / "review.json").get("files")
+            if isinstance(files, dict):
+                relatives.update(k for k in files if isinstance(k, str) and k)
+    return paths, relatives
+
+
+def in_crit_review(doc: Path, reviewed: tuple[set[Path], set[str]]) -> bool:
+    paths, relatives = reviewed
+    target = doc.resolve()
+    if any(target == p or target.is_relative_to(p) for p in paths):
+        return True
+    text = target.as_posix()
+    return any(text.endswith("/" + rel.lstrip("/")) for rel in relatives)
+
+
 def gate() -> int:
     try:
         payload = json.load(sys.stdin)
@@ -128,6 +212,7 @@ def gate() -> int:
 
     limit = threshold()
     pending = []
+    reviewed = None
     for doc in docs:
         if not is_target(doc):
             continue
@@ -135,9 +220,17 @@ def gate() -> int:
             count = changed_japanese(doc)
         except (OSError, UnicodeDecodeError):
             continue
-        if count > limit:
-            first = not snapshot_path(doc).exists()
-            pending.append((doc, count, first))
+        if count <= limit:
+            continue
+        # crit を読むのは閾値を超えた文書があるときだけにする。
+        if reviewed is None:
+            reviewed = crit_review_docs()
+        if in_crit_review(doc, reviewed):
+            # crit の次のラウンドでユーザーが差分を見るので、ここまでを確認済みとする。
+            save_snapshot(doc.resolve())
+            continue
+        first = not snapshot_path(doc).exists()
+        pending.append((doc, count, first))
 
     if not pending:
         return 0
