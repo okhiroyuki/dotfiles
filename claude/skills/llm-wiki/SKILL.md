@@ -43,10 +43,11 @@ wiki の実データは `~/Documents/llm-wiki/`（`wiki/`, `raw/`, `Templates/`�
 
 1. **既存ページを確認**: `llm-wiki search "<キーワード>"` で検索。全体像が要るなら `llm-wiki read wiki/_index.md`
 2. **カテゴリを判断**: `decision`/`prd`/`concept`/`research`/`session` から選ぶ。新しい概念があれば `concept` を作る
-3. **raw/ に資料を保存**（該当時のみ）: `raw/` は `llm-wiki` の対象外。手動で配置する。すでにあれば読むだけ。画像は「画像の扱い」に従う
-4. **本文を用意して `llm-wiki add`**: 相互リンクを本文に含める。既存ページの更新は `llm-wiki` ではなくファイルを直接編集し、内容を保持して追記する（semble 側は次回検索時に自動反映されるため再インデックス操作は不要）
-5. 完了後、`llm-wiki add` が index/log を更新済みであることを確認する
-6. PDF 等の外部ファイルを Markdown 化して raw/に保存した場合、変換元の外部ファイルは削除する（raw/内の Markdown だけを残す）
+3. **要配慮個人情報を点検**: MUST: raw/ への保存と `llm-wiki add` の前に、記録する内容を [references/sensitive-info.md](references/sensitive-info.md) の基準で点検する。該当すれば書き込まずにユーザーに確認し、マスク案を添える
+4. **raw/ に資料を保存**（該当時のみ）: `raw/` は `llm-wiki` の対象外。手動で配置する。すでにあれば読むだけ。画像は「画像の扱い」に従う
+5. **本文を用意して `llm-wiki add`**: 相互リンクを本文に含める。既存ページの更新は `llm-wiki` ではなくファイルを直接編集し、内容を保持して追記する（semble 側は次回検索時に自動反映されるため再インデックス操作は不要）
+6. 完了後、`llm-wiki add` が index/log を更新済みであることを確認する
+7. PDF 等の外部ファイルを Markdown 化して raw/に保存した場合、変換元の外部ファイルは削除する（raw/内の Markdown だけを残す）
 
 ### PDFのMarkdown化（必須）
 
@@ -82,7 +83,6 @@ raw/ に Markdown を新規作成する際、画像は必ずその場でイン�
 - MUST NOT: Markdown化済みの `raw/` 内資料を変更・削除する（PDFからMarkdownへの初回変換と変換元PDFの削除は例外）
 - MUST NOT: 承認なしに `decided` ステータスのページを大きく書き換える
 - MUST NOT: `cd` や semble の直接実行、`_index.md`/`_log.md` の手編集（すべて `llm-wiki` 経由）
-- 追加内容が不明確なときは、先に何を追加するか確認する
 
 ## 成功基準
 
@@ -92,6 +92,7 @@ raw/ に Markdown を新規作成する際、画像は必ずその場でイン�
 - [ ] `raw/` 配下の既存Markdown資料を変更・削除していない（PDF変換時は全ページ抽出・元PDF削除を確認した）
 - [ ] 既存ページの内容を消さず、保持したまま追記・統合した
 - [ ] 内部リンクが標準 Markdown リンク形式（`[[]]` を使っていない）
+- [ ] 要配慮個人情報を点検し、該当した箇所はユーザーの確認どおりに記録した
 
 ## 実行開始
 
